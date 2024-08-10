@@ -1,0 +1,103 @@
+﻿#include "InputManager.h"
+
+InputManager::InputManager()
+{
+    VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "InputManager instance created.");
+
+    // Initialize mouse position
+    m_mouseX = 0;
+    m_mouseY = 0;
+}
+
+void InputManager::Update( UINT uMsg, WPARAM wParam, LPARAM lParam ) {
+    // Clear previous input states
+    m_keyPressed.clear();
+    m_keyReleased.clear();
+    m_mouseButtonPressed.clear();
+    m_mouseButtonReleased.clear();
+
+    int KeyCode = static_cast<int>(wParam);
+    
+    switch (uMsg) {
+    case WM_KEYDOWN:
+        m_keyPressed[KeyCode] = true;
+        m_keyHeld[KeyCode] = true;
+        OnKeyDown(KeyCode);
+        break;
+    case WM_KEYUP:
+        m_keyReleased[KeyCode] = true;
+        m_keyHeld[KeyCode] = false;
+        OnKeyUp(KeyCode);
+        break;
+    case WM_LBUTTONDOWN:
+        m_mouseButtonPressed[VK_LBUTTON] = true;
+        m_mouseButtonHeld[VK_LBUTTON] = true;
+        break;
+    case WM_LBUTTONUP:
+        m_mouseButtonReleased[VK_LBUTTON] = true;
+        m_mouseButtonHeld[VK_LBUTTON] = false;
+        break;
+    case WM_RBUTTONDOWN:
+        m_mouseButtonPressed[VK_RBUTTON] = true;
+        m_mouseButtonHeld[VK_RBUTTON] = true;
+        break;
+    case WM_RBUTTONUP:
+        m_mouseButtonReleased[VK_RBUTTON] = true;
+        m_mouseButtonHeld[VK_RBUTTON] = false;
+        break;
+    case WM_MOUSEMOVE:
+        m_mouseX = LOWORD(lParam);
+        m_mouseY = HIWORD(lParam);
+        break;
+    default:
+        break;
+    }
+}
+
+bool InputManager::IsKeyPressed(int key) {
+    return m_keyPressed[key];
+}
+
+bool InputManager::IsKeyReleased(int key) {
+    return m_keyReleased[key];
+}
+
+bool InputManager::IsKeyHeld(int key) {
+    return m_keyHeld[key];
+}
+
+bool InputManager::IsMouseButtonPressed(int button) {
+    return m_mouseButtonPressed[button];
+}
+
+bool InputManager::IsMouseButtonReleased(int button) {
+    return m_mouseButtonReleased[button];
+}
+
+bool InputManager::IsMouseButtonHeld(int button) {
+    return m_mouseButtonHeld[button];
+}
+
+void InputManager::GetMousePosition(int& x, int& y) const
+{
+    x = m_mouseX;
+    y = m_mouseY;
+}
+
+extern bool GIsRequestingExit;
+
+void InputManager::OnKeyDown(int32 KeyCode)
+{
+    VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "Key Down: %d", KeyCode);
+
+    // escape key
+    if (KeyCode == VK_ESCAPE)
+    {
+        GIsRequestingExit = true;
+    }
+}
+
+void InputManager::OnKeyUp(int32 KeyCode)
+{
+    VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "Key Up: %d", KeyCode);
+}

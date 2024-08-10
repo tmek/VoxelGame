@@ -1,0 +1,74 @@
+﻿
+    decisions to make:
+    ------------------
+    - Should there be seperate structs for:
+        - WorldBlock
+        - LocalBlock
+
+        really it fe
+
+
+
+
+        common operations:
+        ------------------
+
+        use cases:
+        - iterating blocks in a 3d world region to read/write            worldblock --> chunkkey & blockindex
+        - checking isair of adjacent blocks                              worldblock --> chunkkey & blockindex 
+        
+
+        naming:
+            I think we can use WorldToLocal and LocalToWorld, 
+                Changing the param types to make it clear what we are converting between.
+        
+            WorldToLocal(BlockCoords worldIn, BlockIndex blockIndexOut, ChunkKey chunkKeyOut)
+            LocalToWorld(ChunkKey chunkKeyIn, BlockIndex blockIndexIn, BlockCoords worldOut)
+            
+            WorldToLocal(BlockCoords worldIn, BlockCoords localOut, ChunkKey chunkKeyOut)
+            LocalToWorld(ChunkKey chunkKeyIn, BlockCoords localIn, BlockCoords worldOut)
+           
+            
+
+
+        The most common thing we probably want is a fast way to convert between
+        This is because we will be iterating over blocks across chunks a ton.
+
+        local and world blocks (int coords):
+    
+            world block --> chunkkey & blockindex --- Extremely common: Used to iterate over blocks across chunks.
+
+
+
+            chunkkey & blockindex --> world block ---  
+        
+            world block --> chunkkey & localblock --- Not so common: Used to get a block's local coords within a chunk. 
+            
+            chunkkey & localblock --> world block
+            
+            chunkkey --> chunk origin
+            world block --> chunk origin // this is a special case of the above, probably not needed
+        
+
+        
+     
+    */
+    WorldBlockToLocal // includes chunk key and local block coords
+    LocalBlockToWorld // includes chunk key and local block coords
+    ChunkKeyToChunkOrigin
+    
+    
+    
+    static void WorldBlockToLocal(const BlockCoords& worldBlockCoordsIn,
+        ChunkKey& chunkKeyOut,BlockCoords& localBlockCoordsOut);
+
+    static void LocalBlockToWorld(const ChunkKey& chunkKeyIn,
+        const BlockCoords& localBlockCoordsIn, BlockCoords& worldBlockCoordsOut);
+
+    static void WorldBlockToLocal(const int& wbxIn, const int& wbyIn, const int& wbzIn,
+        int& ckxOut, int& ckzOut, int& lbxOut, int& lbyOut, int& lbzOut);
+
+    static void LocalBlockToWorld(const int& ckxIn, const int& ckzIn,
+        const int& lbxIn, const int& lbyIn, const int& lbzIn, int& wbxOut, int& wbyOut, int& wbzOut);
+
+    static void WorldBlockToChunkOrigin
