@@ -3,17 +3,17 @@
 #include <utility>
 #include <vector>
 
-#include "Coords2.h"
+#include "Coordinates.h"
 #include "VoxelDefines.h"
 
 #include "Conversions.h"
 
-#undef max
-#undef min
-#include <algorithm> // Required for std::max
+#undef max // Required for std::min
+#undef min // Required for std::max
+#include <algorithm>
 
 
-struct ChunkUtils
+struct VOXELCORE_API ChunkUtils
 {
     /**
      * @brief Checks if a point in 3D space is within a given sphere.
@@ -31,9 +31,8 @@ struct ChunkUtils
      * @param radius The radius of the sphere.
      * @return true if the point is within or on the sphere, false otherwise.
      */
-    static inline bool IsPointInSphere(const int point_x, const int point_y, const int point_z,
-                                       const int center_x, const int center_y, const int center_z,
-                                       const int radius)
+    static bool IsPointInSphere(const int point_x, const int point_y, const int point_z, const int center_x,
+    const int center_y, const int center_z, const int radius)
     {
         int bias = 1; // Bias to avoid floating point errors
         int distance_squared = (point_x - center_x) * (point_x - center_x) +
@@ -97,67 +96,60 @@ struct ChunkUtils
         }
     }
 
-    struct FillSphere_BlockOperation
-    {
-        template <typename T>
-        void operator()(T* block_states, int block_index, int world_x, int world_y, int world_z, T block_type)
-        {
-            if (IsPointInSphere(world_x, world_y, world_z, 8, 8, 8, 5))
-            {
-                block_states[block_index] = block_type;
-            }
-        }
-    };
+    // struct FillSphere_BlockOperation
+    // {
+    //     template <typename T>
+    //     void operator()(T* block_states, int block_index, int world_x, int world_y, int world_z, T block_type)
+    //     {
+    //         if (IsPointInSphere(world_x, world_y, world_z, 8, 8, 8, 5))
+    //         {
+    //             block_states[block_index] = block_type;
+    //         }
+    //     }
+    // };
 
-    static void TestFill()
-    {
-        uint16_t chunk_block_states[CHUNK_TOTAL_BLOCKS];
-        uint8_t chunk_light_levels[CHUNK_TOTAL_BLOCKS];
-
-        uint16_t block_type = 5;
-        uint8_t light_level = 12;
-
-        //WorldBlockCoord block_world;
-        //LocalBlockCoord block_local;
-
-        FillSphere_BlockOperation fill_sphere_op;
-
-        TFillChunkSubvolume(chunk_block_states,
-                            0, // starting index
-                            15, 15, 15, // subvolume dimensions
-                            -100, 200, 2114, // world offset
-                            [&](auto* block_states, int index, int world_x, int world_y, int world_z)
-                            {
-                                fill_sphere_op(block_states, index, world_x, world_y, world_z, block_type);
-                            });
-
-        TFillChunkSubvolume(chunk_light_levels,
-                            0, // starting index
-                            4, 5, 6, // subvolume dimensions
-                            -100, 200, 2114, // world offset
-                            [&](auto* light_levels, int index, int world_x, int world_y, int world_z)
-                            {
-                                light_levels[index] = light_level;
-                            });
-    }
+    // static void TestFill()
+    // {
+    //     uint16_t chunk_block_states[CHUNK_TOTAL_BLOCKS];
+    //     uint8_t chunk_light_levels[CHUNK_TOTAL_BLOCKS];
+    //
+    //     uint16_t block_type = 5;
+    //     uint8_t light_level = 12;
+    //
+    //     //WorldBlockCoord block_world;
+    //     //LocalBlockCoord block_local;
+    //
+    //     FillSphere_BlockOperation fill_sphere_op;
+    //
+    //     TFillChunkSubvolume(chunk_block_states,
+    //                         0, // starting index
+    //                         15, 15, 15, // subvolume dimensions
+    //                         -100, 200, 2114, // world offset
+    //                         [&](auto* block_states, int index, int world_x, int world_y, int world_z)
+    //                         {
+    //                             fill_sphere_op(block_states, index, world_x, world_y, world_z, block_type);
+    //                         });
+    //
+    //     TFillChunkSubvolume(chunk_light_levels,
+    //                         0, // starting index
+    //                         4, 5, 6, // subvolume dimensions
+    //                         -100, 200, 2114, // world offset
+    //                         [&](auto* light_levels, int index, int world_x, int world_y, int world_z)
+    //                         {
+    //                             light_levels[index] = light_level;
+    //                         });
+    // }
 };
-
 
 class ChunkVolumeMapper
 {
 public:
-    struct ChunkSubVolume
-    {
-        LocalBlockCoord startingBlock; // The starting block within the chunk
-        int width; // The width of the sub-volume within the chunk
-        int height; // The height of the sub-volume within the chunk
-        int depth; // The depth of the sub-volume within the chunk
-    };
 
+    
     // Static method that returns the list of chunks and their corresponding sub-volume dimensions
-    static std::vector<ChunkSubVolume> GetChunksAndSubVolumes(const WorldRegion& worldRegion)
+    static std::vector<ChunkRegion> GetChunksAndSubVolumes(const WorldRegion& worldRegion)
     {
-        std::vector<ChunkSubVolume> result;
+        std::vector<ChunkRegion> result;
 
         // Convert the world volume's min and max coordinates to chunk keys
         ChunkKey chunkKeyMin, chunkKeyMax;

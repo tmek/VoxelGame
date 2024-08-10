@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Platform.h"
-#include "Windows.h"
 
 class PlatformTime
 {
@@ -20,17 +19,8 @@ public:
     }
 
 private:
-    static int64 Frequency; // high-resolution performance counter frequency
-    
-    static void Initialize()
-    {
-        QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&Frequency));
-    }
+    static int64 Frequency;
+    static int64 GetTime();
 
-    static int64 GetTime()
-    {
-        int64 time;
-        QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&time));
-        return time;
-    }
+    static void Initialize();
 };

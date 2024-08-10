@@ -1,7 +1,5 @@
-﻿
-#include "Windows.h"
-#include "PlatformWindow.h" // if you include windef.h before windows.h u get Error C1189 : #error:  "No Target Architecture"
-
+﻿#include "HAL/Windows/PlatformWindows.h"
+#include "PlatformWindow.h" 
 #include "Input/InputManager.h"
 
 
@@ -61,6 +59,9 @@ int32 PlatformWindow::Create()
 
     return 0;    
 }
+
+void PlatformWindow::SetTitle(const char* title)
+{ SetWindowTextA(hwnd, title); }
 
 void PlatformWindow::ForceRepaint()
 {

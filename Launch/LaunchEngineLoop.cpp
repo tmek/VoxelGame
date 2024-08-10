@@ -19,6 +19,7 @@
 #include "Core/Macros.h"
 #include "Core/PlayerController.h"
 #include "Core/StopWatch.h"
+#include "HAL/Windows/WindowsProcess.h"
 
 #include "Input/InputManager.h"
 #include "VoxelCore/ChunkUtils.h"
@@ -39,7 +40,7 @@ VoxelWorld GWorld;
 double GTime = 0.0;
 
 int32 GFrameNumber = 0;
-bool vsync = true;
+bool vsync = false;
 
 PlayerController GPlayerController;
 DirectX::XMVECTOR GCameraPosition = DirectX::XMVectorSet(0.0f, 10.0f, -10.0f, 0.0f);
@@ -82,7 +83,7 @@ void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
 
         // get chunk data
         auto& chunk = GWorld.GetChunk(chunkSubVolume.startingBlock.chunkKey);
-        auto chunkData = chunk.blockStates;
+        auto chunkData = chunk.GetBlockData()->blockStates;
 
         ChunkUtils::TFillChunkSubvolume(chunkData,
                                         chunkSubVolume.startingBlock.Index,
@@ -580,12 +581,27 @@ void FEngineLoop::Tick()
 
         if (KeyPressed)
         {
-            int worldX = static_cast<int>(GCameraPosition.m128_f32[0]);
-            int worldY = static_cast<int>(GCameraPosition.m128_f32[1]);
-            int worldZ = static_cast<int>(GCameraPosition.m128_f32[2]);
+            // put the block 10 units in front of the camera
+            DirectX::XMVECTOR CameraForward = DirectX::XMVector3Rotate(
+                DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
+                DirectX::XMQuaternionRotationRollPitchYaw(
+                    DirectX::XMConvertToRadians(0),
+                    DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
+
+            DirectX::XMVECTOR CameraPosition = GCameraPosition;
+            DirectX::XMVECTOR BlockPosition = DirectX::XMVectorAdd(CameraPosition, CameraForward * 10.0f);
+            
+            
+            DirectX::XMVECTOR BlockPositionRounded = DirectX::XMVectorRound(BlockPosition);
+            
+            WorldBlockCoord blockCursor;
+            blockCursor.X = static_cast<int>(DirectX::XMVectorGetX(BlockPositionRounded));
+            blockCursor.Y = static_cast<int>(DirectX::XMVectorGetY(BlockPositionRounded));
+            blockCursor.Z = static_cast<int>(DirectX::XMVectorGetZ(BlockPositionRounded));
+            
 
             ChunkKey centerChunkKey;
-            WorldToLocal({worldX, worldY, worldZ}, centerChunkKey);
+            WorldToLocal( blockCursor, centerChunkKey);
 
             if (0)
             {
@@ -597,7 +613,7 @@ void FEngineLoop::Tick()
             else
             {
                 //world.DrawSphere(worldX, worldY, worldZ, 4, NewBlockType);
-                TestBigSphere({worldX, worldY, worldZ}, 4, NewBlockType);
+                TestBigSphere(blockCursor, 4, NewBlockType);
 
                 // rebuild chunk and surrounding chunks.
                 // todo: ideally it should only rebuild the chunks that have been modified.
@@ -638,9 +654,9 @@ void FEngineLoop::Tick()
         constexpr int buffer_count = 256;
         static char TempBuffer[buffer_count];
         (void)sprintf_s(TempBuffer, buffer_count,
-                        "FPS: %f, MS: %f, MouseXY(%d, %d), MouseDown: %d, WorldChunks: %d",
+                        "FPS: %f, MS: %f, MouseXY(%d, %d), MouseDown: %d, WorldChunks: %d, Platform: %s",
                         FrameTiming::GetFPS(), FrameTiming::GetFrameTimeInMS(), MouseX, MouseY, MouseDown,
-                        ChunkCount
+                        ChunkCount, PlatformProcess::GetPlatformName()
         );
         GWindow->SetTitle(TempBuffer);
     }
@@ -672,7 +688,7 @@ void FEngineLoop::TestBigSphere(WorldBlockCoord Center, int Radius, BlockType Bl
 
         // get chunk data
         auto& chunk = GWorld.GetChunk(chunkSubVolume.startingBlock.chunkKey);
-        auto chunkData = chunk.blockStates;
+        auto chunkData = chunk.GetBlockData()->blockStates;
 
         ChunkUtils::TFillChunkSubvolume(chunkData,
                                         chunkSubVolume.startingBlock.Index,
@@ -692,6 +708,7 @@ void FEngineLoop::TestBigSphere(WorldBlockCoord Center, int Radius, BlockType Bl
                                         // world origin of chunk block 0
                                         [&](auto* block_states, int index, int world_x, int world_y, int world_z)
                                         {
+                                            
                                             if (ChunkUtils::IsPointInSphere(
                                                 world_x, world_y, world_z, Center.X, Center.Y, Center.Z, Radius))
                                             {

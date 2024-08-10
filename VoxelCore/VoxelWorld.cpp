@@ -3,23 +3,22 @@
 Chunk& VoxelWorld::GetChunk(const ChunkKey& key)
 {
     auto it = Chunks.find(key);
-
+    
     if (it == Chunks.end()) {
-        auto emplaceResult = Chunks.emplace(key, Chunk());
-        it = emplaceResult.first;
+        return Chunks.emplace(key, Chunk(key)).first->second;
     }
-
+    
     return it->second;
 }
 
 Chunk* VoxelWorld::TryGetChunk(const ChunkKey& key)
 {
     auto it = Chunks.find(key);
-
+    
     if (it == Chunks.end()) {
         return nullptr;
     }
-
+    
     return &it->second;
 }
 

@@ -1,21 +1,12 @@
-#include <windows.h>
-#include <stdio.h>
+#include "Hal/Windows/PlatformWindows.h"
+
 #include "Core/Logging.h"
 #include "HAL/PlatformWindow.h"
-#include "Input/InputManager.h"
+#include "HAL/Windows/WindowsProcess.h"
 
 
 extern signed int GuardedMain( const TCHAR* CmdLine );
 
-
-void HelloWorldMsgBox()
-{
-    // create a "Hello World" message box using MessageBox()
-    MessageBox(NULL,
-               L"Hello World!",
-               L"Just another Hello World program!",
-               MB_ICONEXCLAMATION | MB_OK);
-}
 
 HINSTANCE G_hInstance;
 const TCHAR* GCmdLine;
@@ -26,6 +17,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
     LPSTR lpCmdLine,
     int nShowCmd)
 {
+    WindowsProcess::ShowConsole();
+    
     VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Application Entry Point");
     
     ::G_hInstance = hInstance;

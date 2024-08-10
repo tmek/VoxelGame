@@ -3,7 +3,7 @@
 #include "VoxelCore/ChunkKey.h"
 #include "VoxelCore/Conversions.h"
 #include "VoxelCore/VoxelWorld.h"
-#include "VoxelCore/Coords2.h"
+#include "VoxelCore/Coordinates.h"
 
 // class to perform world operations
 class WorldOperations

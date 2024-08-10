@@ -9,6 +9,7 @@
 // stdlib
 #include <cstdio>
 
+#include "VoxelCore/ChunkUtils.h"
 #include "VoxelCore/Conversions.h"
 #include "WorldGen/WorldOperations.h"
 
@@ -19,7 +20,7 @@ void TestChunk()
         "Chunk size is %d bytes", BytesPerBlock * CHUNK_TOTAL_BLOCKS);
 
     // create a chunk
-    Chunk chunk;
+    Chunk chunk({0,0});
 
     // read and write a block
     BlockIndex index = 8;
@@ -165,6 +166,8 @@ int main(int argc, char* argv[])
 
     BeginTestGroup("Sanity Check");
     AssertAreEqual(1, 1, "1 == 1");
+
+    bool result = ChunkUtils::IsPointInSphere(0, 0, 0, 0, 0, 0, 0);
     
     TestConversions();
     return 0;

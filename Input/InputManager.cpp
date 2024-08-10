@@ -1,4 +1,5 @@
 ﻿#include "InputManager.h"
+#include <Windows.h>
 
 InputManager::InputManager()
 {
@@ -7,6 +8,11 @@ InputManager::InputManager()
     // Initialize mouse position
     m_mouseX = 0;
     m_mouseY = 0;
+}
+
+InputManager::~InputManager()
+{
+    VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "InputManager instance destroyed.");
 }
 
 void InputManager::Update( UINT uMsg, WPARAM wParam, LPARAM lParam ) {
@@ -84,11 +90,17 @@ void InputManager::GetMousePosition(int& x, int& y) const
     y = m_mouseY;
 }
 
+InputManager& InputManager::Get()
+{
+    static InputManager instance;
+    return instance;        
+}
+
 extern bool GIsRequestingExit;
 
 void InputManager::OnKeyDown(int32 KeyCode)
 {
-    VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "Key Down: %d", KeyCode);
+    // VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "Key Down: %d", KeyCode); TODO: add verbose logging?
 
     // escape key
     if (KeyCode == VK_ESCAPE)
@@ -99,5 +111,5 @@ void InputManager::OnKeyDown(int32 KeyCode)
 
 void InputManager::OnKeyUp(int32 KeyCode)
 {
-    VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "Key Up: %d", KeyCode);
+    //VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "Key Up: %d", KeyCode);
 }

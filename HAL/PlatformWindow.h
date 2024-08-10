@@ -1,8 +1,7 @@
 ﻿#pragma once
 
-#include "Core/Core.h"
-#include "Windows.h"
-//#include "minwindef.h"
+#include "Platform.h"
+#include "Windows/PlatformWindowsMinimal.h"
 
 /*
  * Represents an OS window for the platform.
@@ -14,16 +13,16 @@ public:
 
     void ProcessMessageQueue();
     HWND GetHandle() const { return hwnd; }
-    void SetTitle(const char* title) { SetWindowTextA(hwnd, title); }
+    void SetTitle(const char* title);
     void ForceRepaint();
 
 private:
+    static constexpr TCHAR ClassName[] = L"VoxelGameWindow";
+    HWND hwnd;
+    
     void RegisterWindowClass();
     int32 Create();
 
-    HWND hwnd;
-
-    static constexpr TCHAR ClassName[] = L"VoxelGameWindow";
 };
 
 // todo: you could have something external that maps PlatformWindow to hwnd to remove the dependency on windef.h

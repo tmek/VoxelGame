@@ -1,28 +1,48 @@
 ﻿#pragma once
-#include <cstdint>
-
-#include "Coords2.h"
 #include "VoxelDefines.h"
+#include "Coordinates.h"
+#include "BlockData.h"
 
-struct Chunk
+#include <memory>
+
+struct VOXELCORE_API Chunk
 {
-    // --- chunk data ---
-    BlockState blockStates[CHUNK_TOTAL_BLOCKS]; // Lower 12-bits for block type, upper 4-bits for block metadata
-    BlockLightLevel lightLevels[CHUNK_TOTAL_BLOCKS]; // Lower 4-bits for torchlight, Upper 4-bits for sunlight
+private:
+#pragma warning(push)
+#pragma warning(disable: 4251) // 'Chunk::blockData': 'std::unique_ptr<BlockData,std::default_delete<BlockData>>' needs to have dll-interface to be used by clients of 'Chunk' 
+    std::unique_ptr<BlockData> blockData;     
+#pragma warning(pop)
+    ChunkKey key;
     // --- end data ---
+public:
+    
+    // Constructor
+    Chunk(ChunkKey key)
+        : blockData(std::make_unique<BlockData>()), key(key)
+    {
+    }
 
     // non copyable
-    Chunk() = default;
-    ~Chunk() = default;
-
-    // Copy constructor - deleted to prevent copying
     Chunk(const Chunk&) = delete;
-    // Copy assignment operator - deleted to prevent copying
     Chunk& operator=(const Chunk&) = delete;
-    // Move constructor
-    Chunk(Chunk&&) noexcept = default;
-    // Move assignment operator
-    Chunk& operator=(Chunk&&) noexcept = default;
+
+    // move constructor
+    Chunk(Chunk&& other) noexcept
+        : blockData(std::move(other.blockData))
+    {
+    }
+
+    // move assignment
+    Chunk& operator=(Chunk&& other) noexcept
+    {
+        if (this != &other)
+        {
+            blockData = std::move(other.blockData);
+        }
+        return *this;
+    }
+
+    BlockData* GetBlockData() const { return blockData.get(); }
     
     // --- chunk ops ---
     inline BlockState GetBlockState(BlockIndex index) const;
@@ -33,7 +53,7 @@ struct Chunk
 
     inline void SetBlockState(BlockIndex index, BlockState state);
     inline void SetBlockType(BlockIndex index, BlockType blockType);
-    inline void SetBlockMetadata(BlockIndex index , BlockMetadata metadata);
+    inline void SetBlockMetadata(BlockIndex index, BlockMetadata metadata);
     inline void SetBlockLightLevel(BlockIndex index, BlockLightLevel lightLevel);
     inline void SetBlockSkyLight(BlockIndex index, BlockLightLevel lightLevel);
 
@@ -42,7 +62,7 @@ struct Chunk
     int GetHighestBlockHeightAt(BlockIndex index) const;
 };
 
-void Chunk::SetBlockType(BlockIndex index, BlockType blockType)
+inline void Chunk::SetBlockType(BlockIndex index, BlockType blockType)
 {
     // break if index is out of bounds
     // todo: this needs to be a check macro or something that gets removed in test/shipping .
@@ -50,7 +70,6 @@ void Chunk::SetBlockType(BlockIndex index, BlockType blockType)
     {
         __debugbreak();
     }
-     
-    
-    blockStates[index] = (blockStates[index] & 0xF000) | (blockType & 0x0FFF);
+
+    blockData->blockStates[index] = (blockData->blockStates[index] & 0xF000) | (blockType & 0x0FFF);
 }

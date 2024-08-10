@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Coords2.h"
+#include "Coordinates.h"
 
 
 inline void WorldToLocal(const WorldBlockCoord& worldIn, ChunkKey& chunkKey)

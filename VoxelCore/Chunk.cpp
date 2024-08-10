@@ -4,47 +4,47 @@
 
 void Chunk::SetBlockState(BlockIndex index, uint16_t state)
 {
-    blockStates[index] = state;
+    blockData->blockStates[index] = state;
 }
 
 uint16_t Chunk::GetBlockState(BlockIndex index) const
 {
-    return blockStates[index];
+    return blockData->blockStates[index];
 }
 
 uint16_t Chunk::GetBlockType(BlockIndex index) const
 {
-    return blockStates[index] & 0x0FFF;
+    return blockData->blockStates[index] & 0x0FFF;
 }
 
 void Chunk::SetBlockMetadata(BlockIndex index, uint8_t metadata)
 {
-    blockStates[index] = (blockStates[index] & 0x0FFF) | ((metadata & 0x0F) << 12);
+    blockData->blockStates[index] = (blockData->blockStates[index] & 0x0FFF) | ((metadata & 0x0F) << 12);
 }
 
 uint8_t Chunk::GetBlockMetadata(BlockIndex index) const
 {
-    return (blockStates[index] >> 12) & 0x0F;
+    return (blockData->blockStates[index] >> 12) & 0x0F;
 }
 
 void Chunk::SetBlockLightLevel(BlockIndex index, uint8_t light)
 {
-    lightLevels[index] = (lightLevels[index] & 0xF0) | (light & 0x0F);
+    blockData->lightLevels[index] = (blockData->lightLevels[index] & 0xF0) | (light & 0x0F);
 }
 
 uint8_t Chunk::GetBlockLightLevel(BlockIndex index) const
 {
-    return lightLevels[index] & 0x0F;
+    return blockData->lightLevels[index] & 0x0F;
 }
 
 void Chunk::SetBlockSkyLight(BlockIndex index, uint8_t light)
 {
-    lightLevels[index] = (lightLevels[index] & 0x0F) | ((light & 0x0F) << 4);
+    blockData->lightLevels[index] = (blockData->lightLevels[index] & 0x0F) | ((light & 0x0F) << 4);
 }
 
 uint8_t Chunk::GetBlockSkyLight(BlockIndex index) const
 {
-    return (lightLevels[index] >> 4) & 0x0F;
+    return (blockData->lightLevels[index] >> 4) & 0x0F;
 }
 
 bool Chunk::IsAirBlock(BlockIndex index) const
