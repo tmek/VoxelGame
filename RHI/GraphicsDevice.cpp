@@ -59,6 +59,46 @@ void GraphicsDevice::SetConstants(const XMMATRIX& viewProjMatrix, float TintR, f
     deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);    
 }
 
+void GraphicsDevice::EnableDepthWrite()
+{
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+    ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
+    
+    // Enable depth testing and depth writes
+    depthStencilDesc.DepthEnable = TRUE;
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+    depthStencilDesc.StencilEnable = FALSE;
+
+    ComPtr<ID3D11DepthStencilState> depthStencilState;
+    HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, depthStencilState.GetAddressOf());
+    if (SUCCEEDED(hr)) {
+        deviceContext->OMSetDepthStencilState(depthStencilState.Get(), 0);
+    } else {
+        check(hr);
+    }
+}
+
+void GraphicsDevice::DisableDepthWrite()
+{
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
+    ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
+    
+    // Disable depth writes but keep depth testing
+    depthStencilDesc.DepthEnable = TRUE;
+    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
+    depthStencilDesc.StencilEnable = FALSE;
+
+    ComPtr<ID3D11DepthStencilState> depthStencilState;
+    HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, depthStencilState.GetAddressOf());
+    if (SUCCEEDED(hr)) {
+        deviceContext->OMSetDepthStencilState(depthStencilState.Get(), 0);
+    } else {
+        check(hr);
+    }
+}
+
 void GraphicsDevice::InitD3D(HWND hWnd)
 {
     isValid = false;

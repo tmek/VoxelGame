@@ -13,3 +13,9 @@ void Mesh::Draw(ID3D11DeviceContext* deviceContext) const
 {
     deviceContext->DrawIndexed(indexCount, 0, 0);
 }
+
+void Mesh::DrawSubMesh(ID3D11DeviceContext* deviceContext, UINT subMeshIndex) const
+{
+    const SubMesh& subMesh = SubMeshes[subMeshIndex];
+    deviceContext->DrawIndexed(subMesh.indexCount, 0, subMesh.baseVertexLocation);
+}

@@ -37,8 +37,9 @@ public:
     void CreateConstantBuffer();
     //todo: don't leave constant buffer here
     void SetConstants(const XMMATRIX& viewProjMatrix, float TintR, float TintG, float TintB);
-    
-    
+    void EnableDepthWrite();
+    void DisableDepthWrite();
+
 private:
     void InitD3D(HWND hWnd);
     void CleanupD3D();

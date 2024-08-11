@@ -51,12 +51,12 @@ struct ForestBeachBiomeGenerator : public TerrainGeneratorBase
         }
 
         // caves
-        constexpr int cave_ground_depth = 6;
-        constexpr float caveFrequency = 0.1f;
-        constexpr float caveAmplitude = 10;
+        constexpr int cave_ground_depth = 12;
         constexpr float caveSquash = 1;
-
-        constexpr int cave_radius = 2;
+        constexpr float caveFrequency = 0.05f; // 0.05f
+        constexpr float caveAmplitude = 50; // 50
+        constexpr int cave_radius = 8; // 8
+        
         int density = Sample3D(x, y * caveSquash, z, caveFrequency) * caveAmplitude;
         bool is_cave = abs(density) < cave_radius;
 

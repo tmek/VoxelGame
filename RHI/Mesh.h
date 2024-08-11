@@ -11,8 +11,8 @@ using Microsoft::WRL::ComPtr;
 struct SubMesh
 {
     UINT indexCount = 0;
-    UINT IndexOffset = 0;
-    UINT VertexOffset = 0;
+    UINT startIndexLocation = 0;
+    int baseVertexLocation = 0;
 };
 
 // Represents a 3D mesh with vertex and index buffers.
@@ -30,7 +30,7 @@ struct Mesh
     // text tag for debugging
     std::shared_ptr<std::string> DebugTag;
 
-    DirectX::XMFLOAT3 DebugColor = { 1.0f, 1.0f, 1.0f };
+    DirectX::XMFLOAT3 DebugColor = {1.0f, 1.0f, 1.0f};
 
     Mesh()
     {
@@ -44,8 +44,9 @@ struct Mesh
     bool IsValid() const { return vertexBuffer.Get() != nullptr && indexBuffer.Get() != nullptr; }
 
     void BindToDeviceContext(ID3D11DeviceContext* deviceContext) const;
-    void Draw(ID3D11DeviceContext* deviceContext ) const;
-    
+    void Draw(ID3D11DeviceContext* deviceContext) const;
+    void DrawSubMesh(ID3D11DeviceContext* deviceContext, UINT subMeshIndex) const;
+
     // ComPtr will automatically release the resources
 
     // todo: make class immutable with readonly properties.
@@ -54,6 +55,4 @@ struct Mesh
     // todo: something like: mesh.boundingBox = BoundingBox::CreateFromPoints(vertexList.size(), vertexList.data(), sizeof(VertexType));
     // todo: something like: mesh.boundingSphere = BoundingSphere::CreateFromPoints(vertexList.size(), vertexList.data(), sizeof(VertexType));
     // todo: something like: mesh.material = material;
-
-    
 };

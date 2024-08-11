@@ -160,6 +160,7 @@
     <ClCompile Include="Render\PosColNormTexVertex.cpp" />
     <ClCompile Include="RHI\GraphicsDevice.cpp" />
     <ClCompile Include="RHI\Mesh.cpp" />
+    <ClCompile Include="RHI\MeshAssembler.cpp" />
     <ClCompile Include="VoxelMisc\ChunkMeshManager.cpp" />
     <ClCompile Include="WorldGen\BlockTypes.cpp" />
     <ClCompile Include="WorldGen\ForrestBeachGenerator.cpp" />
@@ -200,6 +201,7 @@
     <ClInclude Include="Render\PosColNormTexVertex.h" />
     <ClInclude Include="RHI\GraphicsDevice.h" />
     <ClInclude Include="RHI\Mesh.h" />
+    <ClInclude Include="RHI\MeshAssembler.h" />
     <ClInclude Include="VoxelMisc\ChunkMeshManager.h" />
     <ClInclude Include="WorldGen\BlockTypes.h" />
     <ClInclude Include="WorldGen\ForrestBeachGenerator.h" />

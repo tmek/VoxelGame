@@ -14,7 +14,7 @@ public:
     int32 Init();
     void DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMATRIX rotationMatrix,
                     DirectX::XMMATRIX scaleMatrix,
-                    DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix);
+                    DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix, bool bDrawWater);
     void Tick();
     void Exit();
 

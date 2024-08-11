@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "BlockMeshBuilder.h"
+#include "RHI/MeshAssembler.h"
 #include "VoxelCore/Chunk.h"
 #include "WorldGen/BlockTypes.h"
 #include "WorldGen/WorldOperations.h"
@@ -55,12 +56,46 @@ inline XMFLOAT4 GetBlockColor(int blockType)
 Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D11Device* device)
 {
     WorldOperations world(GWorld);
-    MeshBuilder<PosColNormTexVertex> builder(device);
-    BlockMeshBuilder blockMeshBuilder(builder);
+    MeshBuilder<PosColNormTexVertex> solidMeshBuilder;
+    MeshBuilder<PosColNormTexVertex> waterMeshBuilder;
+    
+    BlockMeshBuilder solidBlocksSubMesh(solidMeshBuilder);
+    BlockMeshBuilder waterBlocksSubMesh(waterMeshBuilder);
 
+#if 0
+    // debug mesh builders
+    solidBlocksSubMesh.SetColor(1.0f, 0.0f, 0.0f, 1.0f);
+    waterBlocksSubMesh.SetColor(0.0f, 0.0f, 1.0f, 1.0f);
+    // set position
+    solidBlocksSubMesh.SetMeshRelativeBlockOrigin(0.0f, 0.0f, 0.0f);
+    waterBlocksSubMesh.SetMeshRelativeBlockOrigin(3.0f, 0.0f, 0.0f);
+    // add faces
+    solidBlocksSubMesh.AppendPosXFace();
+    solidBlocksSubMesh.AppendNegXFace();
+    solidBlocksSubMesh.AppendPosYFace();
+    solidBlocksSubMesh.AppendNegYFace();
+    solidBlocksSubMesh.AppendPosZFace();
+    solidBlocksSubMesh.AppendNegZFace();
+    
+    waterBlocksSubMesh.AppendPosXFace();
+    waterBlocksSubMesh.AppendNegXFace();
+    waterBlocksSubMesh.AppendPosYFace();
+    waterBlocksSubMesh.AppendNegYFace();
+    waterBlocksSubMesh.AppendPosZFace();
+    waterBlocksSubMesh.AppendNegZFace();
+
+    // return mesh
+    MeshAssembler assembler2(device);
+    std::vector<MeshBuilder<PosColNormTexVertex>> builders2 = {solidMeshBuilder, waterMeshBuilder};
+    Mesh mesh2 = assembler2.AssembleMesh(builders2);
+    return mesh2;    
+#endif
+
+    
     // get chunk origin in world space
     WorldBlockCoord chunkOrigin;
     ChunkToWorld(chunkKey, chunkOrigin);
+
 
     // loop through all blocks in the chunk in yzx order
     for (int localY = 0; localY < CHUNK_SIZE_Y; ++localY)
@@ -77,7 +112,6 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
                 {
                     continue;
                 }
-
 
                 // get block type
                 BlockType blockType = chunk.GetBlockType(localBlock.Index);
@@ -137,6 +171,8 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
                     includeNegZ = IsFaceTouchingToAirNegZ || IsFaceTouchingToWaterNegZ;
                 }
 
+                BlockMeshBuilder& blockMeshBuilder = IsWaterBlock ? waterBlocksSubMesh : solidBlocksSubMesh;
+                
                 // set position and color for this block
                 blockMeshBuilder.SetMeshRelativeBlockOrigin((float)localBlock.X, (float)localBlock.Y,
                                                             (float)localBlock.Z);
@@ -174,7 +210,11 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
 
             } // end inner block loop
 
-    Mesh mesh = builder.ToMesh();
+    //Mesh mesh = builder.ToMesh();
+
+    MeshAssembler assembler(device);
+    std::vector<MeshBuilder<PosColNormTexVertex>> builders = {solidMeshBuilder, waterMeshBuilder};
+    Mesh mesh = assembler.AssembleMesh(builders);
 
     // store the chunk key in the mesh for debugging
     mesh.DebugTag = std::make_shared<std::string>(

@@ -104,7 +104,7 @@ void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
                                         {
                                             BlockType block_type1 = biome.GetBlock(world_x, world_y, world_z);
 
-                                            if (block_type1 != AIR) 
+                                            if (block_type1 != AIR)
                                             {
                                                 block_states[index] = block_type1;
                                             }
@@ -203,12 +203,12 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
 
         // add leaves
         int leafsize = trunkheight / 3;
-        
+
         for (int dx = -leafsize; dx <= leafsize; dx++)
         {
             for (int dz = -leafsize; dz <= leafsize; dz++)
             {
-                for (int dy = -leafsize/2; dy <= leafsize; dy++)
+                for (int dy = -leafsize / 2; dy <= leafsize; dy++)
                 {
                     // randomly skip some blocks
                     if (rand() % 2 == 0)
@@ -461,7 +461,7 @@ int32 FEngineLoop::Init()
 
 void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMATRIX rotationMatrix,
                              DirectX::XMMATRIX scaleMatrix, DirectX::XMMATRIX viewMatrix,
-                             DirectX::XMMATRIX projectionMatrix)
+                             DirectX::XMMATRIX projectionMatrix, bool bDrawWater)
 {
     // iterate world's chunks and render
     int TotalDrawCalls = 0;
@@ -496,8 +496,22 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
             GGraphicsDevice->SetConstants(TransposedWVPMatrix, TintR, TintG, TintB);
 
             mesh->BindToDeviceContext(GGraphicsDevice->GetDeviceContext());
-            mesh->Draw(GGraphicsDevice->GetDeviceContext());
-            TotalDrawCalls++;
+
+            constexpr int SolidBlocksSubMesh = 0;
+            constexpr int WaterBlocksSubMesh = 1;
+
+            auto dc = GGraphicsDevice->GetDeviceContext();
+
+            if(bDrawWater)
+            {
+                GGraphicsDevice->DisableDepthWrite();
+                mesh->DrawSubMesh(dc, 1);
+            }
+            else
+            {
+                GGraphicsDevice->EnableDepthWrite();
+                mesh->DrawSubMesh(dc, 0);
+            }
         }
     }
 }
@@ -665,7 +679,8 @@ void FEngineLoop::Tick()
         }
     }
 
-    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix);
+    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, false);
+    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, true);
 
     // device present
     GGraphicsDevice->Present(vsync);
