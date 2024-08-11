@@ -1,0 +1,71 @@
+﻿#pragma once
+#include "TerrainGenerators.h"
+
+struct ForestBeachBiomeGenerator : public TerrainGeneratorBase
+{
+    BlockState GetBlock(int x, int y, int z)
+    {
+        // bedrock
+        if (y == 0) return BEDROCK;
+        if (y == 1) return rand() % 3 ? BEDROCK : LAVA;
+        if (y == 2) return rand() % 2 ? BEDROCK : LAVA;
+
+        // surface and cave samples
+        int surf1 = sea_level + Sample2D(x, z, 0.01f) * 60;
+        int surf2 = sea_level + Sample2D(x, z, 0.04f) * 40;
+        surface_height = (surf1 + surf2) / 2;
+
+        // above surface (water or air)
+        if (y > surface_height)
+        {
+            if (y > sea_level)
+            {
+                return AIR;
+            }
+            else
+            {
+                return WATER;
+            }
+        }
+
+        // surface (grass or sand)
+        if (y == surface_height)
+        {
+            // underwater surface
+            if (y <= sea_level)
+            {
+                return rand() % 10 || y == sea_level ? SAND : GRAVEL;
+            }
+
+            if (y <= sea_level + 2)
+            {
+                return SAND;
+            }
+            return GRASS;
+        }
+
+        // the 3 blocks below surface (dirt)
+        if (y > surface_height - 3)
+        {
+            return DIRT;
+        }
+
+        // caves
+        constexpr int cave_ground_depth = 6;
+        constexpr float caveFrequency = 0.1f;
+        constexpr float caveAmplitude = 10;
+        constexpr float caveSquash = 1;
+
+        constexpr int cave_radius = 2;
+        int density = Sample3D(x, y * caveSquash, z, caveFrequency) * caveAmplitude;
+        bool is_cave = abs(density) < cave_radius;
+
+        if (is_cave && y < surface_height - cave_ground_depth)
+        {
+            return AIR;
+        }
+
+        // stone/ores
+        return GetOreBlock(y);
+    }
+};

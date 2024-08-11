@@ -13,14 +13,15 @@ public:
             initialized = true;
         }
 
-        double time = static_cast<double>(GetTime());
+        double time = static_cast<double>(GetCPUCounter());
         double frequency = static_cast<double>(Frequency);
         return time / frequency;
     }
+    
+    static int64 GetCPUCounter();
 
 private:
     static int64 Frequency;
-    static int64 GetTime();
 
     static void Initialize();
 };

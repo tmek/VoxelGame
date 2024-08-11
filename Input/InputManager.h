@@ -16,7 +16,8 @@ public:
     bool IsMouseButtonReleased(int button);
     bool IsMouseButtonHeld(int button);
     void GetMousePosition(int& x, int& y) const;
-    
+    void ClearKeyPressed(int KeyCode);
+
     // return singleton reference
     static InputManager& Get();
 

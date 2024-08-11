@@ -1,5 +1,6 @@
 ﻿#include "Chunk.h"
 
+#include "../WorldGen/BlockTypes.h"
 
 
 void Chunk::SetBlockState(BlockIndex index, uint16_t state)
@@ -55,6 +56,16 @@ bool Chunk::IsAirBlock(BlockIndex index) const
     
     return GetBlockType(index) == 0;
 }
+
+bool Chunk::IsWaterBlock(BlockIndex index) const
+{
+    // todo: IsAirBlock should only be public from the world class.
+    // because we don't want to have to create a new chunk just to check if a block is air. (bad performance)
+    // (if there's no chunk, it's air.)
+    
+    return GetBlockType(index) == 13;
+}
+
 
 int Chunk::GetHighestBlockHeightAt(BlockIndex index) const // todo: this should accept a LocalBlock (maybe) 
 {

@@ -18,7 +18,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     return float4(input.TexCoord, 0.0f, 1.0f);
 #else
     
-    float4 TexelColor = txDiffuse.Sample(samLinear, input.TexCoord);
+    float4 TexelColor = txDiffuse.Sample(samLinear, input.TexCoord) / 2.0f + 0.5f;
     float4 TintedColor = input.Color * TexelColor;
     
     // calculate fog based on distance, 1 unit = 1 meter

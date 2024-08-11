@@ -7,7 +7,7 @@ cbuffer Constants : register(b0)
 struct VS_INPUT
 {
     float3 Pos : POSITION;
-    float3 Color : COLOR;
+    float4 Color : COLOR;
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD0;
 };
@@ -44,11 +44,12 @@ PS_INPUT main(VS_INPUT input)
     output.Normal = N;
 
     // Define normalized direction to the light source
-    float3 L = normalize(float3(0.3f, 1.0f, -.5f));
+    float3 L = normalize(float3(0.25f, 1.0f, -.5f));
     
     // Compute the diffuse lighting based on the Lambertian reflection model
-    float Ambient = 0.5f;
-    float diffuse = max(dot(L, N), 0.0f) + Ambient;
+    float Ambient = 1.5f;
+    float Directional =  max(dot(L, N), 0.0f); 
+    float diffuse = 0.0f + Ambient;
 
     float3 litColor = input.Color * diffuse + TintColor;
 
@@ -69,13 +70,15 @@ PS_INPUT main(VS_INPUT input)
     litColor = lerp(litColor, skyColor, fogAmount);
     */
     
-    output.Color = float4(litColor, 1.0f);
+    output.Color = float4(litColor, input.Color.a);
 
     // apply some shadowing base on Y position (lower is darker)
     float HeightShading = (input.Pos.y * .05f) + .5f;
     // clamp to 0-1
     HeightShading = saturate(HeightShading);
-    output.Color = output.Color * HeightShading;
+
+    float3 shadowedColor = output.Color.rgb * HeightShading;
+    output.Color = float4(shadowedColor, input.Color.a);
 
     return output;
 }

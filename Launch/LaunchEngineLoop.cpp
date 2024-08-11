@@ -26,8 +26,13 @@
 
 #include "VoxelCore/VoxelWorld.h"
 #include "VoxelMisc/ChunkMeshManager.h"
+#include "WorldGen/BlockTypes.h"
+#include "WorldGen/ForrestBeachGenerator.h"
 #include "WorldGen/PerlinNoise.h"
+#include "WorldGen/TerrainGenerators.h"
 #include "WorldGen/WorldOperations.h"
+
+#include "WorldGen/MountainsGenerator.h"
 
 extern bool GIsRequestingExit;
 
@@ -62,14 +67,19 @@ void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
     uint8_t blockType = 3;
 
     // create chunk subvolumes for the perlin noise terrain
-    int maxheight = 64;
+    int maxheight = 384;
     WorldRegion terrainRegion = {
         {startX, 0, startZ}, // min coordinates
         {startX + width, maxheight, startZ + depth} // max coordinates
     };
+
+
     auto chunksAndSubVolumes = ChunkVolumeMapper::GetChunksAndSubVolumes(terrainRegion);
 
     PerlinNoise perlinNoise; // must be initiated once before using
+
+    ForestBeachBiomeGenerator biome;
+    //MountainsGenerator biome;
 
     for (const auto& chunkSubVolume : chunksAndSubVolumes)
     {
@@ -92,6 +102,13 @@ void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
                                         startingBlockWorldCoords.Z,
                                         [&](auto* block_states, int index, int world_x, int world_y, int world_z)
                                         {
+                                            BlockType block_type1 = biome.GetBlock(world_x, world_y, world_z);
+
+                                            if (block_type1 != AIR) 
+                                            {
+                                                block_states[index] = block_type1;
+                                            }
+                                            return;
                                             // as we get farther from world origin, increase amplitude
                                             float distance = (float)sqrt(world_x * world_x + world_z * world_z);
                                             float distanceFactor = distance / 100.0f;
@@ -99,7 +116,7 @@ void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
 
                                             // compute noise value
                                             double noiseValue = perlinNoise.
-                                                noise(world_x * scale, 0.0, world_z * scale);
+                                                sample3D(world_x * scale, 0.0, world_z * scale);
 
                                             // compute ground level
                                             const int ground_level = static_cast<int>(noiseValue * newAmplitude +
@@ -159,7 +176,7 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
     int chunksWide = size / CHUNK_SIZE_X;
 
     int treesPerChunk = 3;
-    int treeCount =  treesPerChunk * chunksWide * chunksWide;
+    int treeCount = treesPerChunk * chunksWide * chunksWide;
     for (int i = 0; i < treeCount; i++)
     {
         // random x, z
@@ -169,33 +186,36 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
         int y = world.GetHighestBlockHeightAt(x, z);
 
         // check ground is not water block
-        if (world.GetBlockType({x, y, z}) == 4)
+        if (world.GetBlockType({x, y, z}) != GRASS)
         {
             continue;
         }
-        
+
         check(y >= 0 && y < CHUNK_SIZE_Y);
 
-        // make trunk height between 4 and 8
-        int trunkheight = rand() % 4 + 4;
+        // make trunk height between 6 and 12
+        BlockType trunkType = rand() % 10 ? OAK_LOG : BIRCH_LOG;
+        int trunkheight = rand() % 4 + 6;
         for (int j = 0; j < trunkheight; j++)
         {
-            world.SetBlockType({x, y + 1 + j, z}, 1);
+            world.SetBlockType({x, y + 1 + j, z}, trunkType);
         }
 
         // add leaves
-        for (int dx = -2; dx <= 2; dx++)
+        int leafsize = trunkheight / 3;
+        
+        for (int dx = -leafsize; dx <= leafsize; dx++)
         {
-            for (int dz = -2; dz <= 2; dz++)
+            for (int dz = -leafsize; dz <= leafsize; dz++)
             {
-                for (int dy = 0; dy <= 2; dy++)
+                for (int dy = -leafsize/2; dy <= leafsize; dy++)
                 {
                     // randomly skip some blocks
                     if (rand() % 2 == 0)
                     {
                         continue;
                     }
-                    world.SetBlockType({x + dx, y + trunkheight + 1 + dy, z + dz}, 6);
+                    world.SetBlockType({x + dx, y + trunkheight + 1 + dy, z + dz}, OAK_LEAVES);
                 }
             }
         }
@@ -208,8 +228,8 @@ void FEngineLoop::GenerateWorld()
 
     //world.DrawSphere(0, 0, 0, 8, 1);
 
-    TestBigSphere({0, 32, 0}, 16, 1);
-    TestBigSphere({100, 0, 0}, 64, 99); // 99 = random block type
+    //TestBigSphere({0, 32, 0}, 16, 1);
+    //TestBigSphere({100, 0, 0}, 64, 99); // 99 = random block type
 
     int range = 1000;
     int max_radius = 32;
@@ -223,13 +243,13 @@ void FEngineLoop::GenerateWorld()
         int radius = rand() % max_radius + 1;
         int blockType = rand() % 5 + 1;
 
-        TestBigSphere({x, y, z}, radius, blockType);
+        //TestBigSphere({x, y, z}, radius, blockType);
     }
 
     // origin block
     world.SetBlockType({0, 0, 0}, 5);
 
-    int ChunksWide = 32;
+    int ChunksWide = 12;
     int size = ChunksWide * CHUNK_SIZE_X;
     GeneratePerlinTerrain(ChunksWide);
 
@@ -525,9 +545,21 @@ void FEngineLoop::Tick()
     GPlayerController.ProcessInput(static_cast<float>(DeltaTime));
     auto MinecraftSprintSpeed = 5.612f;
     static float DistancePerSecond = MinecraftSprintSpeed;
+    float increase = 2;
 
-    InputManager::Get().IsKeyReleased(VK_UP) ? DistancePerSecond += 10.0f : DistancePerSecond;
-    InputManager::Get().IsKeyReleased(VK_DOWN) ? DistancePerSecond -= 10.0f : DistancePerSecond;
+    if (InputManager::Get().IsKeyPressed(VK_UP))
+    {
+        VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Increase speed");
+        DistancePerSecond = DistancePerSecond * increase;
+    }
+    if (InputManager::Get().IsKeyPressed(VK_DOWN))
+    {
+        VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Decrease speed");
+        DistancePerSecond = DistancePerSecond / increase;
+    }
+    InputManager::Get().ClearKeyPressed(VK_UP);
+    InputManager::Get().ClearKeyPressed(VK_DOWN);
+
 
     if (DistancePerSecond < MinecraftSprintSpeed) DistancePerSecond = MinecraftSprintSpeed;
 
@@ -590,18 +622,18 @@ void FEngineLoop::Tick()
 
             DirectX::XMVECTOR CameraPosition = GCameraPosition;
             DirectX::XMVECTOR BlockPosition = DirectX::XMVectorAdd(CameraPosition, CameraForward * 10.0f);
-            
-            
+
+
             DirectX::XMVECTOR BlockPositionRounded = DirectX::XMVectorRound(BlockPosition);
-            
+
             WorldBlockCoord blockCursor;
             blockCursor.X = static_cast<int>(DirectX::XMVectorGetX(BlockPositionRounded));
             blockCursor.Y = static_cast<int>(DirectX::XMVectorGetY(BlockPositionRounded));
             blockCursor.Z = static_cast<int>(DirectX::XMVectorGetZ(BlockPositionRounded));
-            
+
 
             ChunkKey centerChunkKey;
-            WorldToLocal( blockCursor, centerChunkKey);
+            WorldToLocal(blockCursor, centerChunkKey);
 
             if (0)
             {
@@ -708,24 +740,21 @@ void FEngineLoop::TestBigSphere(WorldBlockCoord Center, int Radius, BlockType Bl
                                         // world origin of chunk block 0
                                         [&](auto* block_states, int index, int world_x, int world_y, int world_z)
                                         {
-                                            
                                             if (ChunkUtils::IsPointInSphere(
                                                 world_x, world_y, world_z, Center.X, Center.Y, Center.Z, Radius))
                                             {
-                                                
-                                                
                                                 int block_type = BlockType;
 
                                                 // get random block type between 1 and 7       
                                                 int rand_block_type = rand() % 7 + 1;
-                                                
-                                                if(block_type == 99)
+
+                                                if (block_type == 99)
                                                 {
                                                     block_type = rand_block_type;
                                                 }
 
                                                 if (world_y == 0) block_type = 5; // bedrock
-                                                
+
                                                 block_states[index] = block_type;
                                             }
                                         });

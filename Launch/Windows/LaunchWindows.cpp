@@ -18,6 +18,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
     int nShowCmd)
 {
     WindowsProcess::ShowConsole();
+
+    // hide mouse cursor
+    ShowCursor(false);
+    
     
     VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Application Entry Point");
     

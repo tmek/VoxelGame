@@ -5,7 +5,8 @@
 
 #include <unordered_map>
 
-class VOXELCORE_API VoxelWorld {
+class VOXELCORE_API VoxelWorld
+{
 private:
     // --- begin data ---
 #pragma warning(push)
@@ -29,7 +30,7 @@ public:
 
     // destruct
     ~VoxelWorld() = default; // Destructor
-    
+
 public:
     // Get a chunk or add it if it doesn't exist
     Chunk& GetChunk(const ChunkKey& key);
@@ -47,6 +48,7 @@ public:
     auto end() const { return Chunks.end(); }
 
     auto GetChunkCount() const
-    //{ return Chunks.size(); }
-    { return 0; }
+    {
+        return Chunks.size();
+    }
 };

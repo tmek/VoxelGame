@@ -150,7 +150,16 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     if (FAILED(hr)) {
         VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_ERROR, "Failed to create depth stencil texture: %x", hr);
         return;
-    }    
+    }
+
+    D3D11_DEPTH_STENCIL_DESC depthStencilDesc2 = {};
+    depthStencilDesc2.DepthEnable = TRUE;
+    depthStencilDesc2.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Disable depth writing
+    depthStencilDesc2.DepthFunc = D3D11_COMPARISON_LESS;
+    ID3D11DepthStencilState* pDepthStencilState = nullptr;
+    device->CreateDepthStencilState(&depthStencilDesc2, &pDepthStencilState);
+    deviceContext->OMSetDepthStencilState(pDepthStencilState, 0);
+    
 
     // Define the depth stencil view description
     D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
@@ -208,6 +217,24 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     //deviceContext->PSSetSamplers(0, 1, g_pSamplerLinear.GetAddressOf());    
 
     CreateConstantBuffer();
+
+    // setup alpha blending
+    D3D11_BLEND_DESC blendDesc = {};
+    blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+    ID3D11BlendState* pBlendState = nullptr;
+    device->CreateBlendState(&blendDesc, &pBlendState);
+
+    // Set the blend state
+    float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    deviceContext->OMSetBlendState(pBlendState, blendFactor, 0xffffffff);    
     
     // Success
     VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_INFO, "Graphics device created");

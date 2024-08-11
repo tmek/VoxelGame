@@ -24,6 +24,8 @@ float CalculateLightIntensity(XMFLOAT3 normal, XMFLOAT3 lightDir)
     XMVECTOR normalVec = XMLoadFloat3(&normal);
     XMVECTOR lightDirVec = XMLoadFloat3(&lightDir);
 
+    
+    
     float dotProduct = XMVectorGetX(XMVector3Dot(normalVec, lightDirVec));
     return max(0.0f, dotProduct); // Clamp to [0, 1]
 }

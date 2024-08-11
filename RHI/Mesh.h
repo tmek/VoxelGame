@@ -3,9 +3,17 @@
 #include <DirectXMath.h>
 #include <memory>
 #include <string>
+#include <vector>
 #include <wrl/client.h>
 
 using Microsoft::WRL::ComPtr;
+
+struct SubMesh
+{
+    UINT indexCount = 0;
+    UINT IndexOffset = 0;
+    UINT VertexOffset = 0;
+};
 
 // Represents a 3D mesh with vertex and index buffers.
 // It is not dependent on any specific vertex format or struct.
@@ -16,6 +24,8 @@ struct Mesh
     UINT vertexCount = 0;
     UINT indexCount = 0;
     UINT vertexStride = 0;
+
+    std::vector<SubMesh> SubMeshes;
 
     // text tag for debugging
     std::shared_ptr<std::string> DebugTag;

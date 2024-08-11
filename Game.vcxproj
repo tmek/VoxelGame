@@ -161,6 +161,10 @@
     <ClCompile Include="RHI\GraphicsDevice.cpp" />
     <ClCompile Include="RHI\Mesh.cpp" />
     <ClCompile Include="VoxelMisc\ChunkMeshManager.cpp" />
+    <ClCompile Include="WorldGen\BlockTypes.cpp" />
+    <ClCompile Include="WorldGen\ForrestBeachGenerator.cpp" />
+    <ClCompile Include="WorldGen\MountainsGenerator.cpp" />
+    <ClCompile Include="WorldGen\TerrainGenerators.cpp" />
     <ClCompile Include="WorldGen\WorldOperations.cpp" />
     <Content Include="Shaders\PixelShader.hlsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -197,7 +201,12 @@
     <ClInclude Include="RHI\GraphicsDevice.h" />
     <ClInclude Include="RHI\Mesh.h" />
     <ClInclude Include="VoxelMisc\ChunkMeshManager.h" />
+    <ClInclude Include="WorldGen\BlockTypes.h" />
+    <ClInclude Include="WorldGen\ForrestBeachGenerator.h" />
+    <ClInclude Include="WorldGen\MountainsGenerator.h" />
     <ClInclude Include="WorldGen\PerlinNoise.h" />
+    <ClInclude Include="WorldGen\PerlinNoise2D.h" />
+    <ClInclude Include="WorldGen\TerrainGenerators.h" />
     <ClInclude Include="WorldGen\WorldOperations.h" />
   </ItemGroup>
   <ItemGroup>

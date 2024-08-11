@@ -4,32 +4,35 @@
 
 struct WorldBlockCoord;
 
-
 // A block's index into a BlockStates and LightLevels arrays.
+// Blocks are stored in XZY order (when iterating linearly X increases fastest, Y increases slowest).
+// todo: this may have been a mistake lol, because light and high checks scan vertically and are common.
+//       so checking one block up or down means skipping 256 blocks in the cache. :(|
+//       so maybe YZX order would be better.
 typedef int BlockIndex;
 
 // A block's local coordinates within its chunk as well as the chunk's key.
 struct LocalBlockCoord
 {
     ChunkKey chunkKey;
-    BlockIndex Index;  // blocks are stored in XZY order (X increases fastest, Y increases slowest)
+    BlockIndex Index;  
 
-    // todo: it's possible these and index can be set out of sync. 
+    // todo: it's possible these and index can be set out of sync. need them for now.
     int X;
     int Y;
     int Z;
 };
 
+// A 3D region of blocks in a chunk
 struct ChunkRegion
 {
-    LocalBlockCoord startingBlock; // The starting block within the chunk
-    int width; // The width of the sub-volume within the chunk
-    int height; // The height of the sub-volume within the chunk
-    int depth; // The depth of the sub-volume within the chunk
+    LocalBlockCoord startingBlock; 
+    int width; 
+    int height;
+    int depth; 
 };
 
-// A block's coordinates in the world
-// Integers used because blocks are discrete.
+// A block's coordinates in the world. Integers used because blocks are discrete.
 struct WorldBlockCoord
 {
     int X;

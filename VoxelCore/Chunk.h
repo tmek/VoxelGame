@@ -58,6 +58,7 @@ public:
     inline void SetBlockSkyLight(BlockIndex index, BlockLightLevel lightLevel);
 
     inline bool IsAirBlock(BlockIndex index) const;
+    inline bool IsWaterBlock(BlockIndex index) const;
 
     int GetHighestBlockHeightAt(BlockIndex index) const;
 };

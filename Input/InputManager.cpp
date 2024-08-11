@@ -90,6 +90,11 @@ void InputManager::GetMousePosition(int& x, int& y) const
     y = m_mouseY;
 }
 
+void InputManager::ClearKeyPressed(int KeyCode)
+{
+    m_keyPressed[KeyCode] = false;
+}
+
 InputManager& InputManager::Get()
 {
     static InputManager instance;

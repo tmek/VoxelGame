@@ -9,7 +9,7 @@ void PlatformTime::Initialize()
     QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&Frequency));
 }
 
-int64 PlatformTime::GetTime()
+int64 PlatformTime::GetCPUCounter()
 {
     int64 time;
     QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&time));

@@ -17,7 +17,7 @@ public:
         p.insert(p.end(), p.begin(), p.end());
     }
 
-    double noise(double x, double y, double z) const
+    double sample3D(double x, double y, double z) const
     {
         int X = static_cast<int>(std::floor(x)) & 255;
         int Y = static_cast<int>(std::floor(y)) & 255;

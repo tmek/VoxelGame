@@ -36,6 +36,7 @@ public:
     int GetHighestBlockHeightAt(int x, int z);
 
     bool IsAirBlock(int x, int y, int z) const;
+    bool IsWaterBlock(int x, int y, int z) const;
 
 private:
     VoxelWorld& world_; // todo: shared pointer or something

@@ -4,6 +4,7 @@
 
 #include "BlockMeshBuilder.h"
 #include "VoxelCore/Chunk.h"
+#include "WorldGen/BlockTypes.h"
 #include "WorldGen/WorldOperations.h"
 
 
@@ -16,16 +17,39 @@ static DirectX::XMFLOAT4 TintColors[] = {
     {0.0f, 0.5f, 1.0f, 1.0f}, // water
     {0.2f, 0.2f, 0.2f, 1.0f}, // bedrock
     {0.057f, 0.392f, 0.155f, 1.0f}, // tree leaves 6
-     {0.95f, 0.95f, 0.95f, 1.0f}, // snow
+    {0.95f, 0.95f, 0.95f, 1.0f}, // snow
 };
 
 inline XMFLOAT4 GetBlockColor(int blockType)
 {
-    if(blockType < 1 || blockType > 7)
+    BlockColor color = BlockColors[BEDROCK];
+
+    if (blockType > AIR && blockType <= BAMBOO)
     {
-        return TintColors[5-1];
+        color = BlockColors[blockType];
     }
-    return TintColors[blockType-1];
+
+    auto result = XMFLOAT4(color.Red / 255.0f, color.Green / 255.0f, color.Blue / 255.0f, 1.0f);
+
+    // copy channels to floats
+    float r = (float)color.Red / 255.0f;
+    float g = (float)color.Green / 255.0f;
+    float b = (float)color.Blue / 255.0f;
+
+    // desaturate color a bit
+    float desaturation = 0.3f;
+    r = r + (1.0f - r) * desaturation;
+    g = g + (1.0f - g) * desaturation;
+    b = b + (1.0f - b) * desaturation;
+
+    // darken a bit
+    float darkness = 0.7f;
+    r = r * darkness;
+    g = g * darkness;
+    b = b * darkness;
+
+    // return result
+    return XMFLOAT4(r, g, b, 1.0f);
 }
 
 Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D11Device* device)
@@ -33,7 +57,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
     WorldOperations world(GWorld);
     MeshBuilder<PosColNormTexVertex> builder(device);
     BlockMeshBuilder blockMeshBuilder(builder);
-    
+
     // get chunk origin in world space
     WorldBlockCoord chunkOrigin;
     ChunkToWorld(chunkKey, chunkOrigin);
@@ -54,30 +78,101 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
                     continue;
                 }
 
+
                 // get block type
                 BlockType blockType = chunk.GetBlockType(localBlock.Index);
-                
+                bool IsWaterBlock = blockType == WATER;
+
+                // determine which faces to include:
+                //  if i'm water and touching air, add faces
+                //  if i'm solid and face is touching air or water, add face
+
+                bool includePosX;
+                bool includePosY;
+                bool includePosZ;
+                bool includeNegX;
+                bool includeNegY;
+                bool includeNegZ;
+
+                // is face touching to air?  
+                bool IsFaceTouchingToAirNegX = world.IsAirBlock(worldBlock.X - 1, worldBlock.Y, worldBlock.Z); // left
+                bool IsFaceTouchingToAirNegY = world.IsAirBlock(worldBlock.X, worldBlock.Y - 1, worldBlock.Z); // down
+                bool IsFaceTouchingToAirNegZ = world.IsAirBlock(worldBlock.X, worldBlock.Y, worldBlock.Z - 1);
+                // backward                   
+                bool IsFaceTouchingToAirPosX = world.IsAirBlock(worldBlock.X + 1, worldBlock.Y, worldBlock.Z); // right
+                bool IsFaceTouchingToAirPosY = world.IsAirBlock(worldBlock.X, worldBlock.Y + 1, worldBlock.Z); // up
+                bool IsFaceTouchingToAirPosZ = world.IsAirBlock(worldBlock.X, worldBlock.Y, worldBlock.Z + 1);
+                // forward
+
+                if (IsWaterBlock)
+                {
+                    includePosX = IsFaceTouchingToAirPosX;
+                    includePosY = IsFaceTouchingToAirPosY;
+                    includePosZ = IsFaceTouchingToAirPosZ;
+                    includeNegX = IsFaceTouchingToAirNegX;
+                    includeNegY = IsFaceTouchingToAirNegY;
+                    includeNegZ = IsFaceTouchingToAirNegZ;
+                }
+                else
+                {
+                    // is face touching water?
+                    bool IsFaceTouchingToWaterNegX = world.IsWaterBlock(worldBlock.X - 1, worldBlock.Y, worldBlock.Z);
+                    // left
+                    bool IsFaceTouchingToWaterNegY = world.IsWaterBlock(worldBlock.X, worldBlock.Y - 1, worldBlock.Z);
+                    // down
+                    bool IsFaceTouchingToWaterNegZ = world.IsWaterBlock(worldBlock.X, worldBlock.Y, worldBlock.Z - 1);
+                    // backward                   
+                    bool IsFaceTouchingToWaterPosX = world.IsWaterBlock(worldBlock.X + 1, worldBlock.Y, worldBlock.Z);
+                    // right
+                    bool IsFaceTouchingToWaterPosY = world.IsWaterBlock(worldBlock.X, worldBlock.Y + 1, worldBlock.Z);
+                    // up
+                    bool IsFaceTouchingToWaterPosZ = world.IsWaterBlock(worldBlock.X, worldBlock.Y, worldBlock.Z + 1);
+                    // forward
+
+                    includePosX = IsFaceTouchingToAirPosX || IsFaceTouchingToWaterPosX;
+                    includePosY = IsFaceTouchingToAirPosY || IsFaceTouchingToWaterPosY;
+                    includePosZ = IsFaceTouchingToAirPosZ || IsFaceTouchingToWaterPosZ;
+                    includeNegX = IsFaceTouchingToAirNegX || IsFaceTouchingToWaterNegX;
+                    includeNegY = IsFaceTouchingToAirNegY || IsFaceTouchingToWaterNegY;
+                    includeNegZ = IsFaceTouchingToAirNegZ || IsFaceTouchingToWaterNegZ;
+                }
+
                 // set position and color for this block
+                blockMeshBuilder.SetMeshRelativeBlockOrigin((float)localBlock.X, (float)localBlock.Y,
+                                                            (float)localBlock.Z);
+
+                // give each face a slightly different ambient shade
                 XMFLOAT4 BlockColor = GetBlockColor(blockType);
-                blockMeshBuilder.SetMeshRelativeBlockOrigin((float)localBlock.X, (float)localBlock.Y, (float)localBlock.Z);
-                blockMeshBuilder.SetColor(BlockColor.x, BlockColor.y, BlockColor.z, BlockColor.w);
+                BlockColor.w = IsWaterBlock ? 0.7f : 1.0f;
 
-                // determine which faces of this block are exposed to air
-                bool IsFaceExposedToAirNegX = world.IsAirBlock(worldBlock.X - 1, worldBlock.Y, worldBlock.Z); // left
-                bool IsFaceExposedToAirNegY = world.IsAirBlock(worldBlock.X, worldBlock.Y - 1, worldBlock.Z); // down
-                bool IsFaceExposedToAirNegZ = world.IsAirBlock(worldBlock.X, worldBlock.Y, worldBlock.Z - 1); // backward                   
-                bool IsFaceExposedToAirPosX = world.IsAirBlock(worldBlock.X + 1, worldBlock.Y, worldBlock.Z); // right
-                bool IsFaceExposedToAirPosY = world.IsAirBlock(worldBlock.X, worldBlock.Y + 1, worldBlock.Z); // up
-                bool IsFaceExposedToAirPosZ = world.IsAirBlock(worldBlock.X, worldBlock.Y, worldBlock.Z + 1); // forward
+                constexpr float TopFaceAmbientShade = 1.0f;
+                constexpr float BottomFaceAmbientShade = 0.5f;
+                constexpr float EastWestFaceAmbientShade = 0.8f;
+                constexpr float NorthSouthFaceAmbientShade = 0.6f;
 
-                // add air exposed faces to the mesh
-                if (IsFaceExposedToAirPosX) blockMeshBuilder.AppendPosXFace();
-                if (IsFaceExposedToAirPosY) blockMeshBuilder.AppendPosYFace();
-                if (IsFaceExposedToAirPosZ) blockMeshBuilder.AppendPosZFace();
-                if (IsFaceExposedToAirNegX) blockMeshBuilder.AppendNegXFace();
-                if (IsFaceExposedToAirNegY) blockMeshBuilder.AppendNegYFace();
-                if (IsFaceExposedToAirNegZ) blockMeshBuilder.AppendNegZFace();
-            }
+                // top face
+                blockMeshBuilder.SetColor(BlockColor.x * TopFaceAmbientShade, BlockColor.y * TopFaceAmbientShade,
+                                        BlockColor.z * TopFaceAmbientShade, BlockColor.w);
+                if(includePosY) blockMeshBuilder.AppendPosYFace();
+
+                // bottom face
+                blockMeshBuilder.SetColor(BlockColor.x * BottomFaceAmbientShade, BlockColor.y * BottomFaceAmbientShade,
+                                        BlockColor.z * BottomFaceAmbientShade, BlockColor.w);
+                if(includeNegY) blockMeshBuilder.AppendNegYFace();
+
+                // east/west faces
+                blockMeshBuilder.SetColor(BlockColor.x * EastWestFaceAmbientShade, BlockColor.y * EastWestFaceAmbientShade,
+                                        BlockColor.z * EastWestFaceAmbientShade, BlockColor.w);
+                if(includePosX) blockMeshBuilder.AppendPosXFace();
+                if(includeNegX) blockMeshBuilder.AppendNegXFace();
+
+                // north/south faces
+                blockMeshBuilder.SetColor(BlockColor.x * NorthSouthFaceAmbientShade, BlockColor.y * NorthSouthFaceAmbientShade,
+                                        BlockColor.z * NorthSouthFaceAmbientShade, BlockColor.w);
+                if(includePosZ) blockMeshBuilder.AppendPosZFace();
+                if(includeNegZ) blockMeshBuilder.AppendNegZFace();
+
+            } // end inner block loop
 
     Mesh mesh = builder.ToMesh();
 

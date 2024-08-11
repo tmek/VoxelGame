@@ -64,7 +64,7 @@ void WorldOperations::GeneratePerlinNoiseTerrain(int startX, int startZ, int wid
     {
         for (int z = startZ; z < startZ + depth; ++z)
         {
-            double noiseValue = perlinNoise.noise(x * scale, 0.0, z * scale);
+            double noiseValue = perlinNoise.sample3D(x * scale, 0.0, z * scale);
             const int y = static_cast<int>(noiseValue * amplitude + amplitude / 2);
 
             // set blocks at the bottom of the vertical range to water
@@ -137,4 +137,18 @@ bool WorldOperations::IsAirBlock(int x, int y, int z) const
     }
     
     return chunk->IsAirBlock(localBlock.Index);
+}
+
+bool WorldOperations::IsWaterBlock(int x, int y, int z) const
+{
+    LocalBlockCoord localBlock;
+    WorldToLocal({x, y, z}, localBlock);
+
+    Chunk* chunk = world_.TryGetChunk(localBlock.chunkKey);
+    if(chunk == nullptr) 
+    {
+        return true; // since there's no chunk, it's air
+    }
+    
+    return chunk->IsWaterBlock(localBlock.Index);
 }
