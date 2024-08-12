@@ -33,7 +33,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     float FogFactor = 1.0f - saturate((FogEnd - FogDistance) / (FogEnd - FogStart));
 
     // Interpolate between the vertex color and the fog color
-    float4 finalColor = lerp(TintedColor, FogColor, 0);
+    float4 finalColor = lerp(TintedColor, FogColor, FogFactor);
     
     return finalColor;
 #endif

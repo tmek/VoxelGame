@@ -49,12 +49,23 @@ void PlayerController::ProcessInput(float DeltaTime)
     {
         Yaw += TurnSpeed * DeltaTime;
     }
+
+    // turn up
+    if(Input.IsKeyHeld('I') || Input.IsKeyHeld(VK_UP))
+    {
+        Pitch -= TurnSpeed * DeltaTime *0.5f;
+    }
+    // turn down
+    if(Input.IsKeyHeld('K') || Input.IsKeyHeld(VK_DOWN))
+    {
+        Pitch += TurnSpeed * DeltaTime*0.5f;
+    }
 }
 
 DirectX::XMVECTOR PlayerController::GetForwardVector()
 {
     DirectX::XMVECTOR Forward = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-    DirectX::XMMATRIX RotationMatrix = DirectX::XMMatrixRotationY(DirectX::XMConvertToRadians(Yaw));
+    DirectX::XMMATRIX RotationMatrix = DirectX::XMMatrixRotationRollPitchYaw(DirectX::XMConvertToRadians(Pitch), DirectX::XMConvertToRadians(Yaw), 0.0f);
     return DirectX::XMVector3Transform(Forward, RotationMatrix);
 }
 

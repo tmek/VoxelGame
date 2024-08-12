@@ -45,7 +45,16 @@ VoxelWorld GWorld;
 double GTime = 0.0;
 
 int32 GFrameNumber = 0;
-bool vsync = false;
+bool vsync = true;
+
+#if 1
+ForestBeachBiomeGenerator biome;
+#else
+MountainsGenerator biome;
+#endif
+
+int WorldChunks = 24;
+
 
 PlayerController GPlayerController;
 DirectX::XMVECTOR GCameraPosition = DirectX::XMVectorSet(0.0f, 10.0f, -10.0f, 0.0f);
@@ -78,12 +87,9 @@ void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
 
     PerlinNoise perlinNoise; // must be initiated once before using
 
-    ForestBeachBiomeGenerator biome;
-    //MountainsGenerator biome;
-
     for (const auto& chunkSubVolume : chunksAndSubVolumes)
     {
-        VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Generating perlin noise terrain for chunk: %d, %d",
+        VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Generating terrain for chunk: %d, %d",
                chunkSubVolume.startingBlock.chunkKey.X, chunkSubVolume.startingBlock.chunkKey.Z);
 
         const auto& startingBlock = chunkSubVolume.startingBlock;
@@ -186,7 +192,8 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
         int y = world.GetHighestBlockHeightAt(x, z);
 
         // check ground is not water block
-        if (world.GetBlockType({x, y, z}) != GRASS)
+        auto ground = world.GetBlockType({x, y, z});
+        if (ground == WATER || ground == STONE || ground == SAND || ground == ICE || ground == OAK_LEAVES)
         {
             continue;
         }
@@ -249,9 +256,8 @@ void FEngineLoop::GenerateWorld()
     // origin block
     world.SetBlockType({0, 0, 0}, 5);
 
-    int ChunksWide = 12;
-    int size = ChunksWide * CHUNK_SIZE_X;
-    GeneratePerlinTerrain(ChunksWide);
+    int size = WorldChunks * CHUNK_SIZE_X;
+    GeneratePerlinTerrain(WorldChunks);
 
     // add some "trees"
     //AddTrees(world, 64);
@@ -561,18 +567,18 @@ void FEngineLoop::Tick()
     static float DistancePerSecond = MinecraftSprintSpeed;
     float increase = 2;
 
-    if (InputManager::Get().IsKeyPressed(VK_UP))
+    if (InputManager::Get().IsKeyPressed('R'))
     {
         VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Increase speed");
         DistancePerSecond = DistancePerSecond * increase;
     }
-    if (InputManager::Get().IsKeyPressed(VK_DOWN))
+    if (InputManager::Get().IsKeyPressed('F'))
     {
         VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Decrease speed");
         DistancePerSecond = DistancePerSecond / increase;
     }
-    InputManager::Get().ClearKeyPressed(VK_UP);
-    InputManager::Get().ClearKeyPressed(VK_DOWN);
+    InputManager::Get().ClearKeyPressed('R');
+    InputManager::Get().ClearKeyPressed('F');
 
 
     if (DistancePerSecond < MinecraftSprintSpeed) DistancePerSecond = MinecraftSprintSpeed;
@@ -586,11 +592,13 @@ void FEngineLoop::Tick()
     DirectX::XMVector3Normalize(MoveVector);
     GCameraPosition = DirectX::XMVectorAdd(GCameraPosition, MoveVector);
 
-    // using player controller yaw, create a lookat point in front of the GCameraPosition
+    // using player controller yaw AND pitch, create a lookat point in front of the GCameraPosition
     DirectX::XMVECTOR LookAtPoint = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-    LookAtPoint = DirectX::XMVector3Rotate(LookAtPoint,
-                                           DirectX::XMQuaternionRotationRollPitchYaw(
-                                               0.0f, DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
+    LookAtPoint = GPlayerController.GetForwardVector();
+        // DirectX::XMVector3Rotate(LookAtPoint,
+        //                                    DirectX::XMQuaternionRotationRollPitchYaw(
+        //                                        DirectX::XMConvertToRadians(GPlayerController.Pitch),
+        //                                        DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
     LookAtPoint = DirectX::XMVectorAdd(GCameraPosition, LookAtPoint);
 
     // camera matrix (view)
@@ -621,6 +629,7 @@ void FEngineLoop::Tick()
             {
                 KeyPressed = true;
                 NewBlockType = key - VK_NUMPAD0;
+                if(NewBlockType == 4) NewBlockType = WATER; 
                 break;
             }
         }
@@ -628,11 +637,12 @@ void FEngineLoop::Tick()
         if (KeyPressed)
         {
             // put the block 10 units in front of the camera
-            DirectX::XMVECTOR CameraForward = DirectX::XMVector3Rotate(
-                DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
-                DirectX::XMQuaternionRotationRollPitchYaw(
-                    DirectX::XMConvertToRadians(0),
-                    DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
+             DirectX::XMVECTOR CameraForward = GPlayerController.GetForwardVector();
+                 //DirectX::XMVector3Rotate(
+            //     DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
+            //     DirectX::XMQuaternionRotationRollPitchYaw(
+            //         DirectX::XMConvertToRadians(GPlayerController.Pitch),
+            //         DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
 
             DirectX::XMVECTOR CameraPosition = GCameraPosition;
             DirectX::XMVECTOR BlockPosition = DirectX::XMVectorAdd(CameraPosition, CameraForward * 10.0f);

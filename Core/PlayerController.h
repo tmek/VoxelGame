@@ -12,7 +12,10 @@ public:
     DirectX::XMVECTOR GetUpVector();
     // movement vector
     DirectX::XMVECTOR MovementVector = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+
     
-    // Yaw in degrees
+    
+    // Orientation
     float Yaw;
+    float Pitch;
 };

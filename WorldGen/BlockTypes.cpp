@@ -4,7 +4,7 @@ const BlockColor BlockColors[] = {
     // Natural Blocks
     {255, 255, 255},  // Air (Invisible)
     {128, 128, 128},  // Stone
-    {0, 255, 0},      // Grass
+    {0, 128, 0},      // Grass // 0,255,0 grass original
     {139, 69, 19},    // Dirt
     {128, 128, 128},  // Cobblestone
     {237, 201, 175},  // Sand
@@ -15,7 +15,7 @@ const BlockColor BlockColors[] = {
     {139, 69, 19},    // Log
     {34, 139, 34},    // Leaves
     {0, 0, 0},        // Bedrock
-    {64, 164, 223},   // Water
+    {0, 64, 192},   // Water {64, 164, 223},   // Water
     {255, 69, 0},     // Lava
     {237, 201, 175},  // Sandstone
     {160, 160, 255},  // Clay
@@ -143,7 +143,7 @@ const BlockColor BlockColors[] = {
     {169, 169, 169},  // JungleLog
     {255, 165, 0},    // AcaciaLog
     {112, 112, 112},  // DarkOakLog
-    {34, 139, 34},    // OakLeaves
+    {34, 64, 34},    // OakLeaves 34,139,34 origial
     {34, 139, 34},    // SpruceLeaves
     {34, 139, 34},    // BirchLeaves
     {34, 139, 34},    // JungleLeaves
