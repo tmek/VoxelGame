@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Core/Core.h"
+#include "GameCore/Core.h"
 #include <unordered_map>
  
 #include "HAL/Windows/PlatformWindows.h"

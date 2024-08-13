@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <DirectXMath.h>
 
-#include "Core/Core.h"
+#include "GameCore/Core.h"
 #include "VoxelCore/ChunkUtils.h"
 #include "WorldGen/WorldOperations.h"
 

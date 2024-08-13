@@ -2,7 +2,7 @@
 #include "BlockTypes.h"
 #include "PerlinNoise.h"
 #include "PerlinNoise2D.h"
-#include "Core/Logging.h"
+#include "GameCore/Logging.h"
 #include "HAL/PlatformTime.h"
 #include "Render/BlockMeshBuilder.h"
 

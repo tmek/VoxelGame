@@ -143,10 +143,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Core\FrameTiming.cpp" />
-    <ClCompile Include="Core\Logging.cpp" />
-    <ClCompile Include="Core\PlayerController.cpp" />
-    <ClCompile Include="Core\StopWatch.cpp" />
+    <ClCompile Include="GameCore\FrameTiming.cpp" />
+    <ClCompile Include="GameCore\Logging.cpp" />
+    <ClCompile Include="GameCore\PlayerController.cpp" />
+    <ClCompile Include="GameCore\StopWatch.cpp" />
     <ClCompile Include="Launch\Launch.cpp" />
     <ClCompile Include="Launch\LaunchEngineLoop.cpp" />
     <ClCompile Include="Render\BlockMeshBuilder.cpp" />
@@ -178,12 +178,12 @@
     <Content Include="VoxelNotes.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Core\Core.h" />
-    <ClInclude Include="Core\FrameTiming.h" />
-    <ClInclude Include="Core\Logging.h" />
-    <ClInclude Include="Core\Macros.h" />
-    <ClInclude Include="Core\PlayerController.h" />
-    <ClInclude Include="Core\StopWatch.h" />
+    <ClInclude Include="GameCore\Core.h" />
+    <ClInclude Include="GameCore\FrameTiming.h" />
+    <ClInclude Include="GameCore\Logging.h" />
+    <ClInclude Include="GameCore\Macros.h" />
+    <ClInclude Include="GameCore\PlayerController.h" />
+    <ClInclude Include="GameCore\StopWatch.h" />
     <ClInclude Include="HAL\Windows\PlatformWindows.h" />
     <ClInclude Include="HAL\Windows\PlatformWindowsMinimal.h" />
     <ClInclude Include="Launch\LaunchEngineLoop.h" />

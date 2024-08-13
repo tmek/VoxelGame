@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "Render/ImageUtil.h"
-#include "Core/Logging.h"
-#include "Core/Macros.h"
+#include "GameCore/Logging.h"
+#include "GameCore/Macros.h"
 #include "VoxelCore/VoxelDefines.h"
 
 using Microsoft::WRL::ComPtr;

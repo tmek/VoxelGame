@@ -1,6 +1,6 @@
 #include "Hal/Windows/PlatformWindows.h"
 
-#include "Core/Logging.h"
+#include "GameCore/Logging.h"
 #include "HAL/PlatformWindow.h"
 #include "HAL/Windows/WindowsProcess.h"
 

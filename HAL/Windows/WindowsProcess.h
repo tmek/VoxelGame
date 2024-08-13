@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Core/Core.h"
+#include "GameCore/Core.h"
 
 struct WindowsProcess
 {

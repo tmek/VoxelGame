@@ -2,7 +2,7 @@
 
 #include "LaunchEngineLoop.h"
 
-#include "Core/Core.h"
+#include "GameCore/Core.h"
 #include <cstdio>
 #include <DirectXColors.h>
 
@@ -15,10 +15,10 @@
 
 #include "Render/CubeMesh.h"
 
-#include "Core/FrameTiming.h"
-#include "Core/Macros.h"
-#include "Core/PlayerController.h"
-#include "Core/StopWatch.h"
+#include "GameCore/FrameTiming.h"
+#include "GameCore/Macros.h"
+#include "GameCore/PlayerController.h"
+#include "GameCore/StopWatch.h"
 #include "HAL/Windows/WindowsProcess.h"
 
 #include "Input/InputManager.h"

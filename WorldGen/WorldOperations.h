@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Core/Macros.h"
+#include "GameCore/Macros.h"
 #include "VoxelCore/ChunkKey.h"
 #include "VoxelCore/Conversions.h"
 #include "VoxelCore/VoxelWorld.h"
