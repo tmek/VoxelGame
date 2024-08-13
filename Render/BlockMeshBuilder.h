@@ -2,7 +2,7 @@
 #include <vector>
 #include <DirectXMath.h>
 #include "MeshBuilder.h"
-#include "PosColNormTexVertex.h"
+#include "VoxelGameMeshVertex.h"
 
 using namespace DirectX;
 using std::vector;
@@ -12,7 +12,7 @@ using std::vector;
 // Caller can choose which faces to include or exclude.
 class BlockMeshBuilder {
 public:
-    BlockMeshBuilder(MeshBuilder<PosColNormTexVertex>& meshBuilder);
+    BlockMeshBuilder(MeshBuilder<VoxelGameMeshVertex>& meshBuilder);
 
     void SetMeshRelativeBlockOrigin(float x, float y, float z);
     void SetBounds(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
@@ -26,9 +26,9 @@ public:
     void AppendNegZFace();
 
 private:
-    void AppendFace(const std::vector<PosColNormTexVertex>& vertices) const;
+    void AppendFace(const std::vector<VoxelGameMeshVertex>& vertices) const;
 
-    MeshBuilder<PosColNormTexVertex>& meshBuilder;
+    MeshBuilder<VoxelGameMeshVertex>& meshBuilder;
     XMFLOAT3 Origin;
     XMFLOAT3 mins;
     XMFLOAT3 maxs;

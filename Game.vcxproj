@@ -150,6 +150,7 @@
     <ClCompile Include="Launch\Launch.cpp" />
     <ClCompile Include="Launch\LaunchEngineLoop.cpp" />
     <ClCompile Include="Render\BlockMeshBuilder.cpp" />
+    <ClCompile Include="Render\BoxMeshBuilder.cpp" />
     <ClCompile Include="Render\ChunkMeshBuilder.cpp" />
     <ClCompile Include="Render\CubeMesh.cpp" />
     <ClCompile Include="HAL\PlatformTime.cpp" />
@@ -157,7 +158,7 @@
     <ClCompile Include="HAL\Windows\WindowsProcess.cpp" />
     <ClCompile Include="Render\ImageUtil.cpp" />
     <ClCompile Include="Render\MeshBuilder.cpp" />
-    <ClCompile Include="Render\PosColNormTexVertex.cpp" />
+    <ClCompile Include="Render\VoxelGameMeshVertex.cpp" />
     <ClCompile Include="RHI\GraphicsDevice.cpp" />
     <ClCompile Include="RHI\Mesh.cpp" />
     <ClCompile Include="RHI\MeshAssembler.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="HAL\Windows\PlatformWindowsMinimal.h" />
     <ClInclude Include="Launch\LaunchEngineLoop.h" />
     <ClInclude Include="Render\BlockMeshBuilder.h" />
+    <ClInclude Include="Render\BoxMeshBuilder.h" />
     <ClInclude Include="Render\ChunkMeshBuilder.h" />
     <ClInclude Include="Render\CubeMesh.h" />
     <ClInclude Include="HAL\Platform.h" />
@@ -198,7 +200,7 @@
     <ClCompile Include="Launch\Windows\LaunchWindows.cpp" />
     <ClInclude Include="Render\ImageUtil.h" />
     <ClInclude Include="Render\MeshBuilder.h" />
-    <ClInclude Include="Render\PosColNormTexVertex.h" />
+    <ClInclude Include="Render\VoxelGameMeshVertex.h" />
     <ClInclude Include="RHI\GraphicsDevice.h" />
     <ClInclude Include="RHI\Mesh.h" />
     <ClInclude Include="RHI\MeshAssembler.h" />

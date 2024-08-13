@@ -1,2 +1,2 @@
 ﻿#include "MeshBuilder.h"
-#include "PosColNormTexVertex.h"
+#include "VoxelGameMeshVertex.h"

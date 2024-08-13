@@ -10,7 +10,7 @@ struct ForestBeachBiomeGenerator : public TerrainGeneratorBase
         if (y == 1) return rand() % 3 ? BEDROCK : LAVA;
         if (y == 2) return rand() % 2 ? BEDROCK : LAVA;
 
-        // surface and cave samples
+        // surface samples
         int surf1 = sea_level + Sample2D(x, z, 0.01f) * 60;
         int surf2 = sea_level + Sample2D(x, z, 0.04f) * 40;
         surface_height = (surf1 + surf2) / 2;
@@ -44,8 +44,8 @@ struct ForestBeachBiomeGenerator : public TerrainGeneratorBase
             return GRASS;
         }
 
-        // the 3 blocks below surface (dirt)
-        if (y > surface_height - 3)
+        // dirt layer
+        if (y > surface_height - 4)
         {
             return DIRT;
         }

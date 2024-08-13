@@ -6,6 +6,8 @@
 
 #include "Input/InputManager.h"
 
+#include "Render/VoxelGameMeshVertex.h"
+
 CubeMesh::CubeMesh(ID3D11Device* device, ID3D11DeviceContext* context)
     : device(device), context(context)
 {
@@ -24,8 +26,7 @@ float CalculateLightIntensity(XMFLOAT3 normal, XMFLOAT3 lightDir)
     XMVECTOR normalVec = XMLoadFloat3(&normal);
     XMVECTOR lightDirVec = XMLoadFloat3(&lightDir);
 
-    
-    
+
     float dotProduct = XMVectorGetX(XMVector3Dot(normalVec, lightDirVec));
     return max(0.0f, dotProduct); // Clamp to [0, 1]
 }
@@ -38,8 +39,6 @@ XMFLOAT4 GetShadedColor(float intensity)
 
 void CubeMesh::InitResources()
 {
-    
-    
     // setup some simulated lighting
     XMFLOAT3 lightDirection = XMFLOAT3(-.5f, 1.0f, 0.2f);
     // normalize the light direction
@@ -61,7 +60,7 @@ void CubeMesh::InitResources()
     XMFLOAT4 bottomColor = GetShadedColor(CalculateLightIntensity(bottomNormal, lightDirection));
 
     // Define vertices of a triangle
-    Vertex vertices[] =
+    VoxelGameMeshVertex vertices[] =
     {
         // Front face
         {DirectX::XMFLOAT3(0, 0, 0), frontColor},
@@ -124,7 +123,7 @@ void CubeMesh::InitResources()
     //     {DirectX::XMFLOAT3(0, 0, 0), White}
     // };
 
-    TriangleCount = sizeof(vertices) / sizeof(Vertex);
+    TriangleCount = sizeof(vertices) / sizeof(VoxelGameMeshVertex);
 
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -189,13 +188,13 @@ void CubeMesh::InitResources()
     // Define input layout
     D3D11_INPUT_ELEMENT_DESC layout[] =
     {
-        // todo: this is very sketchy, use offsetof(Vertex, TexCoord) instead of hardcoding
-        // pos, col, norm, uv
-        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Vertex, position), D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(Vertex, color) , D3D11_INPUT_PER_VERTEX_DATA, 0},
-         {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(Vertex,normal ), D3D11_INPUT_PER_VERTEX_DATA, 0},
-            {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(Vertex,texCoord ), D3D11_INPUT_PER_VERTEX_DATA, 0}
+        // todo: be sure to use offsetof([VertexType], [PropertyName]) instead of hardcoding
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VoxelGameMeshVertex, Position), D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(VoxelGameMeshVertex, Color), D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, offsetof(VoxelGameMeshVertex, Normal), D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VoxelGameMeshVertex, TexCoord), D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
+    
     hr = device->CreateInputLayout(layout, ARRAYSIZE(layout), vsBlob->GetBufferPointer(),
                                    vsBlob->GetBufferSize(),
                                    &inputLayout);
@@ -234,7 +233,7 @@ void CubeMesh::InitResources()
 void CubeMesh::Select()
 {
     // select geometry
-    UINT stride = sizeof(Vertex);
+    UINT stride = sizeof(VoxelGameMeshVertex);
     UINT offset = 0;
     context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
     context->IASetInputLayout(inputLayout.Get());

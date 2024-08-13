@@ -2,6 +2,9 @@
 
 #include <cstdarg>
 #include <cstdio>
+#include <intrin.h>
+
+#include "VoxelCore/VoxelDefines.h"
 
 void BeginTestGroup(const char* str)
 { 
@@ -24,7 +27,7 @@ void AssertAreEqual(int a, int b, const char* format, ...)
         {
             printf("Message: %s\n", buffer);
         }
-        __debugbreak();
+        PLATFORM_BREAK();
         return;
     }
 

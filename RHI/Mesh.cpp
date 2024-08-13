@@ -1,5 +1,5 @@
 ﻿#include "Mesh.h"
-#include "Render/PosColNormTexVertex.h"
+#include "Render/VoxelGameMeshVertex.h"
 
 void Mesh::BindToDeviceContext(ID3D11DeviceContext* deviceContext) const
 {

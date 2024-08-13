@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "HAL/Platform.h"
+
 struct VOXELCORE_API Chunk
 {
 private:
@@ -69,7 +71,7 @@ inline void Chunk::SetBlockType(BlockIndex index, BlockType blockType)
     // todo: this needs to be a check macro or something that gets removed in test/shipping .
     if (index < 0 || index >= CHUNK_TOTAL_BLOCKS)
     {
-        __debugbreak();
+        PLATFORM_BREAK();
     }
 
     blockData->blockStates[index] = (blockData->blockStates[index] & 0xF000) | (blockType & 0x0FFF);

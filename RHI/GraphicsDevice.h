@@ -7,13 +7,6 @@
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
-struct Vertex {
-    XMFLOAT3 position;
-    XMFLOAT4 color;
-    XMFLOAT3 normal;
-    XMFLOAT2 texCoord;
-};
-
 
 class GraphicsDevice
 {

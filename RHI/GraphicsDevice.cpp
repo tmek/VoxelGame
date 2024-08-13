@@ -124,7 +124,8 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     swapChainDesc.SampleDesc.Count = 1;
     swapChainDesc.Windowed = TRUE;
 
-    // create device, context and swap chain
+    // create device, context and swap chain 
+    // it is possible to create a device and context separately from the swapchain, but this is the most common way)
     HRESULT hr = D3D11CreateDeviceAndSwapChain(
         nullptr,
         D3D_DRIVER_TYPE_HARDWARE,
@@ -139,6 +140,22 @@ void GraphicsDevice::InitD3D(HWND hWnd)
         nullptr,
         deviceContext.GetAddressOf()
     );
+
+    // Creating the Direct3D device.
+    // VERIFYD3D11RESULT(D3D11CreateDevice(
+    //     Adapter.DXGIAdapter,
+    //     DriverType,
+    //     NULL,
+    //     DeviceFlags,
+    //     &FeatureLevel,
+    //     1,
+    //     D3D11_SDK_VERSION,
+    //     Direct3DDevice.GetInitReference(),
+    //     &ActualFeatureLevel,
+    //     Direct3DDeviceIMContext.GetInitReference()
+    // ));
+    
+    // at this point we have: a device, context and swap chain
 
     if (FAILED(hr)) {
         VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_ERROR, "Failed to create device and swap chain: %x", hr);

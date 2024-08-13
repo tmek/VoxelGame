@@ -22,29 +22,30 @@
 #include "HAL/Windows/WindowsProcess.h"
 
 #include "Input/InputManager.h"
+#include "Render/BoxMeshBuilder.h"
 #include "VoxelCore/ChunkUtils.h"
 
 #include "VoxelCore/VoxelWorld.h"
 #include "VoxelMisc/ChunkMeshManager.h"
 #include "WorldGen/BlockTypes.h"
-#include "WorldGen/ForrestBeachGenerator.h"
 #include "WorldGen/PerlinNoise.h"
 #include "WorldGen/TerrainGenerators.h"
 #include "WorldGen/WorldOperations.h"
 
+#include "WorldGen/ForrestBeachGenerator.h"
 #include "WorldGen/MountainsGenerator.h"
 
 extern bool GIsRequestingExit;
 
 PlatformWindow* GWindow = nullptr;
 GraphicsDevice* GGraphicsDevice = nullptr;
-CubeMesh* GMesh = nullptr;
+CubeMesh* GCubeMesh = nullptr;
+Mesh GBoxMesh;
 
 VoxelWorld GWorld;
-
 double GTime = 0.0;
-
 int32 GFrameNumber = 0;
+
 bool vsync = true;
 
 #if 1
@@ -53,11 +54,17 @@ ForestBeachBiomeGenerator biome;
 MountainsGenerator biome;
 #endif
 
-int WorldChunks = 24;
+// if debug mode, only generate a small world using #if
+#if _DEBUG
+int ChunkGenerationRadius = 1;
+#else
+
+int ChunkGenerationRadius = 1;
+#endif
 
 
 PlayerController GPlayerController;
-DirectX::XMVECTOR GCameraPosition = DirectX::XMVectorSet(0.0f, 10.0f, -10.0f, 0.0f);
+DirectX::XMVECTOR GCameraPosition = DirectX::XMVectorSet(0.0f, 2.0f, -10.0f, 0.0f);
 
 bool GShouldRenderTintColor;
 
@@ -256,8 +263,8 @@ void FEngineLoop::GenerateWorld()
     // origin block
     world.SetBlockType({0, 0, 0}, 5);
 
-    int size = WorldChunks * CHUNK_SIZE_X;
-    GeneratePerlinTerrain(WorldChunks);
+    int size = ChunkGenerationRadius * CHUNK_SIZE_X;
+    GeneratePerlinTerrain(ChunkGenerationRadius);
 
     // add some "trees"
     //AddTrees(world, 64);
@@ -387,11 +394,14 @@ int32 FEngineLoop::Init()
     GGraphicsDevice = new GraphicsDevice(GWindow->GetHandle());
     assert(GGraphicsDevice->IsValid());
 
-    GMesh = new CubeMesh(GGraphicsDevice->GetDevice(), GGraphicsDevice->GetDeviceContext());
-    assert(GMesh->IsValid());
+    BoxMeshBuilder boxMeshBuilder;
+    GBoxMesh = boxMeshBuilder.Build(GGraphicsDevice->GetDevice());
+    
+    GCubeMesh = new CubeMesh(GGraphicsDevice->GetDevice(), GGraphicsDevice->GetDeviceContext());
+    //assert(GMesh->IsValid());
 
-    GMesh->SetShaders();
-    GMesh->Select();
+    GCubeMesh->SetShaders();
+    GCubeMesh->Select();
 
     {
         ScopedTimer timer("GenerateWorld");
@@ -469,6 +479,19 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
                              DirectX::XMMATRIX scaleMatrix, DirectX::XMMATRIX viewMatrix,
                              DirectX::XMMATRIX projectionMatrix, bool bDrawWater)
 {
+    if(1)
+    {
+        DirectX::XMMATRIX WorldViewProjectionMatrix = DirectX::XMMatrixIdentity() * viewMatrix * projectionMatrix;
+        DirectX::XMMATRIX TransposedWVPMatrix = DirectX::XMMatrixTranspose(WorldViewProjectionMatrix);
+
+        GGraphicsDevice->SetConstants(TransposedWVPMatrix, 1, 1, 1);
+        GBoxMesh.BindToDeviceContext(GGraphicsDevice->GetDeviceContext());
+        GBoxMesh.Draw(GGraphicsDevice->GetDeviceContext());
+
+        return;
+    }
+
+    
     // iterate world's chunks and render
     int TotalDrawCalls = 0;
     for (auto& chunkEntry : GWorld)

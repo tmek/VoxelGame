@@ -1,6 +1,6 @@
 ﻿#include "BlockMeshBuilder.h"
 
-BlockMeshBuilder::BlockMeshBuilder(MeshBuilder<PosColNormTexVertex>& meshBuilder)
+BlockMeshBuilder::BlockMeshBuilder(MeshBuilder<VoxelGameMeshVertex>& meshBuilder)
     : meshBuilder(meshBuilder), Origin(0.0f, 0.0f, 0.0f), mins(0.0f, 0.0f, 0.0f), maxs(1.0f, 1.0f, 1.0f),
       color(1.0f, 1.0f, 1.0f, 1.0f)
 {
@@ -24,7 +24,7 @@ void BlockMeshBuilder::SetColor(float r, float g, float b, float a)
 
 void BlockMeshBuilder::AppendPosXFace()
 {
-    std::vector<PosColNormTexVertex> vertices = {
+    std::vector<VoxelGameMeshVertex> vertices = {
         {{Origin.x + maxs.x, Origin.y + mins.y, Origin.z + mins.z}, color, m_RightVector, {0.0f, 0.0f}},
         {{Origin.x + maxs.x, Origin.y + mins.y, Origin.z + maxs.z}, color, m_RightVector, {1.0f, 0.0f}},
         {{Origin.x + maxs.x, Origin.y + maxs.y, Origin.z + maxs.z}, color, m_RightVector, {1.0f, 1.0f}},
@@ -35,7 +35,7 @@ void BlockMeshBuilder::AppendPosXFace()
 
 void BlockMeshBuilder::AppendPosYFace()
 {
-    std::vector<PosColNormTexVertex> vertices = {
+    std::vector<VoxelGameMeshVertex> vertices = {
         {{Origin.x + mins.x, Origin.y + maxs.y, Origin.z + mins.z}, color, m_UpVector, {0.0f, 0.0f}},
         {{Origin.x + maxs.x, Origin.y + maxs.y, Origin.z + mins.z}, color, m_UpVector, {1.0f, 0.0f}},
         {{Origin.x + maxs.x, Origin.y + maxs.y, Origin.z + maxs.z}, color, m_UpVector, {1.0f, 1.0f}},
@@ -46,7 +46,7 @@ void BlockMeshBuilder::AppendPosYFace()
 
 void BlockMeshBuilder::AppendPosZFace()
 {
-    std::vector<PosColNormTexVertex> vertices = {
+    std::vector<VoxelGameMeshVertex> vertices = {
         {{Origin.x + mins.x, Origin.y + maxs.y, Origin.z + maxs.z}, color, m_ForwardVector, {0.0f, 1.0f}},
         {{Origin.x + maxs.x, Origin.y + maxs.y, Origin.z + maxs.z}, color, m_ForwardVector, {1.0f, 1.0f}},
         {{Origin.x + maxs.x, Origin.y + mins.y, Origin.z + maxs.z}, color, m_ForwardVector, {1.0f, 0.0f}},
@@ -57,7 +57,7 @@ void BlockMeshBuilder::AppendPosZFace()
 
 void BlockMeshBuilder::AppendNegXFace()
 {
-    std::vector<PosColNormTexVertex> vertices = {
+    std::vector<VoxelGameMeshVertex> vertices = {
         {{Origin.x + mins.x, Origin.y + maxs.y, Origin.z + mins.z}, color, m_LeftVector, {0.0f, 1.0f}},
         {{Origin.x + mins.x, Origin.y + maxs.y, Origin.z + maxs.z}, color, m_LeftVector, {1.0f, 1.0f}},
         {{Origin.x + mins.x, Origin.y + mins.y, Origin.z + maxs.z}, color, m_LeftVector, {1.0f, 0.0f}},
@@ -68,7 +68,7 @@ void BlockMeshBuilder::AppendNegXFace()
 
 void BlockMeshBuilder::AppendNegYFace()
 {
-    std::vector<PosColNormTexVertex> vertices = {
+    std::vector<VoxelGameMeshVertex> vertices = {
         {{Origin.x + mins.x, Origin.y + mins.y, Origin.z + maxs.z}, color, m_DownVector, {0.0f, 1.0f}},
         {{Origin.x + maxs.x, Origin.y + mins.y, Origin.z + maxs.z}, color, m_DownVector, {1.0f, 1.0f}},
         {{Origin.x + maxs.x, Origin.y + mins.y, Origin.z + mins.z}, color, m_DownVector, {1.0f, 0.0f}},
@@ -79,7 +79,7 @@ void BlockMeshBuilder::AppendNegYFace()
 
 void BlockMeshBuilder::AppendNegZFace()
 {
-    std::vector<PosColNormTexVertex> vertices = {
+    std::vector<VoxelGameMeshVertex> vertices = {
         {{Origin.x + mins.x, Origin.y + mins.y, Origin.z + mins.z}, color, m_BackVector, {0.0f, 0.0f}},
         {{Origin.x + maxs.x, Origin.y + mins.y, Origin.z + mins.z}, color, m_BackVector, {1.0f, 0.0f}},
         {{Origin.x + maxs.x, Origin.y + maxs.y, Origin.z + mins.z}, color, m_BackVector, {1.0f, 1.0f}},
@@ -89,7 +89,7 @@ void BlockMeshBuilder::AppendNegZFace()
 }
 
 
-void BlockMeshBuilder::AppendFace(const std::vector<PosColNormTexVertex>& vertices) const
+void BlockMeshBuilder::AppendFace(const std::vector<VoxelGameMeshVertex>& vertices) const
 {
     static const std::vector<uint32_t> faceIndices = {0, 1, 2, 2, 3, 0};
     meshBuilder.Append(vertices, faceIndices);

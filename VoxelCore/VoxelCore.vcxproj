@@ -159,6 +159,7 @@
   <ItemGroup>
     <ClCompile Include="Chunk.cpp" />
     <ClCompile Include="ChunkUtils.cpp" />
+    <ClCompile Include="LocalChunks.cpp" />
     <ClCompile Include="VoxelWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,11 +169,9 @@
     <ClInclude Include="ChunkUtils.h" />
     <ClInclude Include="Conversions.h" />
     <ClInclude Include="Coordinates.h" />
+    <ClInclude Include="LocalChunks.h" />
     <ClInclude Include="VoxelDefines.h" />
     <ClInclude Include="VoxelWorld.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Coords2Notes.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -12,10 +12,10 @@ struct PS_INPUT
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
-#define DEBUG_UV 0
+#define DEBUG_UV 1
 #if DEBUG_UV
     // render the UVs for debugging
-    return float4(input.TexCoord, 0.0f, 1.0f);
+    return float4(input.TexCoord, 0.0f, input.Color.a);
 #else
     
     float4 TexelColor = txDiffuse.Sample(samLinear, input.TexCoord) / 2.0f + 0.5f;
