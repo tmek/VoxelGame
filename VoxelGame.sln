@@ -15,7 +15,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Games", "Games", "{90997D5E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Engine", "Engine", "{122E0DFC-5677-457D-9CA0-2E4C592927DB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConsoleGame", "ConsoleGame\ConsoleGame.vcxproj", "{F35FB900-3FCB-456D-B124-D3CCEA87AEDC}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SimpleConsoleGame", "SimpleConsoleGame\SimpleConsoleGame.vcxproj", "{F35FB900-3FCB-456D-B124-D3CCEA87AEDC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core.Tests", "Core.Tests\Core.Tests.vcxproj", "{E60B6B07-96F5-40D6-813A-F7C40854277E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +67,14 @@ Global
 		{F35FB900-3FCB-456D-B124-D3CCEA87AEDC}.Release|x64.Build.0 = Release|x64
 		{F35FB900-3FCB-456D-B124-D3CCEA87AEDC}.Release|x86.ActiveCfg = Release|Win32
 		{F35FB900-3FCB-456D-B124-D3CCEA87AEDC}.Release|x86.Build.0 = Release|Win32
+		{E60B6B07-96F5-40D6-813A-F7C40854277E}.Debug|x64.ActiveCfg = Debug|x64
+		{E60B6B07-96F5-40D6-813A-F7C40854277E}.Debug|x64.Build.0 = Debug|x64
+		{E60B6B07-96F5-40D6-813A-F7C40854277E}.Debug|x86.ActiveCfg = Debug|Win32
+		{E60B6B07-96F5-40D6-813A-F7C40854277E}.Debug|x86.Build.0 = Debug|Win32
+		{E60B6B07-96F5-40D6-813A-F7C40854277E}.Release|x64.ActiveCfg = Release|x64
+		{E60B6B07-96F5-40D6-813A-F7C40854277E}.Release|x64.Build.0 = Release|x64
+		{E60B6B07-96F5-40D6-813A-F7C40854277E}.Release|x86.ActiveCfg = Release|Win32
+		{E60B6B07-96F5-40D6-813A-F7C40854277E}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,5 +85,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C53C4960-F00D-4501-BC00-85D9C1263C94} = {122E0DFC-5677-457D-9CA0-2E4C592927DB}
 		{F35FB900-3FCB-456D-B124-D3CCEA87AEDC} = {90997D5E-B96A-4935-8F93-72FE5A57C41B}
+		{E60B6B07-96F5-40D6-813A-F7C40854277E} = {122E0DFC-5677-457D-9CA0-2E4C592927DB}
 	EndGlobalSection
 EndGlobal

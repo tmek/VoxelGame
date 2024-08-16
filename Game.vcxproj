@@ -136,7 +136,6 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -170,6 +169,8 @@
     <ClCompile Include="WorldGen\BlockTypes.cpp" />
     <ClCompile Include="WorldGen\ForrestBeachGenerator.cpp" />
     <ClCompile Include="WorldGen\MountainsGenerator.cpp" />
+    <ClCompile Include="WorldGen\OptimizedPerlinNoise.cpp" />
+    <ClCompile Include="WorldGen\SimplexNoise.cpp" />
     <ClCompile Include="WorldGen\TerrainGenerators.cpp" />
     <ClCompile Include="WorldGen\ThreadPool.cpp" />
     <ClCompile Include="WorldGen\WorldOperations.cpp" />
@@ -213,8 +214,10 @@
     <ClInclude Include="WorldGen\BlockTypes.h" />
     <ClInclude Include="WorldGen\ForrestBeachGenerator.h" />
     <ClInclude Include="WorldGen\MountainsGenerator.h" />
+    <ClInclude Include="WorldGen\OptimizedPerlinNoise.h" />
     <ClInclude Include="WorldGen\PerlinNoise.h" />
     <ClInclude Include="WorldGen\PerlinNoise2D.h" />
+    <ClInclude Include="WorldGen\SimplexNoise.h" />
     <ClInclude Include="WorldGen\TerrainGenerators.h" />
     <ClInclude Include="WorldGen\ThreadPool.h" />
     <ClInclude Include="WorldGen\WorldOperations.h" />

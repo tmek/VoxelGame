@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "HAL/Windows/PlatformWindows.h"
 
-void WindowsPlatformProcess::Sleep(int32 Milliseconds)
+void WindowsPlatformProcess::SleepMS(int32 Milliseconds)
 {
     ::Sleep(Milliseconds);
 }

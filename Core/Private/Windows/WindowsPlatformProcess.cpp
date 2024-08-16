@@ -6,7 +6,7 @@
 #include "Windows/WindowsIncludes.h"
 #include "Windows/WindowsPlatformProcess.h"
 
-void WindowsPlatformProcess::Sleep(int32 Milliseconds)
+void WindowsPlatformProcess::SleepMS(int32 Milliseconds)
 {
     ::Sleep(Milliseconds);
 }

@@ -18,7 +18,7 @@ struct GameLoop
             // Render
             
             TE_LOG(LogTemp, Log, "GameLoop::Run() %f", PlatformTime::GetTimeInSeconds());
-            PlatformProcess::Sleep(1000);
+            PlatformProcess::SleepMS(1000);
         }
     }
 };

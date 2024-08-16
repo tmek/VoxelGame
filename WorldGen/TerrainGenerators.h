@@ -1,7 +1,10 @@
 ﻿#pragma once
 #include "BlockTypes.h"
+#include "OptimizedPerlinNoise.h"
 #include "PerlinNoise.h"
 #include "PerlinNoise2D.h"
+#include "SimplexNoise.h"
+
 #include "GameCore/Logging.h"
 #include "HAL/PlatformTime.h"
 #include "Render/BlockMeshBuilder.h"
@@ -11,7 +14,9 @@
 struct TerrainGeneratorBase
 {
     int surface_height = 64;
+    OptimizedPerlinNoise optimizedPerlinNoise;
     PerlinNoise perlinNoise;
+    SimplexNoise simplexNoise;
 
     virtual BlockState GetBlock(int x, int y, int z);
 
@@ -33,12 +38,13 @@ struct TerrainGeneratorBase
 
     float Sample2D(int x, int z, float freq)
     {
-        return (float)perlinNoise.sample3D((float)x * freq, 0, (float)z * freq);
+        return (float)simplexNoise.sample3D(x * freq, 0, z * freq);
     }
 
     float Sample3D(int x, int y, int z, float freq)
     {
-        return (float)perlinNoise.sample3D((float)x * freq, (float)y * freq, (float)z * freq);
+        //return (float)perlinNoise.sample3D(x * freq, y * freq, z * freq);
+        return (float)simplexNoise.sample3D(x * freq, y * freq, z * freq);
     }
 
     BlockState GetOreBlock(const int y)

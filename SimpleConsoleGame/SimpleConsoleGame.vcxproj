@@ -151,7 +151,6 @@
             <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
             <ConformanceMode>true</ConformanceMode>
             <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-            <LanguageStandard>stdcpp20</LanguageStandard>
         </ClCompile>
         <Link>
             <SubSystem>Console</SubSystem>
@@ -161,13 +160,13 @@
         </Link>
     </ItemDefinitionGroup>
     <ItemGroup>
-        <ClCompile Include="ConsoleGame.cpp"/>
-    </ItemGroup>
-    <ItemGroup>
         <ProjectReference Include="..\Core\Core.vcxproj">
             <Project>{c53c4960-f00d-4501-bc00-85d9c1263c94}</Project>
             <Name>Core</Name>
         </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+      <ClCompile Include="ConsoleGame.cpp" />
     </ItemGroup>
     <ItemGroup>
       <ClInclude Include="SimpleGameLoop.h" />

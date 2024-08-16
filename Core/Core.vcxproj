@@ -151,7 +151,6 @@
       <PreprocessorDefinitions>NDEBUG;CPPDYNAMICLIBRARYTEMPLATE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -180,6 +179,10 @@
     <ClInclude Include="Public\Misc\CoreDefines.h" />
     <ClInclude Include="Public\Windows\WindowsPlatformProcess.h" />
     <ClInclude Include="Public\Windows\WindowsPlatformTypes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Private\Testing\" />
+    <Folder Include="Public\Testing\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -17,7 +17,7 @@ class TestClassMain
 public:
     TestClassMain()
     {
-        TE_LOG(LogTemp, Warning, "Hello From (ConsoleGame): %s", "TestClassMain::TestClassMain()");
+        TE_LOG(LogTemp, Warning, "Hello From (SimpleConsoleGame): %s", "TestClassMain::TestClassMain()");
     }
 };
 
@@ -39,13 +39,13 @@ int main(int argc, char* argv[])
     
     std::thread t([]() {
         TE_LOG(LogTemp, Log, "Hello from thread");
-        PlatformProcess::Sleep(3000);
+        PlatformProcess::SleepMS(3000);
         TE_LOG(LogTemp, Log, "done sleeping in thread");
     });
 
 
     TE_LOG(LogTemp, Log, "Sleeping for 1 second... %f", PlatformTime::GetTimeInSeconds());
-    PlatformProcess::Sleep(1000);
+    PlatformProcess::SleepMS(1000);
     
     PlatformProcess::ShowConsole();
 
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
     //t.detach();
 
-    PlatformProcess::Sleep(5000);
+    PlatformProcess::SleepMS(5000);
 
     // log if thread is joinable
     TE_LOG(LogTemp, Log, "Thread t is joinable: %d", t.joinable());
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
     
     std::thread t2([&gameLoop]() {
         TE_LOG(LogTemp, Log, "Stopping game loop in 3 seconds");
-        PlatformProcess::Sleep(3100);
+        PlatformProcess::SleepMS(3100);
         gameLoop.bRequestExit = true;
         TE_LOG(LogTemp, Log, "done in thread 2");
     });
@@ -98,7 +98,7 @@ int main(int argc, char* argv[])
         ss << ThreadId;
         printf("Thread ID: %s\n", ss.str().c_str());
         
-        PlatformProcess::Sleep(1000); // to verify parallelism
+        PlatformProcess::SleepMS(1000); // to verify parallelism
     });
 
     for (int n : data) {
