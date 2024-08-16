@@ -1,10 +1,12 @@
 ﻿
 #include "WorldOperations.h"
 
+#include "BlockTypes.h"
+
 #include "VoxelCore/Chunk.h"
 #include "PerlinNoise.h"
 
-void WorldOperations::DrawSphere(int centerX, int centerY, int centerZ, int radius, BlockType blockType)
+void WorldOperations::DrawSphere_deprecated(int centerX, int centerY, int centerZ, int radius, BlockType blockType)
 {
     // Calculate the sphere's bounds
     WorldRegion region;
@@ -22,22 +24,22 @@ void WorldOperations::DrawSphere(int centerX, int centerY, int centerZ, int radi
     int bias = 1; // You can adjust this value to fine-tune the effect
 
     // Iterate over all blocks within the sphere's bounds
-    IterateBlocks(region, [&](Chunk* const chunk, const LocalBlockCoord& localBlock, const WorldBlockCoord& worldBlock)
-    {
-        // Calculate the squared distance from the center of the sphere to the current block
-        int dx = worldBlock.X - centerX;
-        int dy = worldBlock.Y - centerY;
-        int dz = worldBlock.Z - centerZ;
-        int distanceSquared = dx * dx + dy * dy + dz * dz;
-
-        // Check if the block is within the sphere
-        // todo: add radius bias back in to remove those unwanted single blocks at axes.
-        if (distanceSquared <= radiusSquared - bias)
-        {
-            // Set the block type
-            chunk->SetBlockType(localBlock.Index, blockType);
-        }
-    });
+    // IterateBlocks(region, [&](Chunk* const chunk, const LocalBlockCoord& localBlock, const WorldBlockCoord& worldBlock)
+    // {
+    //     // Calculate the squared distance from the center of the sphere to the current block
+    //     int dx = worldBlock.X - centerX;
+    //     int dy = worldBlock.Y - centerY;
+    //     int dz = worldBlock.Z - centerZ;
+    //     int distanceSquared = dx * dx + dy * dy + dz * dz;
+    //
+    //     // Check if the block is within the sphere
+    //     // todo: add radius bias back in to remove those unwanted single blocks at axes.
+    //     if (distanceSquared <= radiusSquared - bias)
+    //     {
+    //         // Set the block type
+    //         chunk->SetBlockType(localBlock.Index, blockType);
+    //     }
+    // });
 }
 
 static void CalculateHeightRange(float amplitude, int& minY, int& maxY)
@@ -94,22 +96,28 @@ BlockType WorldOperations::GetBlockType(const WorldBlockCoord& worldBlock) const
     // Get the chunk
     LocalBlockCoord localBlock;
     WorldToLocal(worldBlock, localBlock);
-    Chunk& chunk = world_.GetChunk(localBlock.chunkKey);
+    Chunk* chunk = world_.TryGetChunk(localBlock.chunkKey);
 
+    if(!chunk)
+    {
+        return AIR;
+    }
+    
     // Get the block type
-    return chunk.GetBlockType(localBlock.Index);
+    return chunk->GetBlockType(localBlock.Index);
 }
 
 
 void WorldOperations::SetBlockType(const WorldBlockCoord& worldBlock, const BlockType blockType) const
 {
-    // Get the chunk
-    LocalBlockCoord localBlock;
-    WorldToLocal(worldBlock, localBlock);
-    Chunk& chunk = world_.GetChunk(localBlock.chunkKey);
-
-    // Set the block type
-    chunk.SetBlockType(localBlock.Index, blockType);
+    // TODO: currently disabling this temporarily, this means we can draw trees or single blocks in the world.
+    // // Get the chunk
+    // LocalBlockCoord localBlock;
+    // WorldToLocal(worldBlock, localBlock);
+    // Chunk& chunk = world_.GetChunk(localBlock.chunkKey);
+    //
+    // // Set the block type
+    // chunk.SetBlockType(localBlock.Index, blockType);
 }
 
 
@@ -119,9 +127,14 @@ int WorldOperations::GetHighestBlockHeightAt(int x, int z)
     WorldBlockCoord worldBlock = {x, CHUNK_SIZE_Y-1, z};
     LocalBlockCoord localBlock;
     WorldToLocal(worldBlock, localBlock);
-    Chunk& chunk = world_.GetChunk(localBlock.chunkKey);
+    Chunk* chunk = world_.TryGetChunk(localBlock.chunkKey);
 
-    return chunk.GetHighestBlockHeightAt(localBlock.Index);
+    if(!chunk)
+    {
+        return CHUNK_SIZE_Y-1;
+    }
+
+    return chunk->GetHighestBlockHeightAt(localBlock.Index);
 }
 
 // Is there air? YOU DON'T KNOW!! (v=kcPouxFqUFA)

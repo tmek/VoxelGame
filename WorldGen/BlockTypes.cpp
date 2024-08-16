@@ -148,7 +148,7 @@ const BlockColor BlockColors[] = {
     {34, 139, 34},    // BirchLeaves
     {34, 139, 34},    // JungleLeaves
     {34, 139, 34},    // AcaciaLeaves
-    {34, 139, 34},    // DarkOakLeaves
+    {16, 40, 34},    // DarkOakLeaves original was same as OakLeaves
 
     // Fences & Gates
     {139, 69, 19},    // OakFence

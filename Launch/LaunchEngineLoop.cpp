@@ -5,6 +5,7 @@
 #include "GameCore/Core.h"
 #include <cstdio>
 #include <DirectXColors.h>
+#include <unordered_set>
 
 #include "RHI/GraphicsDevice.h"
 #include "RHI/Mesh.h"
@@ -23,6 +24,8 @@
 
 #include "Input/InputManager.h"
 #include "Render/BoxMeshBuilder.h"
+#include "Render/ChunkMeshBuilder.h"
+
 #include "VoxelCore/ChunkUtils.h"
 
 #include "VoxelCore/VoxelWorld.h"
@@ -56,24 +59,129 @@ MountainsGenerator biome;
 
 // if debug mode, only generate a small world using #if
 #if _DEBUG
-int ChunkGenerationRadius = 1;
+int ChunkDrawRadius = 32;
 #else
-
-int ChunkGenerationRadius = 1;
+int ChunkDrawRadius = 32;
 #endif
 
 
 PlayerController GPlayerController;
-DirectX::XMVECTOR GCameraPosition = DirectX::XMVectorSet(0.0f, 2.0f, -10.0f, 0.0f);
+float InitialCameraHeight = static_cast<float>(-(CHUNK_SIZE_Z + 2) * ChunkDrawRadius);
+DirectX::XMVECTOR GCameraPosition = DirectX::XMVectorSet(0.0f, 100.0f, InitialCameraHeight, 0.0f);
 
 bool GShouldRenderTintColor;
 
 int WorldBlockCounter = 0;
 
-void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
+
+ 
+ThreadPool GThreadPool(std::thread::hardware_concurrency());
+// keep a hashed list of chunk keys that have been queued for generation
+// so we don't queue the same chunk multiple times.
+std::unordered_set<ChunkKey, ChunkKeyHash> ChunkLoadQueue;
+
+#include <algorithm>
+#include <execution>
+
+void FEngineLoop::GenerateChunksInBackground(const std::vector<ChunkKey>& chunkKeys)
 {
+    for (const auto& key : chunkKeys)
+    {
+        GThreadPool.Enqueue([this,key]()
+        {
+            //VG_LOG(LogCategoryGeneral, LOG_INFO, "Generating chunk: %d, %d", key.X, key.Z);
+            
+            // Get or create the chunk
+            Chunk& chunk = GWorld.GetChunk(key);
+
+            // generate the chunk
+            GenerateChunk(chunk, key);
+
+            // build its mesh
+            ChunkMeshManager::GetInstance().RebuildChunkMesh(key, chunk, GGraphicsDevice->GetDevice());
+        });
+    }
+}
+
+void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
+{
+    // get camera position
+    
+    WorldBlockCoord cameraBlock;
+    cameraBlock.X = static_cast<int>(XMVectorGetX(GCameraPosition));
+    cameraBlock.Y = static_cast<int>(XMVectorGetY(GCameraPosition));
+    cameraBlock.Z = static_cast<int>(XMVectorGetZ(GCameraPosition));
+
+    ChunkKey cameraChunkKey;
+    WorldToLocal(cameraBlock, cameraChunkKey);
+
+    // log camera chunk key
+    //VG_LOG(LogCategoryGeneral, LOG_INFO, "Camera Chunk Key: %d, %d", cameraChunkKey.X, cameraChunkKey.Z);
+
+    // make list of chunks to generate, centered around the camera
+    // do an actual radius not just a square
+    
+    
+    std::vector<ChunkKey> chunkKeys;
+    int radius = RadiusInChunks;
+    float bias = 0;//0.5f ; // removes unwanted single chunk at the edge of the radius along x & z axes
+    int radiusSquared = radius * radius;
+
+    VG_LOG("General", LOG_INFO, "Radius = %d", radius);
+    for (int dx = 0; dx <= radius; dx++)
+    {
+        for (int dz = 0; dz <= radius; dz++)
+        {
+            int distanceSquared = (dx * dx) + (dz * dz);
+            //if (distanceSquared <= radiusSquared - bias)
+            {
+                // Generate for the +,+ quadrant
+                ChunkKey chunkKey1 = {cameraChunkKey.X + dx, cameraChunkKey.Z + dz};
+                if (ChunkLoadQueue.find(chunkKey1) == ChunkLoadQueue.end())
+                {
+                    ChunkLoadQueue.insert(chunkKey1);
+                    chunkKeys.push_back(chunkKey1);
+                }
+
+                // Generate for the +,- quadrant
+                ChunkKey chunkKey2 = {cameraChunkKey.X + dx, cameraChunkKey.Z - dz};
+                if (ChunkLoadQueue.find(chunkKey2) == ChunkLoadQueue.end())
+                {
+                    ChunkLoadQueue.insert(chunkKey2);
+                    chunkKeys.push_back(chunkKey2);
+                }
+
+                // Generate for the -,+ quadrant
+                ChunkKey chunkKey3 = {cameraChunkKey.X - dx, cameraChunkKey.Z + dz};
+                if (ChunkLoadQueue.find(chunkKey3) == ChunkLoadQueue.end())
+                {
+                    ChunkLoadQueue.insert(chunkKey3);
+                    chunkKeys.push_back(chunkKey3);
+                }
+
+                // Generate for the -,- quadrant
+                ChunkKey chunkKey4 = {cameraChunkKey.X - dx, cameraChunkKey.Z - dz};
+                if (ChunkLoadQueue.find(chunkKey4) == ChunkLoadQueue.end())
+                {
+                    ChunkLoadQueue.insert(chunkKey4);
+                    chunkKeys.push_back(chunkKey4);
+                }
+            }
+        }
+    }
+
+    VG_LOG("General", LOG_INFO, "Chunks Submitted For Background Generation: %d", chunkKeys.size()); 
+    
+    GenerateChunksInBackground(chunkKeys);
+
+    // remove chunks outside nearby radius
+    //GWorld.RemoveChunksOutsideRadius(cameraChunkKey, ChunksWide);
+    
+    
+    return;
+    
     // generate some perlin terrain
-    int size = ChunksWide * CHUNK_SIZE_X;
+    int size = RadiusInChunks * CHUNK_SIZE_X;
     int startX = -size / 2;
     int startZ = -size / 2;
     int width = size;
@@ -82,6 +190,8 @@ void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
     float amplitude = 20.0f;
     uint8_t blockType = 3;
 
+
+    
     // create chunk subvolumes for the perlin noise terrain
     int maxheight = 384;
     WorldRegion terrainRegion = {
@@ -89,100 +199,108 @@ void FEngineLoop::GeneratePerlinTerrain(int ChunksWide = 32)
         {startX + width, maxheight, startZ + depth} // max coordinates
     };
 
-
     auto chunksAndSubVolumes = ChunkVolumeMapper::GetChunksAndSubVolumes(terrainRegion);
 
     PerlinNoise perlinNoise; // must be initiated once before using
 
-    for (const auto& chunkSubVolume : chunksAndSubVolumes)
-    {
-        VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Generating terrain for chunk: %d, %d",
-               chunkSubVolume.startingBlock.chunkKey.X, chunkSubVolume.startingBlock.chunkKey.Z);
+    // Parallel for_each using execution policy
+    // todo: i think i can hit a racecondition or deadlock here. I need to make sure VoxelWorld is thread safe.
 
-        const auto& startingBlock = chunkSubVolume.startingBlock;
+    // get total # chunks to generate
+    size_t totalChunks = chunksAndSubVolumes.size();
+    StopWatch timer;
+    timer.Start();
 
-        WorldBlockCoord startingBlockWorldCoords;
-        LocalToWorld(startingBlock, startingBlockWorldCoords);
+    std::for_each(std::execution::par, chunksAndSubVolumes.begin(), chunksAndSubVolumes.end(),
+                  [&](const auto& chunkSubVolume)
+                  {
+                      VG_LOG(LogCategoryGeneral, LOG_INFO, "Generating terrain for chunk: %d, %d",
+                             chunkSubVolume.startingBlock.chunkKey.X, chunkSubVolume.startingBlock.chunkKey.Z);
 
-        // get chunk data
-        auto& chunk = GWorld.GetChunk(chunkSubVolume.startingBlock.chunkKey);
-        auto chunkData = chunk.GetBlockData()->blockStates;
+                      const auto& startingBlock = chunkSubVolume.startingBlock;
 
-        ChunkUtils::TFillChunkSubvolume(chunkData,
-                                        chunkSubVolume.startingBlock.Index,
-                                        chunkSubVolume.width, chunkSubVolume.height, chunkSubVolume.depth,
-                                        startingBlockWorldCoords.X, startingBlockWorldCoords.Y,
-                                        startingBlockWorldCoords.Z,
-                                        [&](auto* block_states, int index, int world_x, int world_y, int world_z)
-                                        {
-                                            BlockType block_type1 = biome.GetBlock(world_x, world_y, world_z);
+                      WorldBlockCoord startingBlockWorldCoords;
+                      LocalToWorld(startingBlock, startingBlockWorldCoords);
 
-                                            if (block_type1 != AIR)
-                                            {
-                                                block_states[index] = block_type1;
-                                            }
-                                            return;
-                                            // as we get farther from world origin, increase amplitude
-                                            float distance = (float)sqrt(world_x * world_x + world_z * world_z);
-                                            float distanceFactor = distance / 100.0f;
-                                            float newAmplitude = amplitude + amplitude * distanceFactor;
+                      // get chunk data
+                      auto& chunk = GWorld.GetChunk(chunkSubVolume.startingBlock.chunkKey);
 
-                                            // compute noise value
-                                            double noiseValue = perlinNoise.
-                                                sample3D(world_x * scale, 0.0, world_z * scale);
+                      //GenerateChunk(
+                  });
 
-                                            // compute ground level
-                                            const int ground_level = static_cast<int>(noiseValue * newAmplitude +
-                                                amplitude
-                                                / 2);
 
-                                            int block_type = 0; // air default
-                                            if (world_y == ground_level)
-                                            {
-                                                block_type = 3;
-                                            }
-                                            if (world_y < ground_level)
-                                            {
-                                                block_type = 2;
-                                            }
-                                            if (world_y < ground_level - 3)
-                                            {
-                                                // 1% chance of bedrock vs stone
-                                                block_type = rand() % 100 == 0 ? 5 : 1;
-                                            }
+    
+    timer.Stop();
 
-                                            if (world_y < 4)
-                                            {
-                                                block_type = 4; // water
-                                            }
+    // log how many chunks were generated and time
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "Chunk Generation time: %f", timer.GetElapsedSeconds());
+    // log avg milliseconds per chunk
+    double avgMsPerChunk = timer.GetElapsedSeconds() / totalChunks * 1000;
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "Avg ms per chunk: %f ms", avgMsPerChunk);
+    // chunks per second
+    double chunksPerSecond = totalChunks / timer.GetElapsedSeconds();
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "Chunks per second: %f", chunksPerSecond);
 
-                                            if (world_y == 0)
-                                            {
-                                                block_type = 5; // bedrock
-                                            }
-
-                                            if (world_y <= ground_level)
-                                            {
-                                                if (world_y > 40)
-                                                {
-                                                    // random chance of stone the higher we go
-                                                    block_type = rand() % 100 < 80 ? 1 : block_type;
-                                                }
-
-                                                if (world_y > 50)
-                                                {
-                                                    // random chance of snow the higher we go
-                                                    block_type = rand() % 100 < 80 ? 7 : block_type;
-                                                }
-                                            }
-
-                                            if (block_type) // don't set air blocks
-                                            {
-                                                block_states[index] = block_type;
-                                            }
-                                        });
-    }
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "Generated %d chunks", totalChunks);
 }
+
+//
+// void FEngineLoop::GeneratePerlinTerrain2(int ChunksWide = 32)
+// {
+//     // generate some perlin terrain
+//     int size = ChunksWide * CHUNK_SIZE_X;
+//     int startX = -size / 2;
+//     int startZ = -size / 2;
+//     int width = size;
+//     int depth = size;
+//     float scale = 0.025f;
+//     float amplitude = 20.0f;
+//     uint8_t blockType = 3;
+//
+//     // create chunk subvolumes for the perlin noise terrain
+//     int maxheight = 384;
+//     WorldRegion terrainRegion = {
+//         {startX, 0, startZ}, // min coordinates
+//         {startX + width, maxheight, startZ + depth} // max coordinates
+//     };
+//
+//
+//     auto chunksAndSubVolumes = ChunkVolumeMapper::GetChunksAndSubVolumes(terrainRegion);
+//
+//     PerlinNoise perlinNoise; // must be initiated once before using
+//
+//     for (const auto& chunkSubVolume : chunksAndSubVolumes)
+//     {
+//         VG_LOG(LogCategoryGeneral, LOG_INFO, "Generating terrain for chunk: %d, %d",
+//                chunkSubVolume.startingBlock.chunkKey.X, chunkSubVolume.startingBlock.chunkKey.Z);
+//
+//         const auto& startingBlock = chunkSubVolume.startingBlock;
+//
+//         WorldBlockCoord startingBlockWorldCoords;
+//         LocalToWorld(startingBlock, startingBlockWorldCoords);
+//
+//         // get chunk data
+//         auto& chunk = GWorld.GetChunk(chunkSubVolume.startingBlock.chunkKey);
+//         auto chunkData = chunk.GetBlockData()->blockStates;
+//
+//         ChunkUtils::TFillChunkSubvolume(chunkData,
+//                                         chunkSubVolume.startingBlock.Index,
+//                                         chunkSubVolume.width, chunkSubVolume.height, chunkSubVolume.depth,
+//                                         startingBlockWorldCoords.X, startingBlockWorldCoords.Y,
+//                                         startingBlockWorldCoords.Z,
+//                                         [&](auto* block_states, int index, int world_x, int world_y, int world_z)
+//                                         {
+//                                             BlockType block_type1 = biome.GetBlock(world_x, world_y, world_z);
+//
+//                                             if (block_type1 != AIR)
+//                                             {
+//                                                 block_states[index] = block_type1;
+//                                             }
+//                                             return;
+//      
+//                                         });
+//     }
+// }
 
 void FEngineLoop::AddTrees(WorldOperations world, int size)
 {
@@ -207,8 +325,13 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
 
         check(y >= 0 && y < CHUNK_SIZE_Y);
 
-        // make trunk height between 6 and 12
+
+        // determine leaves and trunk type
         BlockType trunkType = rand() % 10 ? OAK_LOG : BIRCH_LOG;
+        BlockType leafType = rand() % 2 ? OAK_LEAVES : DARK_OAK_LEAVES;
+
+
+        // make trunk height between 6 and 12
         int trunkheight = rand() % 4 + 6;
         for (int j = 0; j < trunkheight; j++)
         {
@@ -229,7 +352,7 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
                     {
                         continue;
                     }
-                    world.SetBlockType({x + dx, y + trunkheight + 1 + dy, z + dz}, OAK_LEAVES);
+                    world.SetBlockType({x + dx, y + trunkheight + 1 + dy, z + dz}, leafType);
                 }
             }
         }
@@ -238,6 +361,7 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
 
 void FEngineLoop::GenerateWorld()
 {
+    return;
     WorldOperations world(GWorld);
 
     //world.DrawSphere(0, 0, 0, 8, 1);
@@ -263,8 +387,8 @@ void FEngineLoop::GenerateWorld()
     // origin block
     world.SetBlockType({0, 0, 0}, 5);
 
-    int size = ChunkGenerationRadius * CHUNK_SIZE_X;
-    GeneratePerlinTerrain(ChunkGenerationRadius);
+    int size = ChunkDrawRadius * CHUNK_SIZE_X;
+    GenerateChunksAroundCamera(ChunkDrawRadius);
 
     // add some "trees"
     //AddTrees(world, 64);
@@ -350,11 +474,12 @@ void FEngineLoop::RebuildChunkMeshes()
 {
     for (auto& chunkEntry : GWorld)
     {
-        // get chunk from key
         const auto& chunkKey = chunkEntry.first;
-        auto& chunk = GWorld.GetChunk(chunkKey);
 
-        ChunkMeshManager::GetInstance().RebuildChunkMesh(chunkKey, chunk, GGraphicsDevice->GetDevice());
+        if(Chunk* chunk = GWorld.TryGetChunk(chunkKey))
+        {
+            ChunkMeshManager::GetInstance().RebuildChunkMesh(chunkKey, *chunk, GGraphicsDevice->GetDevice());
+        }
     }
 }
 
@@ -385,7 +510,9 @@ void FEngineLoop::AddBlockTick()
 
 int32 FEngineLoop::Init()
 {
-    VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "FEngineLoop::Init()");
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "FEngineLoop::Init()");
+
+    InputManager::Get().ShowCursor(false);
 
     GTime = PlatformTime::GetTimeInSeconds();
 
@@ -396,24 +523,26 @@ int32 FEngineLoop::Init()
 
     BoxMeshBuilder boxMeshBuilder;
     GBoxMesh = boxMeshBuilder.Build(GGraphicsDevice->GetDevice());
-    
+
     GCubeMesh = new CubeMesh(GGraphicsDevice->GetDevice(), GGraphicsDevice->GetDeviceContext());
     //assert(GMesh->IsValid());
 
     GCubeMesh->SetShaders();
     GCubeMesh->Select();
 
-    {
-        ScopedTimer timer("GenerateWorld");
-        GenerateWorld();
-    }
+    GenerateChunksAroundCamera(ChunkDrawRadius);
+    
+    // {
+    //     ScopedTimer timer("GenerateWorld");
+    //     GenerateWorld();
+    // }
+    //
+    // {
+    //     ScopedTimer timer("RebuildChunkMeshes");
+    //     RebuildChunkMeshes();
+    // }
 
-    {
-        ScopedTimer timer("RebuildChunkMeshes");
-        RebuildChunkMeshes();
-    }
-
-
+    
     return 0;
 }
 
@@ -479,7 +608,7 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
                              DirectX::XMMATRIX scaleMatrix, DirectX::XMMATRIX viewMatrix,
                              DirectX::XMMATRIX projectionMatrix, bool bDrawWater)
 {
-    if(1)
+    if (0)
     {
         DirectX::XMMATRIX WorldViewProjectionMatrix = DirectX::XMMatrixIdentity() * viewMatrix * projectionMatrix;
         DirectX::XMMATRIX TransposedWVPMatrix = DirectX::XMMatrixTranspose(WorldViewProjectionMatrix);
@@ -491,7 +620,7 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
         return;
     }
 
-    
+
     // iterate world's chunks and render
     int TotalDrawCalls = 0;
     for (auto& chunkEntry : GWorld)
@@ -531,7 +660,7 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
 
             auto dc = GGraphicsDevice->GetDeviceContext();
 
-            if(bDrawWater)
+            if (bDrawWater)
             {
                 GGraphicsDevice->DisableDepthWrite();
                 mesh->DrawSubMesh(dc, 1);
@@ -584,6 +713,9 @@ void FEngineLoop::Tick()
     DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixIdentity();
 
 
+    // input
+    //InputManager::Get().CenterMouse(GWindow->GetHandle());
+
     // movement
     GPlayerController.ProcessInput(static_cast<float>(DeltaTime));
     auto MinecraftSprintSpeed = 5.612f;
@@ -592,12 +724,12 @@ void FEngineLoop::Tick()
 
     if (InputManager::Get().IsKeyPressed('R'))
     {
-        VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Increase speed");
+        VG_LOG(LogCategoryGeneral, LOG_INFO, "Increase speed");
         DistancePerSecond = DistancePerSecond * increase;
     }
     if (InputManager::Get().IsKeyPressed('F'))
     {
-        VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Decrease speed");
+        VG_LOG(LogCategoryGeneral, LOG_INFO, "Decrease speed");
         DistancePerSecond = DistancePerSecond / increase;
     }
     InputManager::Get().ClearKeyPressed('R');
@@ -618,12 +750,15 @@ void FEngineLoop::Tick()
     // using player controller yaw AND pitch, create a lookat point in front of the GCameraPosition
     DirectX::XMVECTOR LookAtPoint = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
     LookAtPoint = GPlayerController.GetForwardVector();
-        // DirectX::XMVector3Rotate(LookAtPoint,
-        //                                    DirectX::XMQuaternionRotationRollPitchYaw(
-        //                                        DirectX::XMConvertToRadians(GPlayerController.Pitch),
-        //                                        DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
+    // DirectX::XMVector3Rotate(LookAtPoint,
+    //                                    DirectX::XMQuaternionRotationRollPitchYaw(
+    //                                        DirectX::XMConvertToRadians(GPlayerController.Pitch),
+    //                                        DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
     LookAtPoint = DirectX::XMVectorAdd(GCameraPosition, LookAtPoint);
 
+    // camera position is known, submit nearby chunks for background generation.
+    //GeneratePerlinTerrain(ChunkDrawRadius);
+    
     // camera matrix (view)
     float AnimatedSin = static_cast<float>(sin(GTime));
     DirectX::FXMVECTOR eye = GCameraPosition; // eye 
@@ -652,7 +787,7 @@ void FEngineLoop::Tick()
             {
                 KeyPressed = true;
                 NewBlockType = key - VK_NUMPAD0;
-                if(NewBlockType == 4) NewBlockType = WATER; 
+                if (NewBlockType == 4) NewBlockType = WATER;
                 break;
             }
         }
@@ -660,8 +795,8 @@ void FEngineLoop::Tick()
         if (KeyPressed)
         {
             // put the block 10 units in front of the camera
-             DirectX::XMVECTOR CameraForward = GPlayerController.GetForwardVector();
-                 //DirectX::XMVector3Rotate(
+            DirectX::XMVECTOR CameraForward = GPlayerController.GetForwardVector();
+            //DirectX::XMVector3Rotate(
             //     DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
             //     DirectX::XMQuaternionRotationRollPitchYaw(
             //         DirectX::XMConvertToRadians(GPlayerController.Pitch),
@@ -696,24 +831,37 @@ void FEngineLoop::Tick()
 
                 // rebuild chunk and surrounding chunks.
                 // todo: ideally it should only rebuild the chunks that have been modified.
-                for (int dx = -1; dx <= 1; dx++)
-                {
-                    for (int dz = -1; dz <= 1; dz++)
-                    {
-                        ChunkKey currentChunkKey = {centerChunkKey.X + dx, centerChunkKey.Z + dz};
-                        auto& currentChunk = GWorld.GetChunk(currentChunkKey);
-
-                        // todo: ideally should add chunks to a rebuild queue and update a few per frame.
-                        ChunkMeshManager::GetInstance().RebuildChunkMesh(
-                            currentChunkKey, currentChunk, GGraphicsDevice->GetDevice());
-                    }
-                }
+                // for (int dx = -1; dx <= 1; dx++)
+                // {
+                //     for (int dz = -1; dz <= 1; dz++)
+                //     {
+                //         ChunkKey currentChunkKey = {centerChunkKey.X + dx, centerChunkKey.Z + dz};
+                //         auto& currentChunk = GWorld.GetChunk(currentChunkKey);
+                //
+                //         // todo: ideally should add chunks to a rebuild queue and update a few per frame.
+                //         ChunkMeshManager::GetInstance().RebuildChunkMesh(
+                //             currentChunkKey, currentChunk, GGraphicsDevice->GetDevice());
+                //     }
+                // }
             }
         }
     }
 
-    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, false);
-    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, true);
+
+    // hotkey for clearing the world
+    if (InputManager::Get().IsKeyPressed('C'))
+    {
+        VG_LOG(LogCategoryGeneral, LOG_INFO, "Clearing world");
+        GWorld.Clear(); // todo: have to clear meshes too.
+        ChunkLoadQueue.clear();
+        //GeneratePerlinTerrain(ChunkGenerationRadius);
+        //RebuildChunkMeshes();
+    }
+    
+    
+    // draw chunks: solid blocks first, then water blocks.    
+    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, false /* solid */);
+    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, true /* water */);
 
     // device present
     GGraphicsDevice->Present(vsync);
@@ -744,12 +892,35 @@ void FEngineLoop::Tick()
 
 void FEngineLoop::Exit()
 {
-    VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "FEngineLoop::Exit()");
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "FEngineLoop::Exit()");
+}
+
+void FEngineLoop::GenerateChunk(const Chunk& chunk, ChunkKey key)
+{
+    auto chunkData = chunk.GetBlockData()->blockStates;
+    ChunkUtils::TFillChunkSubvolume(chunkData,
+                                    0,
+                                    CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z,
+                                    key.X * CHUNK_SIZE_X, 0, key.Z * CHUNK_SIZE_Z,
+                                    [&](auto* block_states, int index, int world_x, int world_y,
+                                        int world_z)
+                                    {
+                                        BlockType block_type1 = biome.GetBlock(
+                                            world_x, world_y, world_z);
+
+                                        if (block_type1 != AIR)
+                                        {
+                                            block_states[index] = block_type1;
+                                        }
+                                        return;
+                                    });
+    
 }
 
 
 void FEngineLoop::TestBigSphere(WorldBlockCoord Center, int Radius, BlockType BlockType)
 {
+    return;
     // Define the world region to map
     WorldRegion sphereWorldRegion = {
         {Center.X - Radius, Center.Y - Radius, Center.Z - Radius}, // Min coordinates
@@ -808,3 +979,64 @@ void FEngineLoop::TestBigSphere(WorldBlockCoord Center, int Radius, BlockType Bl
                                         });
     }
 }
+
+// old codde
+//
+// // as we get farther from world origin, increase amplitude
+//      float distance = (float)sqrt(world_x * world_x + world_z * world_z);
+//      float distanceFactor = distance / 100.0f;
+//      float newAmplitude = amplitude + amplitude * distanceFactor;
+//
+//      // compute noise value
+//      double noiseValue = perlinNoise.
+//          sample3D(world_x * scale, 0.0, world_z * scale);
+//
+//      // compute ground level
+//      const int ground_level = static_cast<int>(noiseValue * newAmplitude +
+//          amplitude
+//          / 2);
+//
+//      int block_type = 0; // air default
+//      if (world_y == ground_level)
+//      {
+//          block_type = 3;
+//      }
+//      if (world_y < ground_level)
+//      {
+//          block_type = 2;
+//      }
+//      if (world_y < ground_level - 3)
+//      {
+//          // 1% chance of bedrock vs stone
+//          block_type = rand() % 100 == 0 ? 5 : 1;
+//      }
+//
+//      if (world_y < 4)
+//      {
+//          block_type = 4; // water
+//      }
+//
+//      if (world_y == 0)
+//      {
+//          block_type = 5; // bedrock
+//      }
+//
+//      if (world_y <= ground_level)
+//      {
+//          if (world_y > 40)
+//          {
+//              // random chance of stone the higher we go
+//              block_type = rand() % 100 < 80 ? 1 : block_type;
+//          }
+//
+//          if (world_y > 50)
+//          {
+//              // random chance of snow the higher we go
+//              block_type = rand() % 100 < 80 ? 7 : block_type;
+//          }
+//      }
+//
+//      if (block_type) // don't set air blocks
+//      {
+//          block_states[index] = block_type;
+//      }

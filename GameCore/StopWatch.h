@@ -9,7 +9,7 @@ public:
     void Stop();
     void Reset();
 
-    double ElapsedTime() const;
+    double GetElapsedSeconds() const;
     bool IsRunning() const;
 
 private:

@@ -30,7 +30,7 @@ void StopWatch::Reset()
     running = false;
 }
 
-double StopWatch::ElapsedTime() const
+double StopWatch::GetElapsedSeconds() const
 {
     if (running) {
         return elapsedTime + (PlatformTime::GetTimeInSeconds() - startTime);

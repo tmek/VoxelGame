@@ -11,8 +11,8 @@ struct ForestBeachBiomeGenerator : public TerrainGeneratorBase
         if (y == 2) return rand() % 2 ? BEDROCK : LAVA;
 
         // surface samples
-        int surf1 = sea_level + Sample2D(x, z, 0.01f) * 60;
-        int surf2 = sea_level + Sample2D(x, z, 0.04f) * 40;
+        int surf1 = sea_level + (int)(Sample2D(x, z, 0.01f) * 60);
+        int surf2 = sea_level + (int)(Sample2D(x, z, 0.04f) * 40);
         surface_height = (surf1 + surf2) / 2;
 
         // above surface (water or air)
@@ -52,12 +52,12 @@ struct ForestBeachBiomeGenerator : public TerrainGeneratorBase
 
         // caves
         constexpr int cave_ground_depth = 12;
-        constexpr float caveSquash = 1;
+        constexpr int caveSquash = 1;
         constexpr float caveFrequency = 0.05f; // 0.05f
         constexpr float caveAmplitude = 50; // 50
         constexpr int cave_radius = 8; // 8
         
-        int density = Sample3D(x, y * caveSquash, z, caveFrequency) * caveAmplitude;
+        int density = static_cast<int>(Sample3D(x, y * caveSquash, z, caveFrequency) * caveAmplitude);
         bool is_cave = abs(density) < cave_radius;
 
         if (is_cave && y < surface_height - cave_ground_depth)

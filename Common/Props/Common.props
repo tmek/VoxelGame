@@ -1,0 +1,14 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="CommonPropsMessage" BeforeTargets="Build">
+        <Message Text="--- Building $(MSBuildProjectName) with Common.props included! ---" Importance="high" />
+    </Target>
+
+    <!-- Common compiler settings for all projects -->
+    <ItemDefinitionGroup>
+        <ClCompile>
+<!--            <WarningLevel>Level4</WarningLevel>-->
+<!--            <TreatWarningAsError>true</TreatWarningAsError>-->
+            <LanguageStandard>stdcpp20</LanguageStandard>
+        </ClCompile>
+    </ItemDefinitionGroup>    
+</Project>

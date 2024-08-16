@@ -2,7 +2,7 @@
 #include <cstdarg>
 #include "Logging.h"
 
-void VGLog(const char* category, LogLevel level, const char* format, ...)
+void VGLog(const char* category, LogVerbosity level, const char* format, ...)
 {
     char lineBuffer[1024];
 

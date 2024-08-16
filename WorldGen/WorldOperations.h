@@ -1,5 +1,10 @@
 ﻿#pragma once
+#include "ThreadPool.h"
+
 #include "GameCore/Macros.h"
+
+#include "RHI/Mesh.h"
+
 #include "VoxelCore/ChunkKey.h"
 #include "VoxelCore/Conversions.h"
 #include "VoxelCore/VoxelWorld.h"
@@ -20,11 +25,11 @@ public:
     // Performance implications are minimal due to inlining of the blockOperation.
     // todo: it would be amazing if we could do range-based for loops with this
     template <typename Func>
-    void IterateBlocks(WorldRegion& region, Func blockOperation);
+    void IterateBlocks_deprecated(WorldRegion& region, Func blockOperation);
     // todo: move to it's own file and keep the editing functions here
 
     // Function to draw a sphere in the world using a specific operation
-    void DrawSphere(int centerX, int centerY, int centerZ, int radius, BlockType blockType);
+    void DrawSphere_deprecated(int centerX, int centerY, int centerZ, int radius, BlockType blockType);
 
     // Method to generate terrain with Perlin noise
     void GeneratePerlinNoiseTerrain(int startX, int startZ, int width, int depth, float scale, float amplitude,
@@ -44,7 +49,7 @@ private:
 
 
 template <typename Func>
-void WorldOperations::IterateBlocks(WorldRegion& region, Func blockOperation)
+void WorldOperations::IterateBlocks_deprecated(WorldRegion& region, Func blockOperation)
 {
     Chunk* activeChunk = nullptr;
     ChunkKey activeChunkKey;

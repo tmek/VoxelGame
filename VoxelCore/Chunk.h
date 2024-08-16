@@ -7,17 +7,8 @@
 
 #include "HAL/Platform.h"
 
-struct VOXELCORE_API Chunk
+struct Chunk
 {
-private:
-#pragma warning(push)
-#pragma warning(disable: 4251) // 'Chunk::blockData': 'std::unique_ptr<BlockData,std::default_delete<BlockData>>' needs to have dll-interface to be used by clients of 'Chunk' 
-    std::unique_ptr<BlockData> blockData;     
-#pragma warning(pop)
-    ChunkKey key;
-    // --- end data ---
-public:
-    
     // Constructor
     Chunk(ChunkKey key)
         : blockData(std::make_unique<BlockData>()), key(key)
@@ -48,7 +39,7 @@ public:
     
     // --- chunk ops ---
     inline BlockState GetBlockState(BlockIndex index) const;
-    inline BlockType GetBlockType(BlockIndex index) const;
+    VOXELCORE_API inline BlockType GetBlockType(BlockIndex index) const;
     inline BlockMetadata GetBlockMetadata(BlockIndex index) const;
     inline BlockLightLevel GetBlockLightLevel(BlockIndex index) const;
     inline BlockLightLevel GetBlockSkyLight(BlockIndex index) const;
@@ -59,10 +50,14 @@ public:
     inline void SetBlockLightLevel(BlockIndex index, BlockLightLevel lightLevel);
     inline void SetBlockSkyLight(BlockIndex index, BlockLightLevel lightLevel);
 
-    inline bool IsAirBlock(BlockIndex index) const;
-    inline bool IsWaterBlock(BlockIndex index) const;
+    VOXELCORE_API inline bool IsAirBlock(BlockIndex index) const;
+    VOXELCORE_API inline bool IsWaterBlock(BlockIndex index) const;
 
-    int GetHighestBlockHeightAt(BlockIndex index) const;
+    VOXELCORE_API int GetHighestBlockHeightAt(BlockIndex index) const;
+
+private:
+    std::unique_ptr<BlockData> blockData;     
+    ChunkKey key;
 };
 
 inline void Chunk::SetBlockType(BlockIndex index, BlockType blockType)

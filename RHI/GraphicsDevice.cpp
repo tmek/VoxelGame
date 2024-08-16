@@ -158,7 +158,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     // at this point we have: a device, context and swap chain
 
     if (FAILED(hr)) {
-        VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_ERROR, "Failed to create device and swap chain: %x", hr);
+        VG_LOG(LogCategoryGraphics, LOG_ERROR, "Failed to create device and swap chain: %x", hr);
         return;
     }
 
@@ -166,14 +166,14 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     ComPtr<ID3D11Texture2D> backBuffer;
     hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
     if (FAILED(hr)) {
-        VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_ERROR, "Failed to get back buffer: %x", hr);
+        VG_LOG(LogCategoryGraphics, LOG_ERROR, "Failed to get back buffer: %x", hr);
         return;
     }
 
     // create render target view of back buffer
     hr = device->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView.GetAddressOf());
     if (FAILED(hr)) {
-        VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_ERROR, "Failed to create render target view: %x", hr);
+        VG_LOG(LogCategoryGraphics, LOG_ERROR, "Failed to create render target view: %x", hr);
         return;
     }
 
@@ -205,7 +205,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     ID3D11Texture2D* depthStencilBuffer;
     hr = device->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencilBuffer);
     if (FAILED(hr)) {
-        VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_ERROR, "Failed to create depth stencil texture: %x", hr);
+        VG_LOG(LogCategoryGraphics, LOG_ERROR, "Failed to create depth stencil texture: %x", hr);
         return;
     }
 
@@ -227,7 +227,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     // Create the depth stencil view
     hr = device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
     if (FAILED(hr)) {
-        VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_ERROR, "Failed to create depth stencil view: %x", hr);
+        VG_LOG(LogCategoryGraphics, LOG_ERROR, "Failed to create depth stencil view: %x", hr);
         return;
     }
 
@@ -245,7 +245,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     ID3D11DepthStencilState* depthStencilState;
     hr = device->CreateDepthStencilState(&depthStencilStateDesc, &depthStencilState);
     if (FAILED(hr)) {
-        VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_ERROR, "Failed to create depth stencil view: %x", hr);
+        VG_LOG(LogCategoryGraphics, LOG_ERROR, "Failed to create depth stencil view: %x", hr);
         return;
     }
 
@@ -294,7 +294,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     deviceContext->OMSetBlendState(pBlendState, blendFactor, 0xffffffff);    
     
     // Success
-    VG_LOG(LOG_CATEGORY_GRAPHICS, LOG_INFO, "Graphics device created");
+    VG_LOG(LogCategoryGraphics, LOG_INFO, "Graphics device created");
     isValid = true;
 }
 

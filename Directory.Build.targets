@@ -1,0 +1,12 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="PrintMessageDirectoryBuildTargets" BeforeTargets="Build">
+        <Message Text="Building project: $(MSBuildProjectName) from Directory.Build.targets" Importance="high"/>
+    </Target>
+
+    <!-- Common settings for all projects -->
+    <Import Project="Common\Props\Common.props"/>
+
+    <!-- Conditionally include LibraryBuild.props for DLL projects -->
+    <Import Project="Common\Props\Library.props" Condition="'$(OutputType)' == 'Library'"/>
+
+</Project>

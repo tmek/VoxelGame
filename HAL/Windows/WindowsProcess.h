@@ -2,7 +2,7 @@
 
 #include "GameCore/Core.h"
 
-struct WindowsProcess
+struct WindowsPlatformProcess
 {
     static void Sleep(int32 Milliseconds);
     static void ShowConsole();
@@ -11,4 +11,4 @@ struct WindowsProcess
     static const char* GetPlatformName();
 };
 
-typedef WindowsProcess PlatformProcess;
+typedef WindowsPlatformProcess PlatformProcess;

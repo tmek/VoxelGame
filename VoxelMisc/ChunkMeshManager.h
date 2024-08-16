@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <mutex>
 #include <unordered_map>
 #include "RHI/Mesh.h"
 #include "VoxelCore/Chunk.h"
@@ -18,4 +19,5 @@ public:
 private:
     // todo: need memory management to delete meshes that are no longer needed
     std::unordered_map<ChunkKey, Mesh, ChunkKeyHash> ChunkMeshes;
+    mutable std::mutex chunkMeshesMutex; // protect access to ChunkMeshes
 };

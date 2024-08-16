@@ -47,7 +47,7 @@ PS_INPUT main(VS_INPUT input)
     float3 L = normalize(float3(0.25f, 1.0f, -.5f));
     
     // Compute the diffuse lighting based on the Lambertian reflection model
-    float Ambient = 1.5f;
+    float Ambient = 1.25f;
     float Directional =  max(dot(L, N), 0.0f); 
     float diffuse = 0.0f + Ambient;
 

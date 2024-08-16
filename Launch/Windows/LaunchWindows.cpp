@@ -17,13 +17,9 @@ int WINAPI WinMain(HINSTANCE hInstance,
     LPSTR lpCmdLine,
     int nShowCmd)
 {
-    WindowsProcess::ShowConsole();
+    WindowsPlatformProcess::ShowConsole();
 
-    // hide mouse cursor
-    ShowCursor(false);
-    
-    
-    VG_LOG(LOG_CATEGORY_GENERAL, LOG_INFO, "Application Entry Point");
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "Application Entry Point");
     
     ::G_hInstance = hInstance;
     GCmdLine = ::GetCommandLineW();

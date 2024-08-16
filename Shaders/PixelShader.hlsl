@@ -12,13 +12,13 @@ struct PS_INPUT
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
-#define DEBUG_UV 1
+#define DEBUG_UV 0
 #if DEBUG_UV
     // render the UVs for debugging
     return float4(input.TexCoord, 0.0f, input.Color.a);
 #else
     
-    float4 TexelColor = txDiffuse.Sample(samLinear, input.TexCoord) / 2.0f + 0.5f;
+    float4 TexelColor = txDiffuse.Sample(samLinear, input.TexCoord) / 2 + 0.5f;
     float4 TintedColor = input.Color * TexelColor;
     
     // calculate fog based on distance, 1 unit = 1 meter
@@ -33,6 +33,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     float FogFactor = 1.0f - saturate((FogEnd - FogDistance) / (FogEnd - FogStart));
 
     // Interpolate between the vertex color and the fog color
+    FogFactor = 0.0f;
     float4 finalColor = lerp(TintedColor, FogColor, FogFactor);
     
     return finalColor;

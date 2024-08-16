@@ -17,10 +17,12 @@ public:
                     DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix, bool bDrawWater);
     void Tick();
     void Exit();
+    void GenerateChunk(const Chunk& chunk, ChunkKey key);
 
     static void TestBigSphere(WorldBlockCoord Center, int Radius, BlockType BlockType);
 
-    void GeneratePerlinTerrain(int ChunksWide);
+    void GenerateChunksInBackground(const std::vector<ChunkKey>& chunkKeys);
+    void GenerateChunksAroundCamera(int RadiusInChunks);
     void AddTrees(WorldOperations world, int size);
     // todo: move this to a world gen class
     void GenerateWorld();

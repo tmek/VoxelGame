@@ -18,6 +18,9 @@ public:
     void GetMousePosition(int& x, int& y) const;
     void ClearKeyPressed(int KeyCode);
 
+    void ShowCursor(bool show);
+    void CenterMouse(HWND hWnd);
+
     // return singleton reference
     static InputManager& Get();
 
@@ -35,6 +38,8 @@ private:
 
     int m_mouseX;
     int m_mouseY;
+    LONG m_windowCenterX;
+    LONG m_windowCenterY;
 
     // singleton
     InputManager();

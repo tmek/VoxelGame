@@ -5,6 +5,7 @@
 Mesh* ChunkMeshManager::GetChunkMesh(const ChunkKey& key)
 {
     // get mesh from unordered_map
+    std::lock_guard<std::mutex> lock(chunkMeshesMutex); // Lock the mutex
     auto it = ChunkMeshes.find(key);
     if (it != ChunkMeshes.end())
     {
@@ -19,8 +20,11 @@ Mesh* ChunkMeshManager::GetChunkMesh(const ChunkKey& key)
 
 void ChunkMeshManager::RebuildChunkMesh(const ChunkKey& key, const Chunk& chunk, ID3D11Device* device)
 {
+    Mesh newMesh = ChunkMeshBuilder::Build(key, chunk, device);
+    
     // store the mesh in the unordered_map
-    ChunkMeshes[key] = ChunkMeshBuilder::Build(key, chunk, device);
+    std::lock_guard<std::mutex> lock(chunkMeshesMutex); // Lock the mutex
+    ChunkMeshes[key] = std::move(newMesh);
 }
 
 ChunkMeshManager& ChunkMeshManager::GetInstance()

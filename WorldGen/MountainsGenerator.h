@@ -7,9 +7,9 @@ struct MountainsGenerator : TerrainGeneratorBase
     {
         // surface samples
         // implement multiple octaves of perlin noise
-        int octave1 = Sample2D(x, z, 0.02f) * 40;
-        int octave2 = Sample2D(x, z, 0.04f) * 20;
-        int octave3 = Sample2D(x, z, 0.08f) * 10;
+        int octave1 = (int)Sample2D(x, z, 0.02f) * 40;
+        int octave2 = (int)Sample2D(x, z, 0.04f) * 20;
+        int octave3 = (int)Sample2D(x, z, 0.08f) * 10;
         int additional_offset = 8;
         surface_height = octave1 + octave2 + octave3;
         surface_height += sea_level + additional_offset;
@@ -69,10 +69,10 @@ struct MountainsGenerator : TerrainGeneratorBase
         constexpr int cave_ground_depth = 6;
         constexpr float caveFrequency = 0.1f;
         constexpr float caveAmplitude = 10;
-        constexpr float caveSquash = 1;
+        constexpr int caveSquash = 1;
 
         constexpr int cave_radius = 2;
-        int density = Sample3D(x, y * caveSquash, z, caveFrequency) * caveAmplitude;
+        int density = static_cast<int>(Sample3D(x, y * caveSquash, z, caveFrequency) * caveAmplitude);
         bool is_cave = abs(density) < cave_radius;
 
         if (is_cave && y < surface_height - cave_ground_depth)

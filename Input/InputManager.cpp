@@ -3,7 +3,7 @@
 
 InputManager::InputManager()
 {
-    VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "InputManager instance created.");
+    VG_LOG(LogCategoryInput, LOG_INFO, "InputManager instance created.");
 
     // Initialize mouse position
     m_mouseX = 0;
@@ -12,7 +12,7 @@ InputManager::InputManager()
 
 InputManager::~InputManager()
 {
-    VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "InputManager instance destroyed.");
+    VG_LOG(LogCategoryInput, LOG_INFO, "InputManager instance destroyed.");
 }
 
 void InputManager::Update( UINT uMsg, WPARAM wParam, LPARAM lParam ) {
@@ -86,13 +86,37 @@ bool InputManager::IsMouseButtonHeld(int button) {
 
 void InputManager::GetMousePosition(int& x, int& y) const
 {
-    x = m_mouseX;
-    y = m_mouseY;
+    // x = m_mouseX;
+    // y = m_mouseY;
+    // get mouse position relative to window center
+    x = m_mouseX - m_windowCenterX;
+    y = m_mouseY - m_windowCenterY;
 }
+
 
 void InputManager::ClearKeyPressed(int KeyCode)
 {
     m_keyPressed[KeyCode] = false;
+}
+
+void InputManager::ShowCursor(bool show)
+{
+    ::ShowCursor(show);
+}
+
+void InputManager::CenterMouse(HWND hWnd)
+{
+    // get full size of  window (including title bar etc.)
+    RECT rect;
+    GetWindowRect(hWnd, &rect);
+    // calculate client area
+    GetClientRect(hWnd, &rect);    
+    
+    
+    m_windowCenterX = (rect.left + rect.right) / 2;
+    m_windowCenterY = (rect.top + rect.bottom) / 2;
+    
+    SetCursorPos(m_windowCenterX, m_windowCenterY);
 }
 
 InputManager& InputManager::Get()

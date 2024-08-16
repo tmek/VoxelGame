@@ -1,0 +1,269 @@
+Folder PATH listing for volume Data
+Volume serial number is 98FF-28D7
+D:.
+³   Directory.Build.props
+³   Directory.Build.targets
+³   listing.txt
+³   RiderSolution01.sln
+³   
+ÃÄÄÄ.idea
+³   ÀÄÄÄ.idea.RiderSolution01
+³       ÀÄÄÄ.idea
+³               .gitignore
+³               encodings.xml
+³               indexLayout.xml
+³               projectSettingsUpdater.xml
+³               workspace.xml
+³               
+ÃÄÄÄCommon
+³   ÀÄÄÄProps
+³           Common.props
+³           Library.props
+³           
+ÃÄÄÄConsoleApplication1
+³   ³   ConsoleApplication1.cpp
+³   ³   ConsoleApplication1.vcxproj
+³   ³   ConsoleApplication1.vcxproj.filters
+³   ³   ConsoleApplication1.vcxproj.user
+³   ³   
+³   ÃÄÄÄDebug
+³   ³   ³   ConsoleApplication1.exe.recipe
+³   ³   ³   ConsoleApplication1.log
+³   ³   ³   vc143.idb
+³   ³   ³   vc143.pdb
+³   ³   ³   
+³   ³   ÀÄÄÄConsoleA.1053B6FD.tlog
+³   ³           CL.command.1.tlog
+³   ³           Cl.items.tlog
+³   ³           ConsoleApplication1.lastbuildstate
+³   ³           link.command.1.tlog
+³   ³           link.read.1.tlog
+³   ³           link.secondary.1.tlog
+³   ³           link.write.1.tlog
+³   ³           unsuccessfulbuild
+³   ³           
+³   ÃÄÄÄRelease
+³   ³   ³   ConsoleApplication1.Build.CppClean.log
+³   ³   ³   ConsoleApplication1.exe.recipe
+³   ³   ³   ConsoleApplication1.iobj
+³   ³   ³   ConsoleApplication1.ipdb
+³   ³   ³   ConsoleApplication1.obj
+³   ³   ³   ConsoleApplication1.vcxproj.FileListAbsolute.txt
+³   ³   ³   vc143.pdb
+³   ³   ³   
+³   ³   ÀÄÄÄConsoleA.1053B6FD.tlog
+³   ³           CL.command.1.tlog
+³   ³           Cl.items.tlog
+³   ³           CL.read.1.tlog
+³   ³           CL.write.1.tlog
+³   ³           ConsoleApplication1.lastbuildstate
+³   ³           link.command.1.tlog
+³   ³           link.read.1.tlog
+³   ³           link.secondary.1.tlog
+³   ³           link.write.1.tlog
+³   ³           
+³   ÀÄÄÄx64
+³       ÃÄÄÄDebug
+³       ³   ³   ConsoleApplication1.Build.CppClean.log
+³       ³   ³   ConsoleApplication1.exe.recipe
+³       ³   ³   ConsoleApplication1.ilk
+³       ³   ³   ConsoleApplication1.obj
+³       ³   ³   ConsoleApplication1.vcxproj.FileListAbsolute.txt
+³       ³   ³   vc143.idb
+³       ³   ³   vc143.pdb
+³       ³   ³   
+³       ³   ÀÄÄÄConsoleA.1053B6FD.tlog
+³       ³           CL.command.1.tlog
+³       ³           Cl.items.tlog
+³       ³           CL.read.1.tlog
+³       ³           CL.write.1.tlog
+³       ³           ConsoleApplication1.lastbuildstate
+³       ³           link.command.1.tlog
+³       ³           link.read.1.tlog
+³       ³           link.secondary.1.tlog
+³       ³           link.write.1.tlog
+³       ³           
+³       ÀÄÄÄRelease
+³           ³   ConsoleApplication1.exe.recipe
+³           ³   ConsoleApplication1.iobj
+³           ³   ConsoleApplication1.ipdb
+³           ³   ConsoleApplication1.obj
+³           ³   vc143.pdb
+³           ³   
+³           ÀÄÄÄConsoleA.1053B6FD.tlog
+³                   CL.command.1.tlog
+³                   Cl.items.tlog
+³                   CL.read.1.tlog
+³                   CL.write.1.tlog
+³                   ConsoleApplication1.lastbuildstate
+³                   link.command.1.tlog
+³                   link.read.1.tlog
+³                   link.secondary.1.tlog
+³                   link.write.1.tlog
+³                   
+ÃÄÄÄDebug
+³       ConsoleApplication1.pdb
+³       VoxelRendering.dll
+³       VoxelRendering.exp
+³       VoxelRendering.lib
+³       VoxelRendering.pdb
+³       
+ÃÄÄÄRelease
+³       ConsoleApplication1.exe
+³       ConsoleApplication1.pdb
+³       VoxelManagement.exp
+³       VoxelManagement.lib
+³       VoxelManagementRenamed.dll
+³       VoxelManagementRenamed.exp
+³       VoxelManagementRenamed.lib
+³       VoxelManagementRenamed.pdb
+³       VoxelRendering.dll
+³       VoxelRendering.exp
+³       VoxelRendering.lib
+³       VoxelRendering.pdb
+³       
+ÃÄÄÄVoxelManagementRenamed
+³   ³   dllmain.cpp
+³   ³   VoxelManagement.vcxproj.filters
+³   ³   VoxelManagementRenamed.vcxproj
+³   ³   
+³   ÃÄÄÄPrivate
+³   ³       MyClass.cpp
+³   ³       
+³   ÃÄÄÄPublic
+³   ³       Exports.h
+³   ³       MyClass.h
+³   ³       
+³   ÀÄÄÄRelease
+³       ³   dllmain.obj
+³       ³   MyClass.obj
+³       ³   vc143.pdb
+³       ³   VoxelManagementRenamed.Build.CppClean.log
+³       ³   VoxelManagementRenamed.dll.recipe
+³       ³   VoxelManagementRenamed.iobj
+³       ³   VoxelManagementRenamed.ipdb
+³       ³   VoxelManagementRenamed.vcxproj.FileListAbsolute.txt
+³       ³   
+³       ÀÄÄÄVoxelMan.017EB5A8.tlog
+³               CL.command.1.tlog
+³               Cl.items.tlog
+³               CL.read.1.tlog
+³               CL.write.1.tlog
+³               link.command.1.tlog
+³               link.read.1.tlog
+³               link.secondary.1.tlog
+³               link.write.1.tlog
+³               VoxelManagementRenamed.lastbuildstate
+³               
+ÃÄÄÄVoxelRendering
+³   ³   VoxelRendering.vcxproj
+³   ³   VoxelRendering.vcxproj.filters
+³   ³   VoxelRendering.vcxproj.user
+³   ³   
+³   ÃÄÄÄDebug
+³   ³   ³   dllmain.obj
+³   ³   ³   MyType.obj
+³   ³   ³   vc143.idb
+³   ³   ³   vc143.pdb
+³   ³   ³   VoxelRendering.dll.recipe
+³   ³   ³   VoxelRendering.ilk
+³   ³   ³   VoxelRendering.log
+³   ³   ³   
+³   ³   ÀÄÄÄVoxelRendering.tlog
+³   ³           CL.command.1.tlog
+³   ³           Cl.items.tlog
+³   ³           CL.read.1.tlog
+³   ³           CL.write.1.tlog
+³   ³           link.command.1.tlog
+³   ³           link.read.1.tlog
+³   ³           link.secondary.1.tlog
+³   ³           link.write.1.tlog
+³   ³           VoxelRendering.lastbuildstate
+³   ³           
+³   ÃÄÄÄPrivate
+³   ³       dllmain.cpp
+³   ³       MyType.cpp
+³   ³       
+³   ÃÄÄÄPublic
+³   ³       Exports.h
+³   ³       MyType.h
+³   ³       
+³   ÃÄÄÄRelease
+³   ³   ³   dllmain.obj
+³   ³   ³   MyType.obj
+³   ³   ³   vc143.pdb
+³   ³   ³   VoxelRendering.Build.CppClean.log
+³   ³   ³   VoxelRendering.dll.recipe
+³   ³   ³   VoxelRendering.iobj
+³   ³   ³   VoxelRendering.ipdb
+³   ³   ³   VoxelRendering.vcxproj.FileListAbsolute.txt
+³   ³   ³   
+³   ³   ÀÄÄÄVoxelRendering.tlog
+³   ³           CL.command.1.tlog
+³   ³           Cl.items.tlog
+³   ³           CL.read.1.tlog
+³   ³           CL.write.1.tlog
+³   ³           link.command.1.tlog
+³   ³           link.read.1.tlog
+³   ³           link.secondary.1.tlog
+³   ³           link.write.1.tlog
+³   ³           VoxelRendering.lastbuildstate
+³   ³           
+³   ÀÄÄÄx64
+³       ÃÄÄÄDebug
+³       ³   ³   dllmain.obj
+³       ³   ³   MyType.obj
+³       ³   ³   vc143.idb
+³       ³   ³   vc143.pdb
+³       ³   ³   VoxelRendering.Build.CppClean.log
+³       ³   ³   VoxelRendering.dll.recipe
+³       ³   ³   VoxelRendering.ilk
+³       ³   ³   VoxelRendering.vcxproj.FileListAbsolute.txt
+³       ³   ³   
+³       ³   ÀÄÄÄVoxelRendering.tlog
+³       ³           CL.command.1.tlog
+³       ³           Cl.items.tlog
+³       ³           CL.read.1.tlog
+³       ³           CL.write.1.tlog
+³       ³           link.command.1.tlog
+³       ³           link.read.1.tlog
+³       ³           link.secondary.1.tlog
+³       ³           link.write.1.tlog
+³       ³           VoxelRendering.lastbuildstate
+³       ³           
+³       ÀÄÄÄRelease
+³           ³   dllmain.obj
+³           ³   MyType.obj
+³           ³   vc143.pdb
+³           ³   VoxelRendering.dll.recipe
+³           ³   VoxelRendering.iobj
+³           ³   VoxelRendering.ipdb
+³           ³   
+³           ÀÄÄÄVoxelRendering.tlog
+³                   CL.command.1.tlog
+³                   Cl.items.tlog
+³                   CL.read.1.tlog
+³                   CL.write.1.tlog
+³                   link.command.1.tlog
+³                   link.read.1.tlog
+³                   link.secondary.1.tlog
+³                   link.write.1.tlog
+³                   VoxelRendering.lastbuildstate
+³                   
+ÀÄÄÄx64
+    ÃÄÄÄDebug
+    ³       ConsoleApplication1.exe
+    ³       ConsoleApplication1.pdb
+    ³       VoxelRendering.dll
+    ³       VoxelRendering.exp
+    ³       VoxelRendering.lib
+    ³       VoxelRendering.pdb
+    ³       
+    ÀÄÄÄRelease
+            ConsoleApplication1.exe
+            ConsoleApplication1.pdb
+            VoxelRendering.dll
+            VoxelRendering.exp
+            VoxelRendering.lib
+            VoxelRendering.pdb
+            

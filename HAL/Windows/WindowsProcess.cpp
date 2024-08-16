@@ -3,12 +3,12 @@
 #include <stdio.h>
 #include "HAL/Windows/PlatformWindows.h"
 
-void WindowsProcess::Sleep(int32 Milliseconds)
+void WindowsPlatformProcess::Sleep(int32 Milliseconds)
 {
     ::Sleep(Milliseconds);
 }
 
-void WindowsProcess::ShowConsole()
+void WindowsPlatformProcess::ShowConsole()
 {
     if (!AllocConsole())
     {
@@ -52,7 +52,10 @@ void WindowsProcess::ShowConsole()
         int posY = monitorInfo.rcMonitor.top;
 
         // Move the console window to the desired position
-        SetWindowPos(consoleWindow, NULL, posX, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        //SetWindowPos(consoleWindow, NULL, posX-1024, posY+100, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        int offsetX = -1024;
+        int offsetY = 100;
+        SetWindowPos(consoleWindow, NULL, posX+offsetX, posY+offsetY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     }
     else
     {
@@ -64,7 +67,7 @@ void WindowsProcess::ShowConsole()
     fflush(stdout);
 }
 
-const char* WindowsProcess::GetPlatformName()
+const char* WindowsPlatformProcess::GetPlatformName()
 {
     // want to know if we are running on 32 or 64 bit and if release or debug
 #if defined(_WIN64)
