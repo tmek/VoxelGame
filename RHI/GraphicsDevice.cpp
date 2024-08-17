@@ -209,6 +209,25 @@ void GraphicsDevice::InitD3D(HWND hWnd)
         return;
     }
 
+    // std::atomic<bool> atomic_bool;
+    // std::atomic<float> atomic_float;
+    // std::atomic<int> atomic_int;
+    // std::atomic<int*> atomic_int_ptr;
+    //
+    // atomic_int.fetch_add(5, std::memory_order_relaxed);
+    // atomic_int_ptr.fetch_add(5, std::memory_order_relaxed);
+    // atomic_bool.store(true, std::memory_order_relaxed);
+    // // atomic_bool.fetch_add( won't compile
+    // atomic_float.store(3.14f, std::memory_order_relaxed);
+    // atomic_float.fetch_add(3.14f, std::memory_order_relaxed);
+    //     
+    
+
+    // // find ref count?
+    // depthStencilBuffer->AddRef();
+    
+    
+
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc2 = {};
     depthStencilDesc2.DepthEnable = TRUE;
     depthStencilDesc2.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Disable depth writing

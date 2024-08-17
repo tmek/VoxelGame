@@ -17,7 +17,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
     LPSTR lpCmdLine,
     int nShowCmd)
 {
-    WindowsPlatformProcess::ShowConsole();
+    // name main thread
+    WindowsPlatformProcess::SetThreadName(L"MainThread");
+    
+    //WindowsPlatformProcess::ShowConsole();
 
     VG_LOG(LogCategoryGeneral, LOG_INFO, "Application Entry Point");
     

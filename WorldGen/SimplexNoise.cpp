@@ -1,11 +1,12 @@
 ﻿#include "SimplexNoise.h"
 
-// Gradient vectors
-const std::array<std::array<int, 3>, 12> SimplexNoise::grad3 = {{
-    {1,1,0}, {-1,1,0}, {1,-1,0}, {-1,-1,0},
-    {1,0,1}, {-1,0,1}, {1,0,-1}, {-1,0,-1},
-    {0,1,1}, {0,-1,1}, {0,1,-1}, {0,-1,-1}
-}};
+namespace {
+    const std::array<std::array<int, 3>, 12> grad3 = {{
+        {1,1,0}, {-1,1,0}, {1,-1,0}, {-1,-1,0},
+        {1,0,1}, {-1,0,1}, {1,0,-1}, {-1,0,-1},
+        {0,1,1}, {0,-1,1}, {0,1,-1}, {0,-1,-1}
+    }};
+}
 
 //
 // const std::array<std::array<int, 3>, 12> SimplexNoise::grad3 = {{

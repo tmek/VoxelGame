@@ -38,6 +38,12 @@
 #include "WorldGen/ForrestBeachGenerator.h"
 #include "WorldGen/MountainsGenerator.h"
 
+// use static initialization to show console early in app startup
+static bool ShowConsoleOnInit = []() {
+    WindowsPlatformProcess::ShowConsole();
+    return true;
+}();
+
 extern bool GIsRequestingExit;
 
 PlatformWindow* GWindow = nullptr;

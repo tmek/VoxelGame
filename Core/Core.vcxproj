@@ -164,6 +164,13 @@
     <ClCompile Include="Private\HAL\PlatformTime.cpp" />
     <ClCompile Include="Private\Logging\LogMacros.cpp" />
     <ClCompile Include="Private\Logging\LogVerbosity.cpp" />
+    <ClCompile Include="Private\Math\Noise\OptimizedPerlinNoise.cpp" />
+    <ClCompile Include="Private\Math\Noise\SimplexNoise.cpp" />
+    <ClCompile Include="Private\Tasks\Launch.cpp" />
+    <ClCompile Include="Private\Tasks\Pipe.cpp" />
+    <ClCompile Include="Private\Tasks\Prerequisites.cpp" />
+    <ClCompile Include="Private\Tasks\TaskEvent.cpp" />
+    <ClCompile Include="Private\Tasks\Task.cpp" />
     <ClCompile Include="Private\Windows\WindowsPlatformProcess.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -176,13 +183,18 @@
     <ClInclude Include="Public\HAL\PlatformTime.h" />
     <ClInclude Include="Public\Logging\LogMacros.h" />
     <ClInclude Include="Public\Logging\LogVerbosity.h" />
+    <ClInclude Include="Public\Math\Noise\OptimizedPerlinNoise.h" />
+    <ClInclude Include="Public\Math\Noise\PerlinNoise.h" />
+    <ClInclude Include="Public\Math\Noise\SimplexNoise.h" />
     <ClInclude Include="Public\Misc\CoreDefines.h" />
+    <ClInclude Include="Public\Tasks\Launch.h" />
+    <ClInclude Include="Public\Tasks\Pipe.h" />
+    <ClInclude Include="Public\Tasks\Prerequisites.h" />
+    <ClInclude Include="Public\Tasks\TaskEvent.h" />
+    <ClInclude Include="Public\Tasks\TaskPriority.h" />
+    <ClInclude Include="Public\Tasks\Task.h" />
     <ClInclude Include="Public\Windows\WindowsPlatformProcess.h" />
     <ClInclude Include="Public\Windows\WindowsPlatformTypes.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Private\Testing\" />
-    <Folder Include="Public\Testing\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

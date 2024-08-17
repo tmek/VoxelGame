@@ -3,6 +3,31 @@
 #include <stdio.h>
 #include "HAL/Windows/PlatformWindows.h"
 
+#include <windows.h>
+#include <processthreadsapi.h>
+#include <thread>
+#include <ittnotify.h>
+
+#include "Core/Public/Misc/CoreDefines.h"
+
+void WindowsPlatformProcess::SetThreadName(const wchar_t* name)
+{
+    // windows thread description  (for VS and Rider debugging)
+    std::thread::id this_id = std::this_thread::get_id();
+    HANDLE ThreadHandle = GetCurrentThread();
+    HRESULT hr = SetThreadDescription(ThreadHandle, name);
+    if (FAILED(hr))
+    {
+        check(false);
+    }
+
+    // VTune thread description
+    __itt_thread_set_name(name);
+
+        
+    
+}
+
 void WindowsPlatformProcess::SleepMS(int32 Milliseconds)
 {
     ::Sleep(Milliseconds);

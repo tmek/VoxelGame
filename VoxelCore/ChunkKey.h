@@ -10,14 +10,14 @@ struct VOXELCORE_API ChunkKey
     int32_t X;
     int32_t Z;
 
-    ChunkKey() : X(0), Z(0) {}
-    ChunkKey(int32_t x, int32_t z) : X(x), Z(z) {}
+    inline ChunkKey() : X(0), Z(0) {}
+    inline ChunkKey(int32_t x, int32_t z) : X(x), Z(z) {}
 
-    bool operator==(const ChunkKey& other) const
+    inline bool operator==(const ChunkKey& other) const
     {
         return X == other.X && Z == other.Z;
     }
-    bool operator!=(const ChunkKey& chunk_key) const
+    inline bool operator!=(const ChunkKey& chunk_key) const
     {
         return !(*this == chunk_key);
     }
@@ -28,7 +28,7 @@ struct VOXELCORE_API ChunkKey
 #if defined(_WIN64) // Hash for 64-bit systems (perfect hash)
 struct VOXELCORE_API ChunkKeyHash
 {
-    size_t operator()(const ChunkKey& key) const
+    inline size_t operator()(const ChunkKey& key) const
     {
         // Combine the two 32-bit integers into a single 64-bit integer.
         // Should be a perfect hash function for 64-bit systems.

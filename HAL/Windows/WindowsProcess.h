@@ -4,6 +4,7 @@
 
 struct WindowsPlatformProcess
 {
+    static void SetThreadName(const wchar_t* name);
     static void SleepMS(int32 Milliseconds);
     static void ShowConsole();
 
