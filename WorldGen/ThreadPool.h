@@ -21,7 +21,7 @@ public:
     auto Enqueue(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Args...>::type>;
 
 private:
-    std::vector<std::thread> workers;
+    std::vector<std::jthread> workers;
     std::queue<std::function<void()>> tasks;
     std::mutex queueMutex;
     std::condition_variable condition;
@@ -61,6 +61,7 @@ inline ThreadPool::ThreadPool(size_t numThreads)
     }
 
     // // queue a task on each worker thread to log the thread id
+    // todo: there's not a way yet to enqueue a task to run on a specific thread
     // for (size_t i = 0; i < numThreads; ++i)
     // {
     //     Enqueue([i]
@@ -69,12 +70,12 @@ inline ThreadPool::ThreadPool(size_t numThreads)
     //     });
     // }
     
-    // // Log the thread IDs after all threads are created and initialized.
-    // for (std::thread& worker : workers)
-    // {
-    //     // Each thread should be joinable immediately after being created and added to the `workers` vector
-    //     VG_LOG(LogCategoryGeneral, LOG_INFO, "Worker thread id: %d", worker.get_id());
-    // }    
+    // Log the thread IDs after all threads are created and initialized.
+    for (std::jthread& worker : workers)
+    {
+        // Each thread should be joinable immediately after being created and added to the `workers` vector
+        VG_LOG(LogCategoryGeneral, LOG_INFO, "Worker thread id: %d", worker.get_id());
+    }    
 }
 
 inline ThreadPool::~ThreadPool()
@@ -84,8 +85,11 @@ inline ThreadPool::~ThreadPool()
         stop = true;
     }
     condition.notify_all();
-    for (std::thread& worker : workers)
+    for (std::jthread& worker : workers)
+    {
+        VG_LOG(LogCategoryGeneral, LOG_INFO, "Joining worker thread id: %d", worker.get_id());        
         worker.join();
+    }
 }
 
 template <class F, class... Args>

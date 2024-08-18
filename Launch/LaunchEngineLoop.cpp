@@ -696,6 +696,8 @@ void FEngineLoop::Tick()
 
     if (InputManager::Get().IsKeyPressed(' '))
     {
+        InputManager::Get().ClearKeyPressed(' '); // todo: may need a better way to 'consume' input
+        
         GShouldRenderTintColor = !GShouldRenderTintColor;
     }
 
@@ -886,13 +888,12 @@ void FEngineLoop::Tick()
         InputManager::Get().GetMousePosition(MouseX, MouseY);
         bool MouseDown = InputManager::Get().IsMouseButtonHeld(VK_LBUTTON);
         constexpr int buffer_count = 256;
-        static char TempBuffer[buffer_count];
-        (void)sprintf_s(TempBuffer, buffer_count,
-                        "FPS: %f, MS: %f, MouseXY(%d, %d), MouseDown: %d, WorldChunks: %d, Platform: %s",
-                        FrameTiming::GetFPS(), FrameTiming::GetFrameTimeInMS(), MouseX, MouseY, MouseDown,
-                        ChunkCount, PlatformProcess::GetPlatformName()
-        );
-        GWindow->SetTitle(TempBuffer);
+        static WIDECHAR TempBuffer[buffer_count];
+
+        // printf to temp buffer
+        swprintf(TempBuffer, buffer_count, L"Voxel Game - %d Chunks - Mouse: %d, %d - MouseDown: %d", ChunkCount, MouseX, MouseY, MouseDown);
+        
+        GWindow->SetTitle(*TempBuffer);
     }
 }
 

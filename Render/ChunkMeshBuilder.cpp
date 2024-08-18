@@ -37,25 +37,27 @@ inline XMFLOAT4 GetBlockColor(int blockType)
     float g = (float)color.Green / 255.0f;
     float b = (float)color.Blue / 255.0f;
 
-        // desaturate color a bit
-        float desaturation = 0.3f;
-        float darkness = 0.7f;
-        //r = r + (1.0f - r) * desaturation * darkness;
-        //g = g + (1.0f - g) * desaturation * darkness;
-        //b = b + (1.0f - b) * desaturation * darkness;
+    // desaturate color a bit
+    float desaturation = 0.3f;
+    float darkness = 0.7f;
+    //r = r + (1.0f - r) * desaturation * darkness;
+    //g = g + (1.0f - g) * desaturation * darkness;
+    //b = b + (1.0f - b) * desaturation * darkness;
 
     // return result
     return XMFLOAT4(r, g, b, 1.0f);
 }
 
+extern bool GIsRequestingExit; // todo: should probably have a globals.h file
+
 Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D11Device* device)
 {
     // setup pointers to chunk and its neighbors
     LocalChunks localChunks(&chunk);
-    for(int i = -1; i <= 1; ++i)
-        for(int j = -1; j <= 1; ++j)
+    for (int i = -1; i <= 1; ++i)
+        for (int j = -1; j <= 1; ++j)
         {
-            if(i == 0 && j == 0) // we already have the center chunk
+            if (i == 0 && j == 0) // we already have the center chunk
                 continue;
 
             ChunkKey neighborKey = {chunkKey.X + i, chunkKey.Z + j};
@@ -100,15 +102,29 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
 #endif
 
     // loop through all blocks in the chunk in yzx order
+    BlockIndex blockIndex = 0;
     for (int localY = 0; localY < CHUNK_SIZE_Y; ++localY)
+    {
+        // check if we're exiting (once per y layer)
+        if (GIsRequestingExit)
+        {
+            return Mesh(); // empty mesh
+        }
         for (int localZ = 0; localZ < CHUNK_SIZE_Z; ++localZ)
-            for (int localX = 0; localX < CHUNK_SIZE_X; ++localX)
+        {
+            for (int localX = 0; localX < CHUNK_SIZE_X; ++localX, ++blockIndex)
             {
+                // todo: the chunk mesh builder is in need of a rewrite.
+                // - you need to know which faces are touching air and which are touching water to determine which faces to include
+                // - you need to know how many blocks are touching each face vertex (in front of face)
+                // this means you need to query all blocks in the chunk and all blocks touching the chunk
+
+
                 BlockType blockType = localChunks.GetBlock(localX, localY, localZ);
                 if (blockType == AIR)
                 {
                     continue;
-                }                
+                }
 
                 // get block type
                 bool IsWaterBlock = blockType == WATER;
@@ -174,15 +190,14 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
                 constexpr float NorthSouthFaceAmbientShade = 0.6f;
 
                 // water is slightly transparent
-                BlockColor.w = IsWaterBlock ? 0.7f : 1.0f; 
+                BlockColor.w = IsWaterBlock ? 0.7f : 1.0f;
 
                 // top face
                 blockMeshBuilder.SetColor(BlockColor.x * TopFaceAmbientShade, BlockColor.y * TopFaceAmbientShade,
                                           BlockColor.z * TopFaceAmbientShade, BlockColor.w);
                 // for each vertex of the top face, of the four blocks in above and adj to that each verte of the face, how many are touching it (in front of face) are solid (for ao)
-                 
-                
-                
+
+
                 if (includePosY) blockMeshBuilder.AppendPosYFace();
 
                 // bottom face
@@ -204,6 +219,9 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
                 if (includePosZ) blockMeshBuilder.AppendPosZFace();
                 if (includeNegZ) blockMeshBuilder.AppendNegZFace();
             } // end inner block loop
+        } // end middle block loop
+    } // end outer block loop
+
 
     //Mesh mesh = builder.ToMesh();
 

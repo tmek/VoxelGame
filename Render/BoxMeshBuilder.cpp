@@ -25,17 +25,17 @@ Mesh BoxMeshBuilder::Build(ID3D11Device* device)
 
     // +z face
     // print face for debugging
-    printf("\n+z face\n");
+    //printf("\n+z face\n");
     BuildFaceFromUVWAxes(-X_AXIS, +Y_AXIS, +Z_AXIS, x, y, z, meshBuilder, {0.0f, 1.0f, 0.0f, 1.0f});
 
     // -z face
     // print face for debugging
-    printf("-z face\n");
+    //printf("-z face\n");
     BuildFaceFromUVWAxes(+X_AXIS, +Y_AXIS, -Z_AXIS, x, y, z, meshBuilder, {1.0f, 0.0f, 0.0f, 0.5f});
 
     // +x face : U = +Z, V = +Y, W = +X
     // print face for debugging
-    printf("+x face\n");    
+    //printf("+x face\n");    
     BuildFaceFromUVWAxes(Z_AXIS, Y_AXIS, X_AXIS, x, y, z, meshBuilder, {0.0f, 0.0f, 1.0f, 1.0f});
 
     // -x face : U = -Z, V = +Y, W = -X
@@ -136,17 +136,13 @@ void BoxMeshBuilder::BuildFaceFromUVWAxes(const int UAxis, const int VAxis, cons
         aoBlockUV[UAxisIndex] += u;
         aoBlockUV[VAxisIndex] += v;
 
-        // print the block positions for debugging
-        // print the face vertices and UVs for debugging
-        // print the face normal for debugging
-        printf("\nVertex %d: %f, %f, %f\n", vi, position.x, position.y, position.z);
-        printf("Normal: %f, %f, %f\n", normal.x, normal.y, normal.z);
-        printf("UV %d: %f, %f\n", vi, texCoord.x, texCoord.y);
-        printf("Block 1: %d, %d, %d\n", aoBlockU[0], aoBlockU[1], aoBlockU[2]);
-        printf("Block 2: %d, %d, %d\n", aoBlockV[0], aoBlockV[1], aoBlockV[2]);
-        printf("Block 3: %d, %d, %d\n", aoBlockUV[0], aoBlockUV[1], aoBlockUV[2]);
-        // flush the output buffer
-        fflush(stdout);
+        // printf("\nVertex %d: %f, %f, %f\n", vi, position.x, position.y, position.z);
+        // printf("Normal: %f, %f, %f\n", normal.x, normal.y, normal.z);
+        // printf("UV %d: %f, %f\n", vi, texCoord.x, texCoord.y);
+        // printf("Block 1: %d, %d, %d\n", aoBlockU[0], aoBlockU[1], aoBlockU[2]);
+        // printf("Block 2: %d, %d, %d\n", aoBlockV[0], aoBlockV[1], aoBlockV[2]);
+        // printf("Block 3: %d, %d, %d\n", aoBlockUV[0], aoBlockUV[1], aoBlockUV[2]);
+        // fflush(stdout);
 
         // BlockType ao1BlockType = GetBlockType(aoBlock1[0], aoBlock1[1], aoBlock1[2]);
         // BlockType ao2BlockType = GetBlockType(aoBlock2[0], aoBlock2[1], aoBlock2[2]);

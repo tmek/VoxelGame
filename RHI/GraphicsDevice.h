@@ -11,7 +11,7 @@ using namespace DirectX;
 class GraphicsDevice
 {
 public:
-    GraphicsDevice(HWND hWnd);
+    GraphicsDevice(void* WindowHandle);
     ~GraphicsDevice();
 
     void Clear(const FLOAT color[4]);

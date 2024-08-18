@@ -1,28 +1,30 @@
 ﻿#pragma once
-
+#include <memory>
 #include "Platform.h"
-#include "Windows/PlatformWindowsMinimal.h"
 
-/*
- * Represents an OS window for the platform.
- */
-class PlatformWindow 
+class PlatformWindow
 {
 public:
-    PlatformWindow();
+    struct WindowOptions
+    {
+        const WIDECHAR* Title = L"Voxel Game";
+        int32 Width = 1920;
+        int32 Height = 1080;
+    };
 
-    void ProcessMessageQueue();
-    HWND GetHandle() const { return hwnd; }
-    void SetTitle(const char* title);
-    void ForceRepaint();
+    PlatformWindow(const WindowOptions& options = WindowOptions());
+    ~PlatformWindow();
+
+    void SetTitle(const WIDECHAR& title) const;
+    void ForceRepaint() const;
+    void ProcessMessageQueue() const;
+
+    void* GetHandle() const;
 
 private:
-    static constexpr TCHAR ClassName[] = L"VoxelGameWindow";
-    HWND hwnd;
-    
+    struct Impl;
+    std::unique_ptr<Impl> pImpl; // Pimpl idiom to hide Windows-specific details
+
     void RegisterWindowClass();
     int32 Create();
-
 };
-
-// todo: you could have something external that maps PlatformWindow to hwnd to remove the dependency on windef.h

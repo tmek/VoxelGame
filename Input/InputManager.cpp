@@ -1,6 +1,8 @@
 ﻿#include "InputManager.h"
 #include <Windows.h>
 
+#include "GameCore/Logging.h"
+
 InputManager::InputManager()
 {
     VG_LOG(LogCategoryInput, LOG_INFO, "InputManager instance created.");
@@ -17,8 +19,6 @@ InputManager::~InputManager()
 
 void InputManager::Update( UINT uMsg, WPARAM wParam, LPARAM lParam ) {
     // Clear previous input states
-    m_keyPressed.clear();
-    m_keyReleased.clear();
     m_mouseButtonPressed.clear();
     m_mouseButtonReleased.clear();
 
@@ -26,11 +26,15 @@ void InputManager::Update( UINT uMsg, WPARAM wParam, LPARAM lParam ) {
     
     switch (uMsg) {
     case WM_KEYDOWN:
+        m_keyPressed.clear();
+        m_keyReleased.clear();
         m_keyPressed[KeyCode] = true;
         m_keyHeld[KeyCode] = true;
         OnKeyDown(KeyCode);
         break;
     case WM_KEYUP:
+        m_keyPressed.clear();
+        m_keyReleased.clear();
         m_keyReleased[KeyCode] = true;
         m_keyHeld[KeyCode] = false;
         OnKeyUp(KeyCode);
@@ -129,7 +133,7 @@ extern bool GIsRequestingExit;
 
 void InputManager::OnKeyDown(int32 KeyCode)
 {
-    // VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "Key Down: %d", KeyCode); TODO: add verbose logging?
+    //VG_LOG(LogCategoryGeneral, LOG_INFO, "Key Down: %d", KeyCode); //TODO: add verbose logging?
 
     // escape key
     if (KeyCode == VK_ESCAPE)

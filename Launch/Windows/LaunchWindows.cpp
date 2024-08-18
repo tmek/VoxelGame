@@ -17,12 +17,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
     LPSTR lpCmdLine,
     int nShowCmd)
 {
-    // name main thread
-    WindowsPlatformProcess::SetThreadName(L"MainThread");
-    
-    //WindowsPlatformProcess::ShowConsole();
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "Windows Platform Entry Point (WinMain)");
 
-    VG_LOG(LogCategoryGeneral, LOG_INFO, "Application Entry Point");
+    // name main thread
+    WindowsPlatformProcess::SetThreadName(L"MainThread"); // todo: this should happen very early (e.g. in static intialization somewhere)
     
     ::G_hInstance = hInstance;
     GCmdLine = ::GetCommandLineW();

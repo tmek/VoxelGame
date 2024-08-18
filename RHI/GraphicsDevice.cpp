@@ -10,9 +10,9 @@
 using Microsoft::WRL::ComPtr;
 
 
-GraphicsDevice::GraphicsDevice(HWND hWnd)
+GraphicsDevice::GraphicsDevice(void* WindowHandle)
 {
-    InitD3D(hWnd);
+    InitD3D((HWND)WindowHandle);
 }
 
 GraphicsDevice::~GraphicsDevice()

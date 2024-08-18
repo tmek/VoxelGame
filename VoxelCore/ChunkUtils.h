@@ -13,6 +13,8 @@
 #include <algorithm>
 
 
+extern bool GIsRequestingExit;
+
 struct VOXELCORE_API ChunkUtils
 {
     /**
@@ -70,14 +72,19 @@ struct VOXELCORE_API ChunkUtils
     template <typename T, typename Func>
     static void TFillChunkSubvolume(T* const block_data,
                                     int start_index, // starting block index
-                                    const int sub_width, const int sub_height, const int sub_depth,
-                                    // subvolume dimensions
+                                    const int sub_width, const int sub_height, const int sub_depth, 
                                     const int world_x, const int world_y, const int world_z, // starting world block
                                     Func&& block_operation) // Pass the block operation as a template parameter
     {
         // for each y layer in the subvolume
         for (int y = 0; y < sub_height; ++y)
         {
+            // check if we're exiting
+            if (GIsRequestingExit)
+            {
+                return;
+            }
+            
             // for each z row in the current y layer
             int row_index = start_index;
             for (int z = 0; z < sub_depth; ++z)
