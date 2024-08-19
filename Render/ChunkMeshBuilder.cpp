@@ -4,7 +4,7 @@
 
 #include "BlockMeshBuilder.h"
 #include "RHI/MeshAssembler.h"
-#include "VoxelCore/Chunk.h"
+#include "VoxelCore/ChunkOld.h"
 #include "WorldGen/BlockTypes.h"
 #include "WorldGen/WorldOperations.h"
 #include "VoxelCore/LocalChunks.h"
@@ -50,7 +50,7 @@ inline XMFLOAT4 GetBlockColor(int blockType)
 
 extern bool GIsRequestingExit; // todo: should probably have a globals.h file
 
-Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D11Device* device)
+Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const ChunkOld& chunk, ID3D11Device* device)
 {
     // setup pointers to chunk and its neighbors
     LocalChunks localChunks(&chunk);
@@ -61,7 +61,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
                 continue;
 
             ChunkKey neighborKey = {chunkKey.X + i, chunkKey.Z + j};
-            Chunk* neighbor = GWorld.TryGetChunk(neighborKey);
+            ChunkOld* neighbor = GWorld.TryGetChunk(neighborKey);
             localChunks.SetNeighbor(neighbor, i, j);
         }
 
@@ -102,17 +102,17 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const Chunk& chunk, ID3D1
 #endif
 
     // loop through all blocks in the chunk in yzx order
-    BlockIndex blockIndex = 0;
-    for (int localY = 0; localY < CHUNK_SIZE_Y; ++localY)
+    ChunkBlockIndex blockIndex = 0;
+    for (int localY = 0; localY < ChunkHeight; ++localY)
     {
         // check if we're exiting (once per y layer)
         if (GIsRequestingExit)
         {
             return Mesh(); // empty mesh
         }
-        for (int localZ = 0; localZ < CHUNK_SIZE_Z; ++localZ)
+        for (int localZ = 0; localZ < ChunkDepth; ++localZ)
         {
-            for (int localX = 0; localX < CHUNK_SIZE_X; ++localX, ++blockIndex)
+            for (int localX = 0; localX < ChunkWidth; ++localX, ++blockIndex)
             {
                 // todo: the chunk mesh builder is in need of a rewrite.
                 // - you need to know which faces are touching air and which are touching water to determine which faces to include

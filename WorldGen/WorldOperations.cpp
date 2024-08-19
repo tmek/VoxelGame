@@ -3,13 +3,13 @@
 
 #include "BlockTypes.h"
 
-#include "VoxelCore/Chunk.h"
+#include "VoxelCore/ChunkOld.h"
 #include "PerlinNoise.h"
 
 void WorldOperations::DrawSphere_deprecated(int centerX, int centerY, int centerZ, int radius, BlockType blockType)
 {
     // Calculate the sphere's bounds
-    WorldRegion region;
+    BlockRegion region;
     region.Min.X = centerX - radius;
     region.Min.Y = centerY - radius;
     region.Min.Z = centerZ - radius;
@@ -91,12 +91,12 @@ void WorldOperations::GeneratePerlinNoiseTerrain(int startX, int startZ, int wid
 }
 
 
-BlockType WorldOperations::GetBlockType(const WorldBlockCoord& worldBlock) const
+BlockType WorldOperations::GetBlockType(const BlockWorldCoordinate& worldBlock) const
 {
     // Get the chunk
-    LocalBlockCoord localBlock;
+    LocalBlockPosition localBlock;
     WorldToLocal(worldBlock, localBlock);
-    Chunk* chunk = world_.TryGetChunk(localBlock.chunkKey);
+    ChunkOld* chunk = world_.TryGetChunk(localBlock.ChunkKey);
 
     if(!chunk)
     {
@@ -108,7 +108,7 @@ BlockType WorldOperations::GetBlockType(const WorldBlockCoord& worldBlock) const
 }
 
 
-void WorldOperations::SetBlockType(const WorldBlockCoord& worldBlock, const BlockType blockType) const
+void WorldOperations::SetBlockType(const BlockWorldCoordinate& worldBlock, const BlockType blockType) const
 {
     // TODO: currently disabling this temporarily, this means we can draw trees or single blocks in the world.
     // // Get the chunk
@@ -124,14 +124,14 @@ void WorldOperations::SetBlockType(const WorldBlockCoord& worldBlock, const Bloc
 int WorldOperations::GetHighestBlockHeightAt(int x, int z)
 {
     // Get the chunk
-    WorldBlockCoord worldBlock = {x, CHUNK_SIZE_Y-1, z};
-    LocalBlockCoord localBlock;
+    BlockWorldCoordinate worldBlock = {x, ChunkHeight-1, z};
+    LocalBlockPosition localBlock;
     WorldToLocal(worldBlock, localBlock);
-    Chunk* chunk = world_.TryGetChunk(localBlock.chunkKey);
+    ChunkOld* chunk = world_.TryGetChunk(localBlock.ChunkKey);
 
     if(!chunk)
     {
-        return CHUNK_SIZE_Y-1;
+        return ChunkHeight-1;
     }
 
     return chunk->GetHighestBlockHeightAt(localBlock.Index);
@@ -140,10 +140,10 @@ int WorldOperations::GetHighestBlockHeightAt(int x, int z)
 // Is there air? YOU DON'T KNOW!! (v=kcPouxFqUFA)
 bool WorldOperations::IsAirBlock(int x, int y, int z) const
 {
-    LocalBlockCoord localBlock;
+    LocalBlockPosition localBlock;
     WorldToLocal({x, y, z}, localBlock);
 
-    Chunk* chunk = world_.TryGetChunk(localBlock.chunkKey);
+    ChunkOld* chunk = world_.TryGetChunk(localBlock.ChunkKey);
     if(chunk == nullptr) 
     {
         return true; // since there's no chunk, it's air
@@ -154,10 +154,10 @@ bool WorldOperations::IsAirBlock(int x, int y, int z) const
 
 bool WorldOperations::IsWaterBlock(int x, int y, int z) const
 {
-    LocalBlockCoord localBlock;
+    LocalBlockPosition localBlock;
     WorldToLocal({x, y, z}, localBlock);
 
-    Chunk* chunk = world_.TryGetChunk(localBlock.chunkKey);
+    ChunkOld* chunk = world_.TryGetChunk(localBlock.ChunkKey);
     if(chunk == nullptr) 
     {
         return true; // since there's no chunk, it's air

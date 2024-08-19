@@ -157,21 +157,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Chunk.cpp" />
-    <ClCompile Include="ChunkUtils.cpp" />
-    <ClCompile Include="LocalChunks.cpp" />
-    <ClCompile Include="VoxelWorld.cpp" />
+    <ClInclude Include="Public\Block\Block.h" />
+    <ClInclude Include="Public\Chunk\Chunk.h" />
+    <ClInclude Include="Public\Chunk\ChunkKey.h" />
+    <ClInclude Include="Public\Chunk\ChunkKeyHash.h" />
+    <ClInclude Include="Public\Chunk\ChunkKeyOperators.h" />
+    <ClInclude Include="Public\Chunk\ChunkConstants.h" />
+    <ClInclude Include="Public\Chunk\ChunkMap.h" />
+    <ClInclude Include="Public\Generated\Exports.h" />
+    <ClInclude Include="Public\Voxel\Conversions.h" />
+    <ClInclude Include="Public\Voxel\PrimitiveTypes.h" />
+    <ClInclude Include="Public\Voxel\VoxelDefines.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BlockData.h" />
-    <ClInclude Include="Chunk.h" />
-    <ClInclude Include="ChunkKey.h" />
-    <ClInclude Include="ChunkUtils.h" />
-    <ClInclude Include="Conversions.h" />
-    <ClInclude Include="Coordinates.h" />
-    <ClInclude Include="LocalChunks.h" />
-    <ClInclude Include="VoxelDefines.h" />
-    <ClInclude Include="VoxelWorld.h" />
+    <Folder Include="Constants\" />
+    <Folder Include="Public\World\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Private\Block\Block.cpp" />
+    <ClCompile Include="Private\Chunk\Chunk.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

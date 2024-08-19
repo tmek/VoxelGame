@@ -1,6 +1,6 @@
 // voxel
 #include "VoxelCore/ChunkKey.h"
-#include "VoxelCore/Chunk.h"
+#include "VoxelCore/ChunkOld.h"
 #include "VoxelCore/VoxelWorld.h"
 
 // asserts
@@ -16,14 +16,14 @@
 void TestChunk()
 {
     int BytesPerBlock = 2 + 1; // 16 bytes for blockStates, 8 bytes for lightLevels
-    AssertAreEqual(sizeof(Chunk), BytesPerBlock * CHUNK_TOTAL_BLOCKS,
-        "Chunk size is %d bytes", BytesPerBlock * CHUNK_TOTAL_BLOCKS);
+    AssertAreEqual(sizeof(ChunkOld), BytesPerBlock * ChunkSize,
+        "Chunk size is %d bytes", BytesPerBlock * ChunkSize);
 
     // create a chunk
-    Chunk chunk({0,0});
+    ChunkOld chunk({0,0});
 
     // read and write a block
-    BlockIndex index = 8;
+    ChunkBlockIndex index = 8;
     chunk.SetBlockType(index, 1u);
     uint16_t type = chunk.GetBlockType(index);
 
@@ -37,14 +37,14 @@ void ChunkBugTest()
     // int x = -52;
     // int y = 10;
     // int z = 1;
-    WorldBlockCoord worldBlock = {-52, 10, 1}; 
+    BlockWorldCoordinate worldBlock = {-52, 10, 1}; 
     BlockType blockType = 3;
     
     // Get the chunk
     //BlockAddress ba = WorldCoordsToBlockAddress({x, y, z});
-    LocalBlockCoord localBlock;
+    LocalBlockPosition localBlock;
     WorldToLocal(worldBlock, localBlock);
-    Chunk& chunk = world.GetChunk(localBlock.chunkKey);
+    ChunkOld& chunk = world.GetChunk(localBlock.ChunkKey);
 
     // Set the block type
     chunk.SetBlockType(localBlock.Index, blockType);    
@@ -58,11 +58,11 @@ void TestMultipleChunks()
     
     // get a chunk and read/write a block
     ChunkKey key = {1, 1};
-    Chunk& chunk = world.GetChunk(key);
+    ChunkOld& chunk = world.GetChunk(key);
 
     // get a chunk with negative coordinates
     ChunkKey key2 = {-64, -64};
-    Chunk& chunk2 = world.GetChunk(key2);
+    ChunkOld& chunk2 = world.GetChunk(key2);
 
     ChunkKeyHash hashFunction;
     size_t hash = hashFunction(key2);
@@ -76,7 +76,7 @@ void TestMultipleChunks()
     for (int i = 0; i < 10; i++)
     {
         ChunkKey key = {i, i};
-        Chunk& chunk = world.GetChunk(key);
+        ChunkOld& chunk = world.GetChunk(key);
 
         // read/write multiple blocks
         for (int j = 0; j < 10; j++)
@@ -95,8 +95,8 @@ void TestWorld()
     VoxelWorld gworld;
 
     // set block
-    Chunk& chunk = gworld.GetChunk({0,0});
-    LocalBlockCoord localBlock;
+    ChunkOld& chunk = gworld.GetChunk({0,0});
+    LocalBlockPosition localBlock;
     WorldToLocal({0,0,0}, localBlock);
     chunk.SetBlockType(localBlock.Index, 1);
 
@@ -114,11 +114,11 @@ void TestWorld()
 
 void TestConversions()
 {
-    WorldBlockCoord worldBlock = {15, 8, 3};
-    LocalBlockCoord localBlock;
+    BlockWorldCoordinate worldBlock = {15, 8, 3};
+    LocalBlockPosition localBlock;
     WorldToLocal(worldBlock, localBlock);
-    AssertAreEqual(localBlock.chunkKey.X, 0, "chunk key x == 0");
-    AssertAreEqual(localBlock.chunkKey.Z, 0, "chunk key z == 0");
+    AssertAreEqual(localBlock.ChunkKey.X, 0, "chunk key x == 0");
+    AssertAreEqual(localBlock.ChunkKey.Z, 0, "chunk key z == 0");
     AssertAreEqual(localBlock.X, 15, "local block x == 15");
     AssertAreEqual(localBlock.Y, 8, "local block y == 8");
     AssertAreEqual(localBlock.Z, 3, "local block z == 3");
@@ -126,8 +126,8 @@ void TestConversions()
 
     worldBlock = {16,17,18};
     WorldToLocal(worldBlock, localBlock);
-    AssertAreEqual(localBlock.chunkKey.X, 1, "chunk key x == 1");
-    AssertAreEqual(localBlock.chunkKey.Z, 1, "chunk key z == 1");
+    AssertAreEqual(localBlock.ChunkKey.X, 1, "chunk key x == 1");
+    AssertAreEqual(localBlock.ChunkKey.Z, 1, "chunk key z == 1");
     AssertAreEqual(localBlock.X, 0, "local block x == 0");
     AssertAreEqual(localBlock.Y, 17, "local block y == 17");
     AssertAreEqual(localBlock.Z, 2, "local block z == 2");
@@ -135,8 +135,8 @@ void TestConversions()
 
     worldBlock =  {-1,0,0}; // -y should not be allowed this should fail
     WorldToLocal(worldBlock, localBlock);
-    AssertAreEqual(localBlock.chunkKey.X, -1, "chunk key x == -1");
-    AssertAreEqual(localBlock.chunkKey.Z, 0, "chunk key z == 0");
+    AssertAreEqual(localBlock.ChunkKey.X, -1, "chunk key x == -1");
+    AssertAreEqual(localBlock.ChunkKey.Z, 0, "chunk key z == 0");
     AssertAreEqual(localBlock.X, 15, "local block x == 15");
     AssertAreEqual(localBlock.Y, 0, "local block y == 0");
     AssertAreEqual(localBlock.Z, 0, "local block z == 0");
@@ -144,8 +144,8 @@ void TestConversions()
 
     worldBlock =  {-1,2,-3}; // -y should not be allowed this should fail
     WorldToLocal(worldBlock, localBlock);
-    AssertAreEqual(localBlock.chunkKey.X, -1, "chunk key x == -1");
-    AssertAreEqual(localBlock.chunkKey.Z, -1, "chunk key z == -1");
+    AssertAreEqual(localBlock.ChunkKey.X, -1, "chunk key x == -1");
+    AssertAreEqual(localBlock.ChunkKey.Z, -1, "chunk key z == -1");
     AssertAreEqual(localBlock.X, 15, "local block x == 15");
     AssertAreEqual(localBlock.Y, 2, "local block y == 2");
     AssertAreEqual(localBlock.Z, 13, "local block z == 13");

@@ -25,7 +25,7 @@ public:
     // Performance implications are minimal due to inlining of the blockOperation.
     // todo: it would be amazing if we could do range-based for loops with this
     template <typename Func>
-    void IterateBlocks_deprecated(WorldRegion& region, Func blockOperation);
+    void IterateBlocks_deprecated(BlockRegion& region, Func blockOperation);
     // todo: move to it's own file and keep the editing functions here
 
     // Function to draw a sphere in the world using a specific operation
@@ -34,9 +34,9 @@ public:
     // Method to generate terrain with Perlin noise
     void GeneratePerlinNoiseTerrain(int startX, int startZ, int width, int depth, float scale, float amplitude,
                                     uint16_t type);
-    BlockType GetBlockType(const WorldBlockCoord& worldBlock) const;
+    BlockType GetBlockType(const BlockWorldCoordinate& worldBlock) const;
 
-    inline void SetBlockType(const WorldBlockCoord& worldBlock, const BlockType blockType) const;
+    inline void SetBlockType(const BlockWorldCoordinate& worldBlock, const BlockType blockType) const;
 
     int GetHighestBlockHeightAt(int x, int z);
 
@@ -49,12 +49,12 @@ private:
 
 
 template <typename Func>
-void WorldOperations::IterateBlocks_deprecated(WorldRegion& region, Func blockOperation)
+void WorldOperations::IterateBlocks_deprecated(BlockRegion& region, Func blockOperation)
 {
-    Chunk* activeChunk = nullptr;
+    ChunkOld* activeChunk = nullptr;
     ChunkKey activeChunkKey;
 
-    LocalBlockCoord localBlock;
+    LocalBlockPosition localBlock;
     
     // Iterate over all blocks within the 3D region in XZY order
     for (int y = region.Min.Y; y <= region.Max.Y; ++y)
@@ -63,14 +63,14 @@ void WorldOperations::IterateBlocks_deprecated(WorldRegion& region, Func blockOp
         {
             for (int x = region.Min.X; x <= region.Max.X; ++x)
             {
-                WorldBlockCoord worldBlock = {x, y, z};
+                BlockWorldCoordinate worldBlock = {x, y, z};
                 WorldToLocal(worldBlock, localBlock);
 
                 // retrieve chunk if needed
-                bool ShouldGetChunk = localBlock.chunkKey != activeChunkKey || activeChunk == nullptr;
+                bool ShouldGetChunk = localBlock.ChunkKey != activeChunkKey || activeChunk == nullptr;
                 if (ShouldGetChunk)
                 {
-                    activeChunkKey = localBlock.chunkKey;
+                    activeChunkKey = localBlock.ChunkKey;
                     activeChunk = &world_.GetChunk(activeChunkKey);
                 }
 

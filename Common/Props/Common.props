@@ -10,5 +10,13 @@
 <!--            <TreatWarningAsError>true</TreatWarningAsError>-->
             <LanguageStandard>stdcpp20</LanguageStandard>
         </ClCompile>
+    </ItemDefinitionGroup>
+
+
+    <!-- add linker additional dependencies for ;d3d11.lib;d3dcompiler.lib; -->
+    <ItemDefinitionGroup>
+        <Link>
+            <AdditionalDependencies>%(AdditionalDependencies);d3d11.lib;d3dcompiler.lib;dxgi.lib</AdditionalDependencies>
+        </Link>
     </ItemDefinitionGroup>    
 </Project>

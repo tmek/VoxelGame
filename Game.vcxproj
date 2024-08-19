@@ -141,8 +141,8 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);d3d11.lib;d3dcompiler.lib;C:\Program Files (x86)\Intel\oneAPI\vtune\2024.2\lib64\libittnotify.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)de</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

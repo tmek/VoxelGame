@@ -6,7 +6,7 @@
 #include "WorldGen/WorldOperations.h"
 
 
-struct Chunk;
+struct ChunkOld;
 
 class FEngineLoop
 {
@@ -17,9 +17,9 @@ public:
                     DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix, bool bDrawWater);
     void Tick();
     void Exit();
-    void GenerateChunk(const Chunk& chunk, ChunkKey key);
+    void GenerateChunk(const ChunkOld& chunk, ChunkKey key);
 
-    static void TestBigSphere(WorldBlockCoord Center, int Radius, BlockType BlockType);
+    static void TestBigSphere(BlockWorldCoordinate Center, int Radius, BlockType BlockType);
 
     void GenerateChunksInBackground(const std::vector<ChunkKey>& chunkKeys);
     void GenerateChunksAroundCamera(int RadiusInChunks);

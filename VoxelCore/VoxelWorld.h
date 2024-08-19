@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <mutex>
 
-#include "Chunk.h"
+#include "ChunkOld.h"
 #include "ChunkKey.h"
 #include "VoxelDefines.h"
 
@@ -26,10 +26,10 @@ public:
 
 public:
     // Get a chunk or add it if it doesn't exist
-    VOXELCORE_API Chunk& GetChunk(const ChunkKey& key);
+    VOXELCORE_API ChunkOld& GetChunk(const ChunkKey& key);
 
     // Get a chunk or return nullptr if it doesn't exist
-    VOXELCORE_API Chunk* TryGetChunk(const ChunkKey& key);
+    VOXELCORE_API ChunkOld* TryGetChunk(const ChunkKey& key);
 
     // Check if a chunk exists
     VOXELCORE_API bool ChunkExists(const ChunkKey key) const;
@@ -54,6 +54,6 @@ public:
     }
 
 private:
-    std::unordered_map<ChunkKey, Chunk, ChunkKeyHash> Chunks;
+    std::unordered_map<ChunkKey, ChunkOld, ChunkKeyHash> Chunks;
     mutable std::mutex chunksMutex; // to protect chunk access
 };

@@ -1,54 +1,54 @@
-﻿#include "Chunk.h"
+﻿#include "ChunkOld.h"
 
 #include "../WorldGen/BlockTypes.h"
 
 
-void Chunk::SetBlockState(BlockIndex index, uint16_t state)
+void ChunkOld::SetBlockState(ChunkBlockIndex index, uint16_t state)
 {
     blockData->blockStates[index] = state;
 }
 
-uint16_t Chunk::GetBlockState(BlockIndex index) const
+uint16_t ChunkOld::GetBlockState(ChunkBlockIndex index) const
 {
     return blockData->blockStates[index];
 }
 
-uint16_t Chunk::GetBlockType(BlockIndex index) const
+uint16_t ChunkOld::GetBlockType(ChunkBlockIndex index) const
 {
     return blockData->blockStates[index] & 0x0FFF;
 }
 
-void Chunk::SetBlockMetadata(BlockIndex index, uint8_t metadata)
+void ChunkOld::SetBlockMetadata(ChunkBlockIndex index, uint8_t metadata)
 {
     blockData->blockStates[index] = (blockData->blockStates[index] & 0x0FFF) | ((metadata & 0x0F) << 12);
 }
 
-uint8_t Chunk::GetBlockMetadata(BlockIndex index) const
+uint8_t ChunkOld::GetBlockMetadata(ChunkBlockIndex index) const
 {
     return (blockData->blockStates[index] >> 12) & 0x0F;
 }
 
-void Chunk::SetBlockLightLevel(BlockIndex index, uint8_t light)
+void ChunkOld::SetBlockLightLevel(ChunkBlockIndex index, uint8_t light)
 {
     blockData->lightLevels[index] = (blockData->lightLevels[index] & 0xF0) | (light & 0x0F);
 }
 
-uint8_t Chunk::GetBlockLightLevel(BlockIndex index) const
+uint8_t ChunkOld::GetBlockLightLevel(ChunkBlockIndex index) const
 {
     return blockData->lightLevels[index] & 0x0F;
 }
 
-void Chunk::SetBlockSkyLight(BlockIndex index, uint8_t light)
+void ChunkOld::SetBlockSkyLight(ChunkBlockIndex index, uint8_t light)
 {
     blockData->lightLevels[index] = (blockData->lightLevels[index] & 0x0F) | ((light & 0x0F) << 4);
 }
 
-uint8_t Chunk::GetBlockSkyLight(BlockIndex index) const
+uint8_t ChunkOld::GetBlockSkyLight(ChunkBlockIndex index) const
 {
     return (blockData->lightLevels[index] >> 4) & 0x0F;
 }
 
-bool Chunk::IsAirBlock(BlockIndex index) const
+bool ChunkOld::IsAirBlock(ChunkBlockIndex index) const
 {
     // todo: IsAirBlock should only be public from the world class.
     // because we don't want to have to create a new chunk just to check if a block is air. (bad performance)
@@ -57,7 +57,7 @@ bool Chunk::IsAirBlock(BlockIndex index) const
     return GetBlockType(index) == 0;
 }
 
-bool Chunk::IsWaterBlock(BlockIndex index) const
+bool ChunkOld::IsWaterBlock(ChunkBlockIndex index) const
 {
     // todo: IsAirBlock should only be public from the world class.
     // because we don't want to have to create a new chunk just to check if a block is air. (bad performance)
@@ -67,7 +67,7 @@ bool Chunk::IsWaterBlock(BlockIndex index) const
 }
 
 
-int Chunk::GetHighestBlockHeightAt(BlockIndex index) const // todo: this should accept a LocalBlock (maybe) 
+int ChunkOld::GetHighestBlockHeightAt(ChunkBlockIndex index) const // todo: this should accept a LocalBlock (maybe) 
 {
     // if the block index is invalid (outside chunk), return 0
     if (index == -1)
@@ -82,11 +82,11 @@ int Chunk::GetHighestBlockHeightAt(BlockIndex index) const // todo: this should 
 
         if (!IsAirBlock(index))
         {
-            int y = index / CHUNK_XZ_LAYER_SIZE;
+            int y = index / ChunkLayerSize;
             return y;
         }
         
-        index -= CHUNK_XZ_LAYER_SIZE;
+        index -= ChunkLayerSize;
     }
 
     return 0;    

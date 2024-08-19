@@ -1,19 +1,19 @@
 ﻿#include "VoxelWorld.h"
 
-Chunk& VoxelWorld::GetChunk(const ChunkKey& key)
+ChunkOld& VoxelWorld::GetChunk(const ChunkKey& key)
 {
     std::lock_guard<std::mutex> lock(chunksMutex);
     
     auto it = Chunks.find(key);
     
     if (it == Chunks.end()) {
-        return Chunks.emplace(key, Chunk(key)).first->second;
+        return Chunks.emplace(key, ChunkOld(key)).first->second;
     }
     
     return it->second;
 }
 
-Chunk* VoxelWorld::TryGetChunk(const ChunkKey& key)
+ChunkOld* VoxelWorld::TryGetChunk(const ChunkKey& key)
 {
     std::lock_guard<std::mutex> lock(chunksMutex);
     

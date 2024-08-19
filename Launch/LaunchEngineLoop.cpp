@@ -72,7 +72,7 @@ int ChunkDrawRadius = 32;
 
 
 PlayerController GPlayerController;
-float InitialCameraHeight = static_cast<float>(-(CHUNK_SIZE_Z + 2) * ChunkDrawRadius);
+float InitialCameraHeight = static_cast<float>(-(ChunkDepth + 2) * ChunkDrawRadius);
 DirectX::XMVECTOR GCameraPosition = DirectX::XMVectorSet(0.0f, 100.0f, InitialCameraHeight, 0.0f);
 
 bool GShouldRenderTintColor;
@@ -98,7 +98,7 @@ void FEngineLoop::GenerateChunksInBackground(const std::vector<ChunkKey>& chunkK
             //VG_LOG(LogCategoryGeneral, LOG_INFO, "Generating chunk: %d, %d", key.X, key.Z);
             
             // Get or create the chunk
-            Chunk& chunk = GWorld.GetChunk(key);
+            ChunkOld& chunk = GWorld.GetChunk(key);
 
             // generate the chunk
             GenerateChunk(chunk, key);
@@ -113,7 +113,7 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
 {
     // get camera position
     
-    WorldBlockCoord cameraBlock;
+    BlockWorldCoordinate cameraBlock;
     cameraBlock.X = static_cast<int>(XMVectorGetX(GCameraPosition));
     cameraBlock.Y = static_cast<int>(XMVectorGetY(GCameraPosition));
     cameraBlock.Z = static_cast<int>(XMVectorGetZ(GCameraPosition));
@@ -187,7 +187,7 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
     return;
     
     // generate some perlin terrain
-    int size = RadiusInChunks * CHUNK_SIZE_X;
+    int size = RadiusInChunks * ChunkWidth;
     int startX = -size / 2;
     int startZ = -size / 2;
     int width = size;
@@ -200,7 +200,7 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
     
     // create chunk subvolumes for the perlin noise terrain
     int maxheight = 384;
-    WorldRegion terrainRegion = {
+    BlockRegion terrainRegion = {
         {startX, 0, startZ}, // min coordinates
         {startX + width, maxheight, startZ + depth} // max coordinates
     };
@@ -225,7 +225,7 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
 
                       const auto& startingBlock = chunkSubVolume.startingBlock;
 
-                      WorldBlockCoord startingBlockWorldCoords;
+                      BlockWorldCoordinate startingBlockWorldCoords;
                       LocalToWorld(startingBlock, startingBlockWorldCoords);
 
                       // get chunk data
@@ -310,7 +310,7 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
 
 void FEngineLoop::AddTrees(WorldOperations world, int size)
 {
-    int chunksWide = size / CHUNK_SIZE_X;
+    int chunksWide = size / ChunkWidth;
 
     int treesPerChunk = 3;
     int treeCount = treesPerChunk * chunksWide * chunksWide;
@@ -329,7 +329,7 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
             continue;
         }
 
-        check(y >= 0 && y < CHUNK_SIZE_Y);
+        check(y >= 0 && y < ChunkHeight);
 
 
         // determine leaves and trunk type
@@ -393,7 +393,7 @@ void FEngineLoop::GenerateWorld()
     // origin block
     world.SetBlockType({0, 0, 0}, 5);
 
-    int size = ChunkDrawRadius * CHUNK_SIZE_X;
+    int size = ChunkDrawRadius * ChunkWidth;
     GenerateChunksAroundCamera(ChunkDrawRadius);
 
     // add some "trees"
@@ -482,7 +482,7 @@ void FEngineLoop::RebuildChunkMeshes()
     {
         const auto& chunkKey = chunkEntry.first;
 
-        if(Chunk* chunk = GWorld.TryGetChunk(chunkKey))
+        if(ChunkOld* chunk = GWorld.TryGetChunk(chunkKey))
         {
             ChunkMeshManager::GetInstance().RebuildChunkMesh(chunkKey, *chunk, GGraphicsDevice->GetDevice());
         }
@@ -502,7 +502,7 @@ void FEngineLoop::AddBlockTick()
         WorldBlockCounter++;
         if (WorldBlockCounter < 1000)
         {
-            WorldBlockCoord worldBlock = {WorldBlockCounter, 0, 1};
+            BlockWorldCoordinate worldBlock = {WorldBlockCounter, 0, 1};
             world.SetBlockType(worldBlock, 1);
 
             // rebuild chunk and surrounding chunks.
@@ -640,7 +640,7 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
         //     //continue;
         // }
 
-        WorldBlockCoord chunkOrigin;
+        BlockWorldCoordinate chunkOrigin;
         ChunkToWorld(chunkKey, chunkOrigin);
 
         translationMatrix = DirectX::XMMatrixTranslation(
@@ -816,7 +816,7 @@ void FEngineLoop::Tick()
 
             DirectX::XMVECTOR BlockPositionRounded = DirectX::XMVectorRound(BlockPosition);
 
-            WorldBlockCoord blockCursor;
+            BlockWorldCoordinate blockCursor;
             blockCursor.X = static_cast<int>(DirectX::XMVectorGetX(BlockPositionRounded));
             blockCursor.Y = static_cast<int>(DirectX::XMVectorGetY(BlockPositionRounded));
             blockCursor.Z = static_cast<int>(DirectX::XMVectorGetZ(BlockPositionRounded));
@@ -902,13 +902,13 @@ void FEngineLoop::Exit()
     VG_LOG(LogCategoryGeneral, LOG_INFO, "FEngineLoop::Exit()");
 }
 
-void FEngineLoop::GenerateChunk(const Chunk& chunk, ChunkKey key)
+void FEngineLoop::GenerateChunk(const ChunkOld& chunk, ChunkKey key)
 {
     auto chunkData = chunk.GetBlockData()->blockStates;
     ChunkUtils::TFillChunkSubvolume(chunkData,
                                     0,
-                                    CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z,
-                                    key.X * CHUNK_SIZE_X, 0, key.Z * CHUNK_SIZE_Z,
+                                    ChunkWidth, ChunkHeight, ChunkDepth,
+                                    key.X * ChunkWidth, 0, key.Z * ChunkDepth,
                                     [&](auto* block_states, int index, int world_x, int world_y,
                                         int world_z)
                                     {
@@ -925,11 +925,11 @@ void FEngineLoop::GenerateChunk(const Chunk& chunk, ChunkKey key)
 }
 
 
-void FEngineLoop::TestBigSphere(WorldBlockCoord Center, int Radius, BlockType BlockType)
+void FEngineLoop::TestBigSphere(BlockWorldCoordinate Center, int Radius, BlockType BlockType)
 {
     return;
     // Define the world region to map
-    WorldRegion sphereWorldRegion = {
+    BlockRegion sphereWorldRegion = {
         {Center.X - Radius, Center.Y - Radius, Center.Z - Radius}, // Min coordinates
         {Center.X + Radius, Center.Y + Radius, Center.Z + Radius} // Max coordinates
     };
@@ -941,16 +941,16 @@ void FEngineLoop::TestBigSphere(WorldBlockCoord Center, int Radius, BlockType Bl
     {
         const auto& startingBlock = chunkSubVolume.startingBlock;
 
-        WorldBlockCoord startingBlockWorldCoords;
+        BlockWorldCoordinate startingBlockWorldCoords;
         LocalToWorld(startingBlock, startingBlockWorldCoords);
 
         // get chunk data
-        auto& chunk = GWorld.GetChunk(chunkSubVolume.startingBlock.chunkKey);
+        auto& chunk = GWorld.GetChunk(chunkSubVolume.startingBlock.ChunkKey);
         auto chunkData = chunk.GetBlockData()->blockStates;
 
         ChunkUtils::TFillChunkSubvolume(chunkData,
                                         chunkSubVolume.startingBlock.Index,
-                                        chunkSubVolume.width, chunkSubVolume.height, chunkSubVolume.depth,
+                                        chunkSubVolume.Width, chunkSubVolume.Height, chunkSubVolume.Depth,
                                         startingBlockWorldCoords.X, startingBlockWorldCoords.Y,
                                         startingBlockWorldCoords.Z,
                                         // [&](auto* block_states, int index, int world_x, int world_y, int world_z)

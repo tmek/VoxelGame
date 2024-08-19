@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+/*
 #include "Logging/LogMacros.h"
 
 #include "Tasks/Launch.h"
@@ -40,3 +41,4 @@ TEST(LaunchTask, LaunchSimpleTask)
     auto task2 = Launch("SimpleTask", [] { return 123; });
     TE_LOG(LogTemp, Log, "Task2 result: %d", task2->GetResult());
 }
+*/

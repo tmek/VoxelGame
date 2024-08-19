@@ -97,9 +97,9 @@ struct VOXELCORE_API ChunkUtils
                     std::forward<Func>(block_operation)(block_data, block_index, world_x + x, world_y + y, world_z + z);
                     block_index++;
                 }
-                row_index += CHUNK_SIZE_X; // advance one full z row (16 blocks)
+                row_index += ChunkWidth; // advance one full z row (16 blocks)
             }
-            start_index += CHUNK_XZ_LAYER_SIZE; // advance one full y layer (256 blocks)
+            start_index += ChunkLayerSize; // advance one full y layer (256 blocks)
         }
     }
 
@@ -154,7 +154,7 @@ public:
 
     
     // Static method that returns the list of chunks and their corresponding sub-volume dimensions
-    static std::vector<ChunkRegion> GetChunksAndSubVolumes(const WorldRegion& worldRegion)
+    static std::vector<ChunkRegion> GetChunksAndSubVolumes(const BlockRegion& worldRegion)
     {
         std::vector<ChunkRegion> result;
 
@@ -171,12 +171,12 @@ public:
                 ChunkKey currentChunkKey = {cx, cz};
 
                 // Convert chunk key back to the world coordinates to determine the chunk origin
-                WorldBlockCoord chunkOrigin;
+                BlockWorldCoordinate chunkOrigin;
                 ChunkToWorld(currentChunkKey, chunkOrigin);
 
                 // Calculate the sub-volume starting block and dimensions within the current chunk
-                LocalBlockCoord localBlock;
-                WorldBlockCoord startCoord = worldRegion.Min;
+                LocalBlockPosition localBlock;
+                BlockWorldCoordinate startCoord = worldRegion.Min;
                 
                 startCoord.X = std::max(worldRegion.Min.X, chunkOrigin.X);
                 startCoord.Y = std::max(worldRegion.Min.Y, chunkOrigin.Y);
@@ -185,11 +185,11 @@ public:
                 WorldToLocal(startCoord, localBlock);
 
                 int x_min = std::max(worldRegion.Min.X - chunkOrigin.X, 0);
-                int x_max = std::min(worldRegion.Max.X - chunkOrigin.X, CHUNK_SIZE_X - 1);
+                int x_max = std::min(worldRegion.Max.X - chunkOrigin.X, ChunkWidth - 1);
                 int y_min = std::max(worldRegion.Min.Y, 0);
-                int y_max = std::min(worldRegion.Max.Y, CHUNK_SIZE_Y - 1);
+                int y_max = std::min(worldRegion.Max.Y, ChunkHeight - 1);
                 int z_min = std::max(worldRegion.Min.Z - chunkOrigin.Z, 0);
-                int z_max = std::min(worldRegion.Max.Z - chunkOrigin.Z, CHUNK_SIZE_Z - 1);
+                int z_max = std::min(worldRegion.Max.Z - chunkOrigin.Z, ChunkDepth - 1);
 
                 int width = x_max - x_min + 1;
                 int height = y_max - y_min + 1;

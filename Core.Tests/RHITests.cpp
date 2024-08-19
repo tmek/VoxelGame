@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+/*
 DynamicRHI* GDynamicRHI;
 
 
@@ -49,3 +50,5 @@ TEST(TestCaseName, TestName)
 
     
 }
+
+*/

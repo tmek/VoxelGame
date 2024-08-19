@@ -20,7 +20,7 @@ Mesh* ChunkMeshManager::GetChunkMesh(const ChunkKey& key)
 }
 
 
-void ChunkMeshManager::RebuildChunkMesh(const ChunkKey& key, const Chunk& chunk, ID3D11Device* device)
+void ChunkMeshManager::RebuildChunkMesh(const ChunkKey& key, const ChunkOld& chunk, ID3D11Device* device)
 {
     if (!device || GIsRequestingExit)
     {

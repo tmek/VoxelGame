@@ -1,32 +1,32 @@
 ﻿#pragma once
-#include "Chunk.h"
+#include "ChunkOld.h"
 
 class LocalChunks {
 public:
     // Pointer to the center chunk
-    const Chunk* centerChunk;
+    const ChunkOld* centerChunk;
 
     // Neighboring Chunks (including diagonals)
-    const Chunk* leftNeighbor = nullptr;
-    const Chunk* rightNeighbor = nullptr;
-    const Chunk* frontNeighbor = nullptr;
-    const Chunk* backNeighbor = nullptr;
-    const Chunk* frontLeftNeighbor = nullptr;
-    const Chunk* frontRightNeighbor = nullptr;
-    const Chunk* backLeftNeighbor = nullptr;
-    const Chunk* backRightNeighbor = nullptr;
+    const ChunkOld* leftNeighbor = nullptr;
+    const ChunkOld* rightNeighbor = nullptr;
+    const ChunkOld* frontNeighbor = nullptr;
+    const ChunkOld* backNeighbor = nullptr;
+    const ChunkOld* frontLeftNeighbor = nullptr;
+    const ChunkOld* frontRightNeighbor = nullptr;
+    const ChunkOld* backLeftNeighbor = nullptr;
+    const ChunkOld* backRightNeighbor = nullptr;
 
     // Constructor
-    inline LocalChunks(const Chunk* center) : centerChunk(center) {}
+    inline LocalChunks(const ChunkOld* center) : centerChunk(center) {}
 
     // Method to retrieve a block at a given local position
     inline BlockType GetBlock(int x, int y, int z);
 
     // Method to cache/set neighbor chunks
-    inline void SetNeighbor(Chunk* neighbor, int offsetX, int offsetZ);
+    inline void SetNeighbor(ChunkOld* neighbor, int offsetX, int offsetZ);
 };
 
-inline void LocalChunks::SetNeighbor(Chunk* neighbor, int offsetX, int offsetZ) {
+inline void LocalChunks::SetNeighbor(ChunkOld* neighbor, int offsetX, int offsetZ) {
     if (offsetX == -1 && offsetZ == 0) leftNeighbor = neighbor;
     else if (offsetX == 1 && offsetZ == 0) rightNeighbor = neighbor;
     else if (offsetX == 0 && offsetZ == -1) backNeighbor = neighbor;
@@ -39,48 +39,48 @@ inline void LocalChunks::SetNeighbor(Chunk* neighbor, int offsetX, int offsetZ) 
 
 inline BlockType LocalChunks::GetBlock(int x, int y, int z) {
 
-    if(y<0 || y>=CHUNK_SIZE_Y)
+    if(y<0 || y>=ChunkHeight)
     {
         return 0; // AIR
     }
     
     // Check if coordinates are within the center chunk
-    if (x >= 0 && x < CHUNK_SIZE_X && z >= 0 && z < CHUNK_SIZE_Z) {
-        BlockIndex index = x + z * CHUNK_SIZE_X + y * CHUNK_XZ_LAYER_SIZE;
+    if (x >= 0 && x < ChunkWidth && z >= 0 && z < ChunkDepth) {
+        ChunkBlockIndex index = x + z * ChunkWidth + y * ChunkLayerSize;
         return centerChunk->GetBlockType(index);  // Access within the center chunk
     }
 
     // Determine which neighbor chunk to query
-    const Chunk* targetChunk = centerChunk;
+    const ChunkOld* targetChunk = centerChunk;
 
-    if (x < 0 && z >= 0 && z < CHUNK_SIZE_Z) {
+    if (x < 0 && z >= 0 && z < ChunkDepth) {
         targetChunk = leftNeighbor;
-        x += CHUNK_SIZE_X;  // Adjust to local chunk space
-    } else if (x >= CHUNK_SIZE_X && z >= 0 && z < CHUNK_SIZE_Z) {
+        x += ChunkWidth;  // Adjust to local chunk space
+    } else if (x >= ChunkWidth && z >= 0 && z < ChunkDepth) {
         targetChunk = rightNeighbor;
-        x -= CHUNK_SIZE_X;
-    } else if (z < 0 && x >= 0 && x < CHUNK_SIZE_X) {
+        x -= ChunkWidth;
+    } else if (z < 0 && x >= 0 && x < ChunkWidth) {
         targetChunk = backNeighbor;
-        z += CHUNK_SIZE_Z;
-    } else if (z >= CHUNK_SIZE_Z && x >= 0 && x < CHUNK_SIZE_X) {
+        z += ChunkDepth;
+    } else if (z >= ChunkDepth && x >= 0 && x < ChunkWidth) {
         targetChunk = frontNeighbor;
-        z -= CHUNK_SIZE_Z;
-    } else if (x < 0 && z >= CHUNK_SIZE_Z) {
+        z -= ChunkDepth;
+    } else if (x < 0 && z >= ChunkDepth) {
         targetChunk = frontLeftNeighbor;
-        x += CHUNK_SIZE_X;
-        z -= CHUNK_SIZE_Z;
-    } else if (x >= CHUNK_SIZE_X && z >= CHUNK_SIZE_Z) {
+        x += ChunkWidth;
+        z -= ChunkDepth;
+    } else if (x >= ChunkWidth && z >= ChunkDepth) {
         targetChunk = frontRightNeighbor;
-        x -= CHUNK_SIZE_X;
-        z -= CHUNK_SIZE_Z;
+        x -= ChunkWidth;
+        z -= ChunkDepth;
     } else if (x < 0 && z < 0) {
         targetChunk = backLeftNeighbor;
-        x += CHUNK_SIZE_X;
-        z += CHUNK_SIZE_Z;
-    } else if (x >= CHUNK_SIZE_X && z < 0) {
+        x += ChunkWidth;
+        z += ChunkDepth;
+    } else if (x >= ChunkWidth && z < 0) {
         targetChunk = backRightNeighbor;
-        x -= CHUNK_SIZE_X;
-        z += CHUNK_SIZE_Z;
+        x -= ChunkWidth;
+        z += ChunkDepth;
     }
 
     // todo: might want to check we haven't gone beyond the neighbor bounds
@@ -92,6 +92,6 @@ inline BlockType LocalChunks::GetBlock(int x, int y, int z) {
     }
 
     // Retrieve the block from the appropriate chunk
-    BlockIndex index = x + z * CHUNK_SIZE_X + y * CHUNK_XZ_LAYER_SIZE;
+    ChunkBlockIndex index = x + z * ChunkWidth + y * ChunkLayerSize;
     return targetChunk->GetBlockType(index);
 }
