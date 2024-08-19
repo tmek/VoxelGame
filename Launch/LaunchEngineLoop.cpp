@@ -2,7 +2,6 @@
 
 #include "LaunchEngineLoop.h"
 
-#include "GameCore/Core.h"
 #include <cstdio>
 #include <DirectXColors.h>
 #include <unordered_set>
@@ -19,12 +18,10 @@
 #include "GameCore/FrameTiming.h"
 #include "GameCore/Macros.h"
 #include "GameCore/PlayerController.h"
-#include "GameCore/StopWatch.h"
 #include "HAL/Windows/WindowsProcess.h"
 
 #include "Input/InputManager.h"
 #include "Render/BoxMeshBuilder.h"
-#include "Render/ChunkMeshBuilder.h"
 
 #include "Utils/ChunkUtils.h"
 
@@ -35,8 +32,6 @@
 #include "WorldGen/TerrainGenerators.h"
 #include "WorldGen/WorldOperations.h"
 
-#include "WorldGen/ForrestBeachGenerator.h"
-#include "WorldGen/MountainsGenerator.h"
 
 // use static initialization to show console early in app startup
 static bool ShowConsoleOnInit = []() {
@@ -58,8 +53,10 @@ int32 GFrameNumber = 0;
 bool vsync = true;
 
 #if 1
+#include "WorldGen/ForrestBeachGenerator.h"
 ForestBeachBiomeGenerator biome;
 #else
+#include "WorldGen/MountainsGenerator.h"
 MountainsGenerator biome;
 #endif
 
@@ -81,7 +78,9 @@ int WorldBlockCounter = 0;
 
 
  
-ThreadPool GThreadPool(std::thread::hardware_concurrency());
+ThreadPool GThreadPool(std::thread::hardware_concurrency()); // leave one physical core for game main thread, GPU, system etc.
+ 
+
 // keep a hashed list of chunk keys that have been queued for generation
 // so we don't queue the same chunk multiple times.
 std::unordered_set<ChunkKey, ChunkKeyHash> ChunkLoadQueue;
@@ -892,7 +891,8 @@ void FEngineLoop::Tick()
         static WIDECHAR TempBuffer[buffer_count];
 
         // printf to temp buffer
-        swprintf(TempBuffer, buffer_count, L"Voxel Game - %d Chunks - Mouse: %d, %d - MouseDown: %d", ChunkCount, MouseX, MouseY, MouseDown);
+        auto FPS = FrameTiming::GetFPS();
+        swprintf(TempBuffer, buffer_count, L"Voxel Game: FPS=%.2f, Chunks=%d, Mouse={%d, %d}, MouseDown=%d", FPS, ChunkCount, MouseX, MouseY, MouseDown);
         
         GWindow->SetTitle(*TempBuffer);
     }

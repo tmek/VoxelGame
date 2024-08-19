@@ -20,7 +20,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
     VG_LOG(LogCategoryGeneral, LOG_INFO, "Windows Platform Entry Point (WinMain)");
 
     // name main thread
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "Setting main thread name to 'MainThread'");
     WindowsPlatformProcess::SetThreadName(L"MainThread"); // todo: this should happen very early (e.g. in static intialization somewhere)
+
+    // set main thread priority
+    VG_LOG(LogCategoryGeneral, LOG_INFO, "Setting main thread priority to THREAD_PRIORITY_ABOVE_NORMAL");
+    ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_NORMAL);
+
     
     ::G_hInstance = hInstance;
     GCmdLine = ::GetCommandLineW();

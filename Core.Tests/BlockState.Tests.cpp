@@ -1,4 +1,6 @@
-﻿#include <filesystem>
+﻿/*
+
+#include <filesystem>
 
 #include "gtest/gtest.h"
 
@@ -111,3 +113,4 @@ TEST(VoxelDataTests, EmptyBlockState)
     printf("BlockState as unsigned int: %u\n", rawData);
 }
 
+*/

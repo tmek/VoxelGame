@@ -10,6 +10,7 @@
 #include <condition_variable>
 
 #include "HAL/Windows/WindowsProcess.h"
+#include "Windows.h" // todo: this is temporary. implement generic platform version.  
 
 class ThreadPool
 {
@@ -40,6 +41,10 @@ inline ThreadPool::ThreadPool(size_t numThreads)
             swprintf(threadName, 32, L"Worker Thread %zu", i);
             WindowsPlatformProcess::SetThreadName(threadName);
 
+            VG_LOG(LogCategoryGeneral, LOG_INFO, "Setting worker thread priority to THREAD_PRIORITY_BELOW_NORMAL");
+            ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+
+            
             // worker thread's loop
             while (true)
             {

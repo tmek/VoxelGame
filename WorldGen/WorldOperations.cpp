@@ -98,7 +98,7 @@ Block& WorldOperations::GetBlockRef(const BlockCoordinate& WorldBlockPosition) c
     ChunkKey ChunkKey;
     BlockCoordinate BlockOffset;
     BlockIndex BlockIndex;
-    WorldToLocal(WorldBlockPosition, ChunkKey, BlockOffset, BlockIndex);
+    WorldPositionToChunkKeyBlockOffsetAndBlockIndex(WorldBlockPosition, ChunkKey, BlockOffset, BlockIndex);
 
     ChunkPtr chunk = world_.TryGetChunk(ChunkKey);
 
@@ -133,7 +133,7 @@ int WorldOperations::GetHighestBlockHeightAt(int x, int z)
     ChunkKey ChunkKey;
     BlockCoordinate HighestBlockOffset;
     BlockIndex HighestBlockIndex;
-    WorldToLocal(WorldBlockPosition, ChunkKey, HighestBlockOffset, HighestBlockIndex);
+    WorldPositionToChunkKeyBlockOffsetAndBlockIndex(WorldBlockPosition, ChunkKey, HighestBlockOffset, HighestBlockIndex);
     
     // if the block index is invalid, return bottom layer Y height
     if (HighestBlockIndex <= 0 || HighestBlockIndex >= ChunkSize)
@@ -172,7 +172,7 @@ bool WorldOperations::IsAirBlock(int x, int y, int z) const
     ChunkKey ChunkKey;
     BlockCoordinate localBlock;
     BlockIndex index;
-    WorldToLocal({x, y, z}, ChunkKey, localBlock, index);
+    WorldPositionToChunkKeyBlockOffsetAndBlockIndex({x, y, z}, ChunkKey, localBlock, index);
 
     ChunkPtr chunk = world_.TryGetChunk(ChunkKey);
     if(chunk == nullptr) 
@@ -188,7 +188,7 @@ bool WorldOperations::IsWaterBlock(int x, int y, int z) const
     ChunkKey ChunkKey;
     BlockCoordinate localBlock;
     BlockIndex index;
-    WorldToLocal({x, y, z}, ChunkKey, localBlock, index);
+    WorldPositionToChunkKeyBlockOffsetAndBlockIndex({x, y, z}, ChunkKey, localBlock, index);
 
     ChunkPtr chunk = world_.TryGetChunk(ChunkKey);
     if(chunk == nullptr) 

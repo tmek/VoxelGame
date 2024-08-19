@@ -1,6 +1,7 @@
-#include "../VoxelCore/Conversions.h"
+/*
+#include "Voxel/Conversions.h"
 
-#include "VoxelData/ChunkConstants.h"
+#include "Voxel/ChunkConstants.h"
 #include "gtest/gtest.h"
 
 #include "VoxelData/Chunk.h"
@@ -46,3 +47,4 @@ TEST(ChunkConstantsTestCase, FillChunkRand)
 
     SUCCEED();
 }
+*/

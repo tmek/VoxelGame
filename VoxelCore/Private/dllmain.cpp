@@ -5,16 +5,27 @@
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
+    const char* ReasonString = nullptr;
+    
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-    case DLL_THREAD_ATTACH:
-    case DLL_THREAD_DETACH:
-    case DLL_PROCESS_DETACH:
+        ReasonString = "DLL_PROCESS_ATTACH";
         break;
+    case DLL_THREAD_ATTACH:
+        ReasonString = "DLL_THREAD_ATTACH";
+        break;
+    case DLL_THREAD_DETACH:
+        ReasonString = "DLL_THREAD_DETACH";
+        break;
+    case DLL_PROCESS_DETACH:
+        ReasonString = "DLL_PROCESS_DETACH";
+        break;
+    default:
+        ReasonString = "Reason Unknown";
     }
 
-    printf("Hello from DllMain\n");
+    printf("Hello from DllMain: %s\n", ReasonString);
 	
     return TRUE;
 }

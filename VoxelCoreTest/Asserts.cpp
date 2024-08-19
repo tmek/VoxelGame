@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <intrin.h>
 
-#include "VoxelCore/VoxelDefines.h"
+#include "Voxel/VoxelDefines.h"
 
 void BeginTestGroup(const char* str)
 { 

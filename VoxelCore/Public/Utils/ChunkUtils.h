@@ -183,7 +183,7 @@ public:
                 ChunkKey DummyChunkKey;
                 BlockIndex DummyBlockIndex;
                 BlockCoordinate BlockOffset;
-                WorldToLocal(StartBlockWorldPosition, DummyChunkKey, BlockOffset, DummyBlockIndex);
+                WorldPositionToChunkKeyBlockOffsetAndBlockIndex(StartBlockWorldPosition, DummyChunkKey, BlockOffset, DummyBlockIndex);
 
                 int x_min = std::max(WorldRegion.Min.X - CurrentChunkOrigin.X, 0);
                 int x_max = std::min(WorldRegion.Max.X - CurrentChunkOrigin.X, ChunkWidth - 1);
