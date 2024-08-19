@@ -16,4 +16,5 @@ constexpr int32 ChunkSize = ChunkLayerSize * ChunkHeight;   // Total number of b
 
 /** Utility */
 constexpr int32 MaxBlockHeight = ChunkHeight - 1;           // Maximum Y height of the topmost block layer in a chunk
+constexpr int32 MinBlockHeight = 0;                         // Minimum Y height of the bottommost block layer in a chunk
 

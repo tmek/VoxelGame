@@ -14,8 +14,7 @@
     {
         constexpr inline size_t operator()(const ChunkKey& Key) const noexcept
         {
-            // returns a 64-bit size_t with X in the upper 32 bits and Z in the lower 32 bits
-            return std::bit_cast<size_t>(Key);
+            return Key.ToRawData();
         }
     };
     static_assert(sizeof(ChunkKey) == sizeof(size_t), "ChunkKey must be the same size as size_t.");

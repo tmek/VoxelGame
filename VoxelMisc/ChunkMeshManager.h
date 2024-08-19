@@ -1,9 +1,14 @@
 ﻿#pragma once
 #include <mutex>
 #include <unordered_map>
+
+#include "Chunk/Chunk.h"
+
 #include "RHI/Mesh.h"
-#include "VoxelCore/ChunkOld.h"
-#include "VoxelCore/ChunkKey.h"
+#include "Chunk/ChunkKey.h"
+#include "Chunk/ChunkKeyHash.h"
+
+struct Chunk;
 
 struct ID3D11Device;
 
@@ -12,7 +17,7 @@ class ChunkMeshManager
 public:
     Mesh* GetChunkMesh(const ChunkKey& key);
 
-    void RebuildChunkMesh(const ChunkKey& key, const ChunkOld& chunk, ID3D11Device* device);
+    void RebuildChunkMesh(const ChunkKey& key, ChunkRef, ID3D11Device* device);
 
     static ChunkMeshManager& GetInstance();
     

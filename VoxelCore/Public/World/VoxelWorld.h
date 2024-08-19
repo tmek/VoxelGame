@@ -1,11 +1,25 @@
-﻿#pragma once
+﻿// Copyright
+
+#pragma once
+
+#include "Chunk/Chunk.h"
+#include "Chunk/ChunkKey.h"
+#include "Chunk/ChunkMap.h"
+
+
 #include <mutex>
 
-#include "ChunkOld.h"
-#include "ChunkKey.h"
-#include "VoxelDefines.h"
+/*
+    todo: Need to think more about const for Chunks and ChunkMap.
+    
+    This class would like shared pointers to const chunks.
+    but the ChunkMap currently stores shared pointers to non-const chunks.
+    Ideally each chunk should be created as a temporary, be generated, and finally to map as const.
 
-#include <unordered_map>
+    I guess the "world" can be responsible for loading or generating chunks and adding them to its ChunkMap.
+
+    For now I'll just leave them non-const until it builds and runs again.
+*/
 
 class VoxelWorld
 {
@@ -25,11 +39,14 @@ public:
     VOXELCORE_API ~VoxelWorld() = default; // Destructor
 
 public:
-    // Get a chunk or add it if it doesn't exist
-    VOXELCORE_API ChunkOld& GetChunk(const ChunkKey& key);
+    // Get a chunk or loads/generates it if it doesn't exist
+    VOXELCORE_API ChunkRef GetChunk(const ChunkKey& ChunkKey);
 
+    ChunkPtr LoadOrGenerateChunk(const ChunkKey& key); 
+
+    
     // Get a chunk or return nullptr if it doesn't exist
-    VOXELCORE_API ChunkOld* TryGetChunk(const ChunkKey& key);
+    VOXELCORE_API ChunkPtr TryGetChunk(const ChunkKey& key);
 
     // Check if a chunk exists
     VOXELCORE_API bool ChunkExists(const ChunkKey key) const;
@@ -53,7 +70,8 @@ public:
         Chunks.clear();
     }
 
+
 private:
-    std::unordered_map<ChunkKey, ChunkOld, ChunkKeyHash> Chunks;
+    ChunkMap Chunks;
     mutable std::mutex chunksMutex; // to protect chunk access
 };

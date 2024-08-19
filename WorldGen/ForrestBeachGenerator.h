@@ -3,8 +3,9 @@
 
 struct ForestBeachBiomeGenerator : public TerrainGeneratorBase
 {
-    BlockState GetBlock(int x, int y, int z)
+    const Block GetBlock(int x, int y, int z)
     {
+        
         // bedrock
         if (y == 0) return BEDROCK;
         if (y == 1) return rand() % 3 ? BEDROCK : LAVA;

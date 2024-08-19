@@ -3,7 +3,7 @@
 
 struct MountainsGenerator : TerrainGeneratorBase
 {
-    BlockState GetBlock(int x, int y, int z)
+    const Block GetBlock(int x, int y, int z) override
     {
         // surface samples
         // implement multiple octaves of perlin noise

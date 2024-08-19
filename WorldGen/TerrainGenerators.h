@@ -18,7 +18,7 @@ struct TerrainGeneratorBase
     PerlinNoise perlinNoise;
     SimplexNoise simplexNoise;
 
-    virtual BlockState GetBlock(int x, int y, int z);
+    virtual const Block GetBlock(int x, int y, int z);
 
     // PlainsBiomeGenerator() : TerrainGeneratorBase()
     // {
@@ -47,7 +47,7 @@ struct TerrainGeneratorBase
         return (float)optimizedPerlinNoise.sample3D(x * freq, y * freq, z * freq);
     }
 
-    BlockState GetOreBlock(const int y)
+    Block GetOreBlock(const int y)
     {
         // diamonds
         if (y < 16)
@@ -71,7 +71,8 @@ struct TerrainGeneratorBase
         }
 
         // everything else
-        return rand() % 50 ? STONE : COAL_ORE;
+        return rand() % 50 ? STONE : COAL_ORE; // todo: rand not threadsafe
+        
     }
 
     virtual ~TerrainGeneratorBase() = default;

@@ -1,13 +1,18 @@
-﻿#include "ChunkMeshBuilder.h"
+﻿// Copyright
+
+#include "ChunkMeshBuilder.h"
 
 #include <memory>
 
 #include "BlockMeshBuilder.h"
 #include "RHI/MeshAssembler.h"
-#include "VoxelCore/ChunkOld.h"
+
+#include "Utils/ChunkCluster.h"
+
+
 #include "WorldGen/BlockTypes.h"
 #include "WorldGen/WorldOperations.h"
-#include "VoxelCore/LocalChunks.h"
+
 
 
 extern VoxelWorld GWorld;
@@ -22,7 +27,7 @@ static DirectX::XMFLOAT4 TintColors[] = {
     {0.95f, 0.95f, 0.95f, 1.0f}, // snow
 };
 
-inline XMFLOAT4 GetBlockColor(int blockType)
+inline XMFLOAT4 GetBlockColor(uint32 blockType)
 {
     BlockColor color = BlockColors[BEDROCK];
 
@@ -50,10 +55,11 @@ inline XMFLOAT4 GetBlockColor(int blockType)
 
 extern bool GIsRequestingExit; // todo: should probably have a globals.h file
 
-Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const ChunkOld& chunk, ID3D11Device* device)
+Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Device* device)
 {
     // setup pointers to chunk and its neighbors
-    LocalChunks localChunks(&chunk);
+    ChunkCluster localChunks(chunk);
+    
     for (int i = -1; i <= 1; ++i)
         for (int j = -1; j <= 1; ++j)
         {
@@ -61,7 +67,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const ChunkOld& chunk, ID
                 continue;
 
             ChunkKey neighborKey = {chunkKey.X + i, chunkKey.Z + j};
-            ChunkOld* neighbor = GWorld.TryGetChunk(neighborKey);
+            ChunkPtr neighbor = GWorld.TryGetChunk(neighborKey);
             localChunks.SetNeighbor(neighbor, i, j);
         }
 
@@ -102,7 +108,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const ChunkOld& chunk, ID
 #endif
 
     // loop through all blocks in the chunk in yzx order
-    ChunkBlockIndex blockIndex = 0;
+    BlockIndex blockIndex = 0;
     for (int localY = 0; localY < ChunkHeight; ++localY)
     {
         // check if we're exiting (once per y layer)
@@ -120,7 +126,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const ChunkOld& chunk, ID
                 // this means you need to query all blocks in the chunk and all blocks touching the chunk
 
 
-                BlockType blockType = localChunks.GetBlock(localX, localY, localZ);
+                BlockType blockType = localChunks.GetBlockFromCluster(localX, localY, localZ);
                 if (blockType == AIR)
                 {
                     continue;
@@ -141,13 +147,13 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const ChunkOld& chunk, ID
                 bool includeNegZ;
 
                 // is face touching to air?  
-                bool IsFaceTouchingToAirNegX = localChunks.GetBlock(localX - 1, localY, localZ) == AIR; // left
-                bool IsFaceTouchingToAirNegY = localChunks.GetBlock(localX, localY - 1, localZ) == AIR; // down
-                bool IsFaceTouchingToAirNegZ = localChunks.GetBlock(localX, localY, localZ - 1) == AIR;
-                // backward                   
-                bool IsFaceTouchingToAirPosX = localChunks.GetBlock(localX + 1, localY, localZ) == AIR; // right 
-                bool IsFaceTouchingToAirPosY = localChunks.GetBlock(localX, localY + 1, localZ) == AIR; // up
-                bool IsFaceTouchingToAirPosZ = localChunks.GetBlock(localX, localY, localZ + 1) == AIR;
+                bool IsFaceTouchingToAirNegX = localChunks.GetBlockFromCluster(localX - 1, localY, localZ) == AIR; // left
+                bool IsFaceTouchingToAirNegY = localChunks.GetBlockFromCluster(localX, localY - 1, localZ) == AIR; // down
+                bool IsFaceTouchingToAirNegZ = localChunks.GetBlockFromCluster(localX, localY, localZ - 1) == AIR;
+                // backward                                        
+                bool IsFaceTouchingToAirPosX = localChunks.GetBlockFromCluster(localX + 1, localY, localZ) == AIR; // right 
+                bool IsFaceTouchingToAirPosY = localChunks.GetBlockFromCluster(localX, localY + 1, localZ) == AIR; // up
+                bool IsFaceTouchingToAirPosZ = localChunks.GetBlockFromCluster(localX, localY, localZ + 1) == AIR;
                 // forward
 
                 if (IsWaterBlock)
@@ -162,12 +168,12 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, const ChunkOld& chunk, ID
                 else
                 {
                     // is face touching water?
-                    bool IsFaceTouchingToWaterNegX = localChunks.GetBlock(localX - 1, localY, localZ) == WATER; // left
-                    bool IsFaceTouchingToWaterNegY = localChunks.GetBlock(localX, localY - 1, localZ) == WATER; // down
-                    bool IsFaceTouchingToWaterNegZ = localChunks.GetBlock(localX, localY, localZ - 1) == WATER;
-                    bool IsFaceTouchingToWaterPosX = localChunks.GetBlock(localX + 1, localY, localZ) == WATER; // right
-                    bool IsFaceTouchingToWaterPosY = localChunks.GetBlock(localX, localY + 1, localZ) == WATER; // up
-                    bool IsFaceTouchingToWaterPosZ = localChunks.GetBlock(localX, localY, localZ + 1) == WATER;
+                    bool IsFaceTouchingToWaterNegX = localChunks.GetBlockFromCluster(localX - 1, localY, localZ) == WATER; // left
+                    bool IsFaceTouchingToWaterNegY = localChunks.GetBlockFromCluster(localX, localY - 1, localZ) == WATER; // down
+                    bool IsFaceTouchingToWaterNegZ = localChunks.GetBlockFromCluster(localX, localY, localZ - 1) == WATER;
+                    bool IsFaceTouchingToWaterPosX = localChunks.GetBlockFromCluster(localX + 1, localY, localZ) == WATER; // right
+                    bool IsFaceTouchingToWaterPosY = localChunks.GetBlockFromCluster(localX, localY + 1, localZ) == WATER; // up
+                    bool IsFaceTouchingToWaterPosZ = localChunks.GetBlockFromCluster(localX, localY, localZ + 1) == WATER;
 
                     includePosX = IsFaceTouchingToAirPosX || IsFaceTouchingToWaterPosX;
                     includePosY = IsFaceTouchingToAirPosY || IsFaceTouchingToWaterPosY;

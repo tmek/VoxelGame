@@ -26,9 +26,9 @@
 #include "Render/BoxMeshBuilder.h"
 #include "Render/ChunkMeshBuilder.h"
 
-#include "VoxelCore/ChunkUtils.h"
+#include "Utils/ChunkUtils.h"
 
-#include "VoxelCore/VoxelWorld.h"
+#include "World/VoxelWorld.h"
 #include "VoxelMisc/ChunkMeshManager.h"
 #include "WorldGen/BlockTypes.h"
 #include "WorldGen/PerlinNoise.h"
@@ -98,7 +98,7 @@ void FEngineLoop::GenerateChunksInBackground(const std::vector<ChunkKey>& chunkK
             //VG_LOG(LogCategoryGeneral, LOG_INFO, "Generating chunk: %d, %d", key.X, key.Z);
             
             // Get or create the chunk
-            ChunkOld& chunk = GWorld.GetChunk(key);
+            ChunkRef chunk = GWorld.GetChunk(key);
 
             // generate the chunk
             GenerateChunk(chunk, key);
@@ -113,13 +113,13 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
 {
     // get camera position
     
-    BlockWorldCoordinate cameraBlock;
+    BlockCoordinate cameraBlock;
     cameraBlock.X = static_cast<int>(XMVectorGetX(GCameraPosition));
     cameraBlock.Y = static_cast<int>(XMVectorGetY(GCameraPosition));
     cameraBlock.Z = static_cast<int>(XMVectorGetZ(GCameraPosition));
 
     ChunkKey cameraChunkKey;
-    WorldToLocal(cameraBlock, cameraChunkKey);
+    WorldPositionToChunkKey(cameraBlock, cameraChunkKey);
 
     // log camera chunk key
     //VG_LOG(LogCategoryGeneral, LOG_INFO, "Camera Chunk Key: %d, %d", cameraChunkKey.X, cameraChunkKey.Z);
@@ -185,7 +185,7 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
     
     
     return;
-    
+    /*
     // generate some perlin terrain
     int size = RadiusInChunks * ChunkWidth;
     int startX = -size / 2;
@@ -225,7 +225,7 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
 
                       const auto& startingBlock = chunkSubVolume.startingBlock;
 
-                      BlockWorldCoordinate startingBlockWorldCoords;
+                      BlockCoordinate startingBlockWorldCoords;
                       LocalToWorld(startingBlock, startingBlockWorldCoords);
 
                       // get chunk data
@@ -248,6 +248,7 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
     VG_LOG(LogCategoryGeneral, LOG_INFO, "Chunks per second: %f", chunksPerSecond);
 
     VG_LOG(LogCategoryGeneral, LOG_INFO, "Generated %d chunks", totalChunks);
+    */
 }
 
 //
@@ -323,7 +324,7 @@ void FEngineLoop::AddTrees(WorldOperations world, int size)
         int y = world.GetHighestBlockHeightAt(x, z);
 
         // check ground is not water block
-        auto ground = world.GetBlockType({x, y, z});
+        const Block ground = world.GetBlockRef({x, y, z});
         if (ground == WATER || ground == STONE || ground == SAND || ground == ICE || ground == OAK_LEAVES)
         {
             continue;
@@ -482,9 +483,9 @@ void FEngineLoop::RebuildChunkMeshes()
     {
         const auto& chunkKey = chunkEntry.first;
 
-        if(ChunkOld* chunk = GWorld.TryGetChunk(chunkKey))
+        if(ChunkPtr chunk = GWorld.TryGetChunk(chunkKey))
         {
-            ChunkMeshManager::GetInstance().RebuildChunkMesh(chunkKey, *chunk, GGraphicsDevice->GetDevice());
+            ChunkMeshManager::GetInstance().RebuildChunkMesh(chunkKey, chunk, GGraphicsDevice->GetDevice());
         }
     }
 }
@@ -502,13 +503,13 @@ void FEngineLoop::AddBlockTick()
         WorldBlockCounter++;
         if (WorldBlockCounter < 1000)
         {
-            BlockWorldCoordinate worldBlock = {WorldBlockCounter, 0, 1};
+            BlockCoordinate worldBlock = {WorldBlockCounter, 0, 1};
             world.SetBlockType(worldBlock, 1);
 
             // rebuild chunk and surrounding chunks.
             ChunkKey chunkKey;
-            WorldToLocal(worldBlock, chunkKey);
-            auto& chunk = GWorld.GetChunk(chunkKey);
+            WorldPositionToChunkKey(worldBlock, chunkKey);
+            auto chunk = GWorld.GetChunk(chunkKey);
             ChunkMeshManager::GetInstance().RebuildChunkMesh(chunkKey, chunk, GGraphicsDevice->GetDevice());
         }
     }
@@ -640,8 +641,8 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
         //     //continue;
         // }
 
-        BlockWorldCoordinate chunkOrigin;
-        ChunkToWorld(chunkKey, chunkOrigin);
+        BlockCoordinate chunkOrigin;
+        ChunkKeyToWorldPosition(chunkKey, chunkOrigin);
 
         translationMatrix = DirectX::XMMatrixTranslation(
             static_cast<float>(chunkOrigin.X), 0.0f, static_cast<float>(chunkOrigin.Z));
@@ -816,14 +817,14 @@ void FEngineLoop::Tick()
 
             DirectX::XMVECTOR BlockPositionRounded = DirectX::XMVectorRound(BlockPosition);
 
-            BlockWorldCoordinate blockCursor;
+            BlockCoordinate blockCursor;
             blockCursor.X = static_cast<int>(DirectX::XMVectorGetX(BlockPositionRounded));
             blockCursor.Y = static_cast<int>(DirectX::XMVectorGetY(BlockPositionRounded));
             blockCursor.Z = static_cast<int>(DirectX::XMVectorGetZ(BlockPositionRounded));
 
 
             ChunkKey centerChunkKey;
-            WorldToLocal(blockCursor, centerChunkKey);
+            WorldPositionToChunkKey(blockCursor, centerChunkKey);
 
             if (0)
             {
@@ -902,32 +903,32 @@ void FEngineLoop::Exit()
     VG_LOG(LogCategoryGeneral, LOG_INFO, "FEngineLoop::Exit()");
 }
 
-void FEngineLoop::GenerateChunk(const ChunkOld& chunk, ChunkKey key)
+void FEngineLoop::GenerateChunk(ChunkRef chunk, ChunkKey key)
 {
-    auto chunkData = chunk.GetBlockData()->blockStates;
-    ChunkUtils::TFillChunkSubvolume(chunkData,
+    ChunkUtils::TFillChunkSubvolume(chunk->Blocks,
                                     0,
                                     ChunkWidth, ChunkHeight, ChunkDepth,
                                     key.X * ChunkWidth, 0, key.Z * ChunkDepth,
                                     [&](auto* block_states, int index, int world_x, int world_y,
                                         int world_z)
                                     {
-                                        BlockType block_type1 = biome.GetBlock(
+                                        const Block block_type1 = biome.GetBlock(
                                             world_x, world_y, world_z);
 
-                                        if (block_type1 != AIR)
+                                        // set only non-air blocks (to prevent drawing air blocks over something that was drawn to the chunk previously)
+                                        if (!block_type1.IsAir())
                                         {
                                             block_states[index] = block_type1;
                                         }
-                                        return;
                                     });
     
 }
 
 
-void FEngineLoop::TestBigSphere(BlockWorldCoordinate Center, int Radius, BlockType BlockType)
+void FEngineLoop::TestBigSphere(BlockCoordinate Center, int Radius, BlockType BlockType)
 {
     return;
+    /*
     // Define the world region to map
     BlockRegion sphereWorldRegion = {
         {Center.X - Radius, Center.Y - Radius, Center.Z - Radius}, // Min coordinates
@@ -985,6 +986,7 @@ void FEngineLoop::TestBigSphere(BlockWorldCoordinate Center, int Radius, BlockTy
                                             }
                                         });
     }
+    */
 }
 
 // old codde

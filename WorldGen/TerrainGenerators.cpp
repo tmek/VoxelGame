@@ -4,7 +4,7 @@
 
 
 
-BlockState TerrainGeneratorBase::GetBlock(int x, int y, int z)
+const Block TerrainGeneratorBase::GetBlock(int x, int y, int z)
 {
     if(y <= sea_level) return STONE;
 

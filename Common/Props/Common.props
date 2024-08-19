@@ -13,10 +13,13 @@
     </ItemDefinitionGroup>
 
 
-    <!-- add linker additional dependencies for ;d3d11.lib;d3dcompiler.lib; -->
     <ItemDefinitionGroup>
         <Link>
+            <!-- add linker additional dependencies for ;d3d11.lib;d3dcompiler.lib; -->
             <AdditionalDependencies>%(AdditionalDependencies);d3d11.lib;d3dcompiler.lib;dxgi.lib</AdditionalDependencies>
+            
+            <!-- /DEBUG:FULL for profilers (even for release builds) -->
+            <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
         </Link>
     </ItemDefinitionGroup>    
 </Project>

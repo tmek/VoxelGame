@@ -3,9 +3,9 @@
 
 #include "BlockTypes.h"
 
-#include "VoxelCore/ChunkOld.h"
 #include "PerlinNoise.h"
 
+/*
 void WorldOperations::DrawSphere_deprecated(int centerX, int centerY, int centerZ, int radius, BlockType blockType)
 {
     // Calculate the sphere's bounds
@@ -41,6 +41,7 @@ void WorldOperations::DrawSphere_deprecated(int centerX, int centerY, int center
     //     }
     // });
 }
+*/
 
 static void CalculateHeightRange(float amplitude, int& minY, int& maxY)
 {
@@ -91,24 +92,27 @@ void WorldOperations::GeneratePerlinNoiseTerrain(int startX, int startZ, int wid
 }
 
 
-BlockType WorldOperations::GetBlockType(const BlockWorldCoordinate& worldBlock) const
+Block& WorldOperations::GetBlockRef(const BlockCoordinate& WorldBlockPosition) const
 {
     // Get the chunk
-    LocalBlockPosition localBlock;
-    WorldToLocal(worldBlock, localBlock);
-    ChunkOld* chunk = world_.TryGetChunk(localBlock.ChunkKey);
+    ChunkKey ChunkKey;
+    BlockCoordinate BlockOffset;
+    BlockIndex BlockIndex;
+    WorldToLocal(WorldBlockPosition, ChunkKey, BlockOffset, BlockIndex);
+
+    ChunkPtr chunk = world_.TryGetChunk(ChunkKey);
 
     if(!chunk)
     {
-        return AIR;
+        return const_cast<Block&>(EmptyBlock);
     }
     
     // Get the block type
-    return chunk->GetBlockType(localBlock.Index);
+    return chunk->Blocks[BlockIndex];
 }
 
 
-void WorldOperations::SetBlockType(const BlockWorldCoordinate& worldBlock, const BlockType blockType) const
+void WorldOperations::SetBlockType(const BlockCoordinate& worldBlock, const BlockType blockType) const
 {
     // TODO: currently disabling this temporarily, this means we can draw trees or single blocks in the world.
     // // Get the chunk
@@ -124,44 +128,73 @@ void WorldOperations::SetBlockType(const BlockWorldCoordinate& worldBlock, const
 int WorldOperations::GetHighestBlockHeightAt(int x, int z)
 {
     // Get the chunk
-    BlockWorldCoordinate worldBlock = {x, ChunkHeight-1, z};
-    LocalBlockPosition localBlock;
-    WorldToLocal(worldBlock, localBlock);
-    ChunkOld* chunk = world_.TryGetChunk(localBlock.ChunkKey);
+    BlockCoordinate WorldBlockPosition = {x, MaxBlockHeight, z};
 
-    if(!chunk)
+    ChunkKey ChunkKey;
+    BlockCoordinate HighestBlockOffset;
+    BlockIndex HighestBlockIndex;
+    WorldToLocal(WorldBlockPosition, ChunkKey, HighestBlockOffset, HighestBlockIndex);
+    
+    // if the block index is invalid, return bottom layer Y height
+    if (HighestBlockIndex <= 0 || HighestBlockIndex >= ChunkSize)
     {
-        return ChunkHeight-1;
+        return MinBlockHeight;
     }
 
-    return chunk->GetHighestBlockHeightAt(localBlock.Index);
+    // try to get the chunk
+    ChunkPtr Chunk = world_.TryGetChunk(ChunkKey);
+    if(!Chunk)
+    {
+        return MaxBlockHeight; 
+    }
+
+
+    // start at the top of the chunk and move down until we find a non-air block or hit the bottom
+    while (HighestBlockIndex > 0)
+    {
+        const bool IsAir = Chunk->Blocks[HighestBlockIndex].IsAir();
+        if (!IsAir)
+        {
+            return HighestBlockIndex / ChunkLayerSize;
+        }
+
+        // move down one layer
+        HighestBlockIndex -= ChunkLayerSize;
+    }
+
+    // we went all the way to the bottom and found nothing
+    return 0;     
 }
 
 // Is there air? YOU DON'T KNOW!! (v=kcPouxFqUFA)
 bool WorldOperations::IsAirBlock(int x, int y, int z) const
 {
-    LocalBlockPosition localBlock;
-    WorldToLocal({x, y, z}, localBlock);
+    ChunkKey ChunkKey;
+    BlockCoordinate localBlock;
+    BlockIndex index;
+    WorldToLocal({x, y, z}, ChunkKey, localBlock, index);
 
-    ChunkOld* chunk = world_.TryGetChunk(localBlock.ChunkKey);
+    ChunkPtr chunk = world_.TryGetChunk(ChunkKey);
     if(chunk == nullptr) 
     {
         return true; // since there's no chunk, it's air
     }
     
-    return chunk->IsAirBlock(localBlock.Index);
+    return chunk->Blocks[index].IsAir();
 }
 
 bool WorldOperations::IsWaterBlock(int x, int y, int z) const
 {
-    LocalBlockPosition localBlock;
-    WorldToLocal({x, y, z}, localBlock);
+    ChunkKey ChunkKey;
+    BlockCoordinate localBlock;
+    BlockIndex index;
+    WorldToLocal({x, y, z}, ChunkKey, localBlock, index);
 
-    ChunkOld* chunk = world_.TryGetChunk(localBlock.ChunkKey);
+    ChunkPtr chunk = world_.TryGetChunk(ChunkKey);
     if(chunk == nullptr) 
     {
-        return true; // since there's no chunk, it's air
+        return false; // since there's no chunk, it's not water
     }
     
-    return chunk->IsWaterBlock(localBlock.Index);
+    return chunk->Blocks[index].IsWater();
 }

@@ -85,10 +85,6 @@ TEST(ChunkTests, FillChunkWithRandomBlockTypes)
 {
     srand(static_cast<uint32>(time(nullptr)));
 
-    // sleep to let profiler settle
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    
-
     // ARRANGE
     Chunk NewChunk = {};
     ChunkKey NewChunkKey;

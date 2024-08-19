@@ -1,14 +1,17 @@
-﻿#pragma once
+﻿// Copyright
+
+#pragma once
+
 #include "ThreadPool.h"
 
 #include "GameCore/Macros.h"
 
 #include "RHI/Mesh.h"
 
-#include "VoxelCore/ChunkKey.h"
-#include "VoxelCore/Conversions.h"
-#include "VoxelCore/VoxelWorld.h"
-#include "VoxelCore/Coordinates.h"
+#include "Chunk/ChunkKey.h"
+#include "Voxel/Conversions.h"
+#include "World/VoxelWorld.h"
+
 
 // class to perform world operations
 class WorldOperations
@@ -34,9 +37,10 @@ public:
     // Method to generate terrain with Perlin noise
     void GeneratePerlinNoiseTerrain(int startX, int startZ, int width, int depth, float scale, float amplitude,
                                     uint16_t type);
-    BlockType GetBlockType(const BlockWorldCoordinate& worldBlock) const;
+    
+    Block& GetBlockRef(const BlockCoordinate& WorldBlockPosition) const;
 
-    inline void SetBlockType(const BlockWorldCoordinate& worldBlock, const BlockType blockType) const;
+    inline void SetBlockType(const BlockCoordinate& worldBlock, const BlockType blockType) const;
 
     int GetHighestBlockHeightAt(int x, int z);
 
@@ -47,38 +51,38 @@ private:
     VoxelWorld& world_; // todo: shared pointer or something
 };
 
-
-template <typename Func>
-void WorldOperations::IterateBlocks_deprecated(BlockRegion& region, Func blockOperation)
-{
-    ChunkOld* activeChunk = nullptr;
-    ChunkKey activeChunkKey;
-
-    LocalBlockPosition localBlock;
-    
-    // Iterate over all blocks within the 3D region in XZY order
-    for (int y = region.Min.Y; y <= region.Max.Y; ++y)
-    {
-        for (int z = region.Min.Z; z <= region.Max.Z; ++z)
-        {
-            for (int x = region.Min.X; x <= region.Max.X; ++x)
-            {
-                BlockWorldCoordinate worldBlock = {x, y, z};
-                WorldToLocal(worldBlock, localBlock);
-
-                // retrieve chunk if needed
-                bool ShouldGetChunk = localBlock.ChunkKey != activeChunkKey || activeChunk == nullptr;
-                if (ShouldGetChunk)
-                {
-                    activeChunkKey = localBlock.ChunkKey;
-                    activeChunk = &world_.GetChunk(activeChunkKey);
-                }
-
-                check(activeChunk != nullptr);
-                
-                // Apply operation to block
-                blockOperation(activeChunk, localBlock, worldBlock);
-            }
-        }
-    }
-}
+//
+// template <typename Func>
+// void WorldOperations::IterateBlocks_deprecated(BlockRegion& region, Func blockOperation)
+// {
+//     ChunkPtr activeChunk = nullptr;
+//     ChunkKey activeChunkKey;
+//
+//     BlockCoordinate BlockOffset;
+//     
+//     // Iterate over all blocks within the 3D region in XZY order
+//     for (int y = region.Min.Y; y <= region.Max.Y; ++y)
+//     {
+//         for (int z = region.Min.Z; z <= region.Max.Z; ++z)
+//         {
+//             for (int x = region.Min.X; x <= region.Max.X; ++x)
+//             {
+//                 BlockCoordinate worldBlock = {x, y, z};
+//                 WorldPositionToBlockOffset(worldBlock, BlockOffset);
+//
+//                 // retrieve chunk if needed
+//                 bool ShouldGetChunk = BlockOffset.ChunkKey != activeChunkKey || activeChunk == nullptr;
+//                 if (ShouldGetChunk)
+//                 {
+//                     activeChunkKey = localBlock.ChunkKey;
+//                     activeChunk = &world_.GetChunk(activeChunkKey);
+//                 }
+//
+//                 check(activeChunk != nullptr);
+//                 
+//                 // Apply operation to block
+//                 blockOperation(activeChunk, localBlock, worldBlock);
+//             }
+//         }
+//     }
+// }

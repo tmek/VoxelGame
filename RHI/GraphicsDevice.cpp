@@ -5,7 +5,8 @@
 #include "Render/ImageUtil.h"
 #include "GameCore/Logging.h"
 #include "GameCore/Macros.h"
-#include "VoxelCore/VoxelDefines.h"
+#include "Voxel/VoxelDefines.h"
+
 
 using Microsoft::WRL::ComPtr;
 

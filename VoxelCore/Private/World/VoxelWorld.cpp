@@ -1,19 +1,36 @@
-﻿#include "VoxelWorld.h"
+﻿#include "World/VoxelWorld.h"
+#include "Chunk/Chunk.h"
+#include "Chunk/ChunkKey.h"
 
-ChunkOld& VoxelWorld::GetChunk(const ChunkKey& key)
+
+
+ChunkRef VoxelWorld::GetChunk(const ChunkKey& ChunkKey)
 {
     std::lock_guard<std::mutex> lock(chunksMutex);
     
-    auto it = Chunks.find(key);
+    auto it = Chunks.find(ChunkKey);
     
     if (it == Chunks.end()) {
-        return Chunks.emplace(key, ChunkOld(key)).first->second;
+        // Allocate a new chunk and add it to the map.
+        auto MyChunk = LoadOrGenerateChunk(ChunkKey);
+        return Chunks.emplace(ChunkKey, MyChunk).first->second;
     }
     
     return it->second;
 }
 
-ChunkOld* VoxelWorld::TryGetChunk(const ChunkKey& key)
+ChunkPtr VoxelWorld::LoadOrGenerateChunk(const ChunkKey& key)
+{
+    // allocate chunk
+    auto NewChunk = std::make_shared<Chunk>();
+
+    // Load or generate the chunk data
+    
+
+    return NewChunk; // eventually we want to return ConstChunkPtr, but this for now.
+}
+
+ChunkPtr VoxelWorld::TryGetChunk(const ChunkKey& key)
 {
     std::lock_guard<std::mutex> lock(chunksMutex);
     
@@ -22,8 +39,8 @@ ChunkOld* VoxelWorld::TryGetChunk(const ChunkKey& key)
     if (it == Chunks.end()) {
         return nullptr;
     }
-    
-    return &it->second;
+
+    return it->second;
 }
 
 bool VoxelWorld::ChunkExists(const ChunkKey key) const

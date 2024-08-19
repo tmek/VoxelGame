@@ -27,14 +27,21 @@ struct TVector3
 }; 
 
 /** 3D Region */
-template<typename T>
-struct Region
-{
-    TVector3<T> Min;
-    TVector3<T> Max;
-};
+// template<typename T>
+// struct Region
+// {
+//     TVector3<T> Min;
+//     TVector3<T> Max;
+// };
 
 /** Blocks */ 
 using BlockCoordinate = TVector3<int32>;
-using BlockRegion = Region<int32>;
-using BlockIndex = size_t;
+using BlockIndex = uint32;
+
+/** A 3D region of blocks in the world, or within a chunk as block offsets. */
+struct BlockRegion
+{
+    BlockCoordinate Min;
+    BlockCoordinate Max;
+};
+

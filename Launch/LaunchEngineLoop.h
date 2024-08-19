@@ -2,7 +2,6 @@
 #include <DirectXMath.h>
 
 #include "GameCore/Core.h"
-#include "VoxelCore/ChunkUtils.h"
 #include "WorldGen/WorldOperations.h"
 
 
@@ -17,9 +16,9 @@ public:
                     DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix, bool bDrawWater);
     void Tick();
     void Exit();
-    void GenerateChunk(const ChunkOld& chunk, ChunkKey key);
+    void GenerateChunk(ChunkRef chunk, ChunkKey key);
 
-    static void TestBigSphere(BlockWorldCoordinate Center, int Radius, BlockType BlockType);
+    static void TestBigSphere(BlockCoordinate Center, int Radius, BlockType BlockType);
 
     void GenerateChunksInBackground(const std::vector<ChunkKey>& chunkKeys);
     void GenerateChunksAroundCamera(int RadiusInChunks);
