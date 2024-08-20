@@ -157,7 +157,7 @@
     <ClCompile Include="Render\ChunkMeshBuilder.cpp" />
     <ClCompile Include="Render\CubeMesh.cpp" />
     <ClCompile Include="HAL\PlatformTime.cpp" />
-    <ClCompile Include="HAL\PlatformWindow.cpp" />
+    <ClCompile Include="HAL\GenericWindow.cpp" />
     <ClCompile Include="HAL\Windows\WindowsProcess.cpp" />
     <ClCompile Include="Render\ImageUtil.cpp" />
     <ClCompile Include="Render\MeshBuilder.cpp" />
@@ -200,7 +200,7 @@
     <ClInclude Include="HAL\Platform.h" />
     <ClInclude Include="HAL\PlatformProcess.h" />
     <ClInclude Include="HAL\PlatformTime.h" />
-    <ClInclude Include="HAL\PlatformWindow.h" />
+    <ClInclude Include="HAL\GenericWindow.h" />
     <ClInclude Include="HAL\Windows\WindowsProcess.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClCompile Include="Launch\Windows\LaunchWindows.cpp" />

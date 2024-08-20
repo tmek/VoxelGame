@@ -9,7 +9,7 @@
 #include "RHI/GraphicsDevice.h"
 #include "RHI/Mesh.h"
 
-#include "HAL/PlatformWindow.h"
+#include "HAL/GenericWindow.h"
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformTime.h"
 
@@ -34,17 +34,19 @@
 
 
 // use static initialization to show console early in app startup
-static bool ShowConsoleOnInit = []() {
+static bool ShowConsoleOnInit = []()
+{
     WindowsPlatformProcess::ShowConsole();
     return true;
 }();
 
 extern bool GIsRequestingExit;
 
-PlatformWindow* GWindow = nullptr;
+GenericWindow* GWindow = nullptr;
 GraphicsDevice* GGraphicsDevice = nullptr;
 CubeMesh* GCubeMesh = nullptr;
 Mesh GBoxMesh;
+vector<ChunkKey> VisibleChunks;
 
 VoxelWorld GWorld;
 double GTime = 0.0;
@@ -76,10 +78,7 @@ bool GShouldRenderTintColor;
 
 int WorldBlockCounter = 0;
 
-
- 
-ThreadPool GThreadPool(std::thread::hardware_concurrency()); // leave one physical core for game main thread, GPU, system etc.
- 
+ThreadPool GThreadPool(std::thread::hardware_concurrency());
 
 // keep a hashed list of chunk keys that have been queued for generation
 // so we don't queue the same chunk multiple times.
@@ -95,7 +94,7 @@ void FEngineLoop::GenerateChunksInBackground(const std::vector<ChunkKey>& chunkK
         GThreadPool.Enqueue([this,key]()
         {
             //VG_LOG(LogCategoryGeneral, LOG_INFO, "Generating chunk: %d, %d", key.X, key.Z);
-            
+
             // Get or create the chunk
             ChunkRef chunk = GWorld.GetChunk(key);
 
@@ -111,7 +110,7 @@ void FEngineLoop::GenerateChunksInBackground(const std::vector<ChunkKey>& chunkK
 void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
 {
     // get camera position
-    
+
     BlockCoordinate cameraBlock;
     cameraBlock.X = static_cast<int>(XMVectorGetX(GCameraPosition));
     cameraBlock.Y = static_cast<int>(XMVectorGetY(GCameraPosition));
@@ -125,11 +124,11 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
 
     // make list of chunks to generate, centered around the camera
     // do an actual radius not just a square
-    
-    
+
+
     std::vector<ChunkKey> chunkKeys;
     int radius = RadiusInChunks;
-    float bias = 0;//0.5f ; // removes unwanted single chunk at the edge of the radius along x & z axes
+    float bias = 0; //0.5f ; // removes unwanted single chunk at the edge of the radius along x & z axes
     int radiusSquared = radius * radius;
 
     VG_LOG("General", LOG_INFO, "Radius = %d", radius);
@@ -175,14 +174,14 @@ void FEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
         }
     }
 
-    VG_LOG("General", LOG_INFO, "Chunks Submitted For Background Generation: %d", chunkKeys.size()); 
-    
+    VG_LOG("General", LOG_INFO, "Chunks Submitted For Background Generation: %d", chunkKeys.size());
+
     GenerateChunksInBackground(chunkKeys);
 
     // remove chunks outside nearby radius
     //GWorld.RemoveChunksOutsideRadius(cameraChunkKey, ChunksWide);
-    
-    
+
+
     return;
     /*
     // generate some perlin terrain
@@ -476,18 +475,18 @@ void FEngineLoop::GenerateWorld()
 }
 */
 
-void FEngineLoop::RebuildChunkMeshes()
-{
-    for (auto& chunkEntry : GWorld)
-    {
-        const auto& chunkKey = chunkEntry.first;
-
-        if(ChunkPtr chunk = GWorld.TryGetChunk(chunkKey))
-        {
-            ChunkMeshManager::GetInstance().RebuildChunkMesh(chunkKey, chunk, GGraphicsDevice->GetDevice());
-        }
-    }
-}
+// void FEngineLoop::RebuildChunkMeshes()
+// {
+//     for (auto& chunkEntry : GWorld)
+//     {
+//         const auto& chunkKey = chunkEntry.first;
+//
+//         if(ChunkPtr chunk = GWorld.TryGetChunk(chunkKey))
+//         {
+//             ChunkMeshManager::GetInstance().RebuildChunkMesh(chunkKey, chunk, GGraphicsDevice->GetDevice());
+//         }
+//     }
+// }
 
 
 void FEngineLoop::AddBlockTick()
@@ -522,7 +521,7 @@ int32 FEngineLoop::Init()
 
     GTime = PlatformTime::GetTimeInSeconds();
 
-    GWindow = new PlatformWindow();
+    GWindow = new GenericWindow();
 
     GGraphicsDevice = new GraphicsDevice(GWindow->GetHandle());
     assert(GGraphicsDevice->IsValid());
@@ -537,7 +536,7 @@ int32 FEngineLoop::Init()
     GCubeMesh->Select();
 
     GenerateChunksAroundCamera(ChunkDrawRadius);
-    
+
     // {
     //     ScopedTimer timer("GenerateWorld");
     //     GenerateWorld();
@@ -548,7 +547,7 @@ int32 FEngineLoop::Init()
     //     RebuildChunkMeshes();
     // }
 
-    
+
     return 0;
 }
 
@@ -610,6 +609,83 @@ int32 FEngineLoop::Init()
 //     return DrawCalls;
 // }
 
+
+struct Plane
+{
+    DirectX::XMFLOAT3 Normal;
+    float Distance;
+};
+
+void ExtractFrustumPlanes(Plane planes[6], DirectX::XMMATRIX& viewProjMatrix)
+{
+    DirectX::XMFLOAT4X4 m;
+    DirectX::XMStoreFloat4x4(&m, viewProjMatrix);
+
+    // Left plane
+    planes[0].Normal = {m._14 + m._11, m._24 + m._21, m._34 + m._31};
+    planes[0].Distance = m._44 + m._41;
+
+    // Right plane
+    planes[1].Normal = {m._14 - m._11, m._24 - m._21, m._34 - m._31};
+    planes[1].Distance = m._44 - m._41;
+
+    // Top plane
+    planes[2].Normal = {m._14 - m._12, m._24 - m._22, m._34 - m._32};
+    planes[2].Distance = m._44 - m._42;
+
+    // Bottom plane
+    planes[3].Normal = {m._14 + m._12, m._24 + m._22, m._34 + m._32};
+    planes[3].Distance = m._44 + m._42;
+
+    // Near plane
+    planes[4].Normal = {m._13, m._23, m._33};
+    planes[4].Distance = m._43;
+
+    // Far plane
+    planes[5].Normal = {m._14 - m._13, m._24 - m._23, m._34 - m._33};
+    planes[5].Distance = m._44 - m._43 ;
+
+    // Normalize the planes
+    for (int i = 0; i < 6; i++)
+    {
+        float length = sqrtf(planes[i].Normal.x * planes[i].Normal.x +
+            planes[i].Normal.y * planes[i].Normal.y +
+            planes[i].Normal.z * planes[i].Normal.z);
+        planes[i].Normal.x /= length;
+        planes[i].Normal.y /= length;
+        planes[i].Normal.z /= length;
+        planes[i].Distance /= length;
+    }
+}
+
+
+constexpr inline bool IsBoxInFrustum(const Plane planes[6], const DirectX::XMFLOAT3& minPoint, const DirectX::XMFLOAT3& maxPoint) noexcept
+{
+    for (int i = 0; i < 6; i++)
+    {
+        // Find the point in the AABB that is most opposite to the plane normal (i.e., "furthest" from the plane)
+        DirectX::XMFLOAT3 farthestPoint = minPoint;
+
+        if (planes[i].Normal.x >= 0) farthestPoint.x = maxPoint.x;
+        if (planes[i].Normal.y >= 0) farthestPoint.y = maxPoint.y;
+        if (planes[i].Normal.z >= 0) farthestPoint.z = maxPoint.z;
+
+        // If this point is outside the plane, then the box is outside the frustum
+        float distance = planes[i].Normal.x * farthestPoint.x +
+            planes[i].Normal.y * farthestPoint.y +
+            planes[i].Normal.z * farthestPoint.z + planes[i].Distance;
+
+        if (distance < 0)
+        {
+            return false; // Box is outside this plane
+        }
+    }
+
+    return true; // Box is inside or intersecting the frustum
+}
+
+int GTotalDrawCalls;
+
 void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMATRIX rotationMatrix,
                              DirectX::XMMATRIX scaleMatrix, DirectX::XMMATRIX viewMatrix,
                              DirectX::XMMATRIX projectionMatrix, bool bDrawWater)
@@ -627,19 +703,10 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
     }
 
 
+
     // iterate world's chunks and render
-    int TotalDrawCalls = 0;
-    for (auto& chunkEntry : GWorld)
+    for (ChunkKey& chunkKey : VisibleChunks)
     {
-        const auto& chunkKey = chunkEntry.first;
-
-        //Chunk& chunk = chunkEntry.second;
-        // if (chunk.GetWorldOffsetX() == 0 && chunk.GetWorldOffsetZ() == 0)
-        // {
-        //     // skip the chunk at 0,0
-        //     //continue;
-        // }
-
         BlockCoordinate chunkOrigin;
         ChunkKeyToWorldPosition(chunkKey, chunkOrigin);
 
@@ -649,6 +716,7 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
         DirectX::XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
         DirectX::XMMATRIX WorldViewProjectionMatrix = worldMatrix * viewMatrix * projectionMatrix;
         DirectX::XMMATRIX TransposedWVPMatrix = DirectX::XMMatrixTranspose(WorldViewProjectionMatrix);
+        
 
         Mesh* mesh = ChunkMeshManager::GetInstance().GetChunkMesh(chunkKey);
         if (mesh)
@@ -669,6 +737,11 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
             if (bDrawWater)
             {
                 GGraphicsDevice->DisableDepthWrite();
+                const SubMesh& subMesh = mesh->SubMeshes[1];
+                if(subMesh.indexCount == 0)
+                {
+                    continue;
+                }
                 mesh->DrawSubMesh(dc, 1);
             }
             else
@@ -676,6 +749,44 @@ void FEngineLoop::DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMAT
                 GGraphicsDevice->EnableDepthWrite();
                 mesh->DrawSubMesh(dc, 0);
             }
+            GTotalDrawCalls++;
+        }
+    }
+}
+
+
+void FEngineLoop::ComputeChunkVisibility(DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix)
+{
+    // build list of visible chunks
+    VisibleChunks.clear();
+    // get view frustum planes
+    Plane frustumPlanes[6];
+    auto viewProjMatrix = viewMatrix * projectionMatrix;
+    ExtractFrustumPlanes(frustumPlanes, viewProjMatrix);
+
+    // loop through chunk keys and check if they are in view frustum    
+    for (auto& chunkEntry : GWorld)
+    {
+        const auto& chunkKey = chunkEntry.first;
+
+        BlockCoordinate chunkOrigin;
+        ChunkKeyToWorldPosition(chunkKey, chunkOrigin);
+
+        // get chunk mins and maxs
+        DirectX::XMFLOAT3 BoundingBoxMin = {
+            static_cast<float>(chunkOrigin.X),
+            0.0f,
+            static_cast<float>(chunkOrigin.Z)};
+        DirectX::XMFLOAT3 BoundingBoxMax = {
+            static_cast<float>(chunkOrigin.X + ChunkWidth),
+            static_cast<float>(ChunkHeight),
+            static_cast<float>(chunkOrigin.Z + ChunkDepth)
+        };
+
+        // check if chunk is within view frustum
+        if (IsBoxInFrustum(frustumPlanes, BoundingBoxMin, BoundingBoxMax))
+        {
+            VisibleChunks.push_back(chunkKey);
         }
     }
 }
@@ -697,7 +808,7 @@ void FEngineLoop::Tick()
     if (InputManager::Get().IsKeyPressed(' '))
     {
         InputManager::Get().ClearKeyPressed(' '); // todo: may need a better way to 'consume' input
-        
+
         GShouldRenderTintColor = !GShouldRenderTintColor;
     }
 
@@ -766,7 +877,7 @@ void FEngineLoop::Tick()
 
     // camera position is known, submit nearby chunks for background generation.
     //GeneratePerlinTerrain(ChunkDrawRadius);
-    
+
     // camera matrix (view)
     float AnimatedSin = static_cast<float>(sin(GTime));
     DirectX::FXMVECTOR eye = GCameraPosition; // eye 
@@ -865,14 +976,38 @@ void FEngineLoop::Tick()
         //GeneratePerlinTerrain(ChunkGenerationRadius);
         //RebuildChunkMeshes();
     }
+
+
+    static bool FreezeFrustumCulling = false;
+    if (InputManager::Get().IsKeyPressed('G')) // toggle freeze culling 
+    {
+        VG_LOG(LogCategoryGeneral, LOG_INFO, "Toggling freeze frustum culling");
+        FreezeFrustumCulling = !FreezeFrustumCulling;
+        InputManager::Get().ClearKeyPressed('G');
+    }
+
+    if(!FreezeFrustumCulling)
+    {
+        ComputeChunkVisibility(viewMatrix, projectionMatrix);
+    }
+
     
+
     
-    // draw chunks: solid blocks first, then water blocks.    
+    // draw chunks: solid blocks first, then water blocks.
+    GTotalDrawCalls = 0;
     DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, false /* solid */);
     DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, true /* water */);
 
     // device present
     GGraphicsDevice->Present(vsync);
+
+    // yield to other threads
+    if (!vsync)
+    {
+        //std::this_thread::yield();
+        //std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 
     // update window title
     constexpr float TimeBetweenUpdates = 0.01f;
@@ -892,9 +1027,11 @@ void FEngineLoop::Tick()
 
         // printf to temp buffer
         auto FPS = FrameTiming::GetFPS();
-        swprintf(TempBuffer, buffer_count, L"Voxel Game: FPS=%.2f, Chunks=%d, Mouse={%d, %d}, MouseDown=%d", FPS, ChunkCount, MouseX, MouseY, MouseDown);
-        
-        GWindow->SetTitle(*TempBuffer);
+        swprintf(TempBuffer, buffer_count,
+                 L"Voxel Game: FPS=%.2f, Chunks=%d, DrawCalls=%d, Mouse={%d, %d}, MouseDown=%d",
+                 FPS, ChunkCount, GTotalDrawCalls, MouseX, MouseY, MouseDown);
+
+        GWindow->SetTitle(TempBuffer);
     }
 }
 
@@ -921,7 +1058,6 @@ void FEngineLoop::GenerateChunk(ChunkRef chunk, ChunkKey key)
                                             block_states[index] = block_type1;
                                         }
                                     });
-    
 }
 
 

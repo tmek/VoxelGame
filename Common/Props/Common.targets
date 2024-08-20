@@ -1,0 +1,25 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Target Name="CommonPropsMessage" BeforeTargets="Build">
+        <Message Text="--- Building $(MSBuildProjectName) with Common.props included! ---" Importance="high" />
+    </Target>
+
+<!--    &lt;!&ndash; Common compiler settings for all projects &ndash;&gt;-->
+<!--    <ItemDefinitionGroup>-->
+<!--        <ClCompile>-->
+<!--&lt;!&ndash;            <WarningLevel>Level4</WarningLevel>&ndash;&gt;-->
+<!--&lt;!&ndash;            <TreatWarningAsError>true</TreatWarningAsError>&ndash;&gt;-->
+<!--            <LanguageStandard>stdcpp20</LanguageStandard>-->
+<!--        </ClCompile>-->
+<!--    </ItemDefinitionGroup>-->
+
+
+<!--    <ItemDefinitionGroup>-->
+<!--        <Link>-->
+<!--            &lt;!&ndash; add linker additional dependencies for ;d3d11.lib;d3dcompiler.lib; &ndash;&gt;-->
+<!--            <AdditionalDependencies>%(AdditionalDependencies);d3d11.lib;d3dcompiler.lib;dxgi.lib</AdditionalDependencies>-->
+<!--            -->
+<!--            &lt;!&ndash; /DEBUG:FULL for profilers (even for release builds) &ndash;&gt;-->
+<!--            <GenerateDebugInformation>DebugFull</GenerateDebugInformation>-->
+<!--        </Link>-->
+<!--    </ItemDefinitionGroup>    -->
+</Project>

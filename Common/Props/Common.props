@@ -3,6 +3,9 @@
         <Message Text="--- Building $(MSBuildProjectName) with Common.props included! ---" Importance="high" />
     </Target>
 
+    
+
+
     <!-- Common compiler settings for all projects -->
     <ItemDefinitionGroup>
         <ClCompile>
@@ -13,6 +16,7 @@
     </ItemDefinitionGroup>
 
 
+    
     <ItemDefinitionGroup>
         <Link>
             <!-- add linker additional dependencies for ;d3d11.lib;d3dcompiler.lib; -->
@@ -21,5 +25,6 @@
             <!-- /DEBUG:FULL for profilers (even for release builds) -->
             <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
         </Link>
-    </ItemDefinitionGroup>    
+    </ItemDefinitionGroup>
+
 </Project>

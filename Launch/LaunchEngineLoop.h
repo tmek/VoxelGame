@@ -14,6 +14,7 @@ public:
     void DrawChunks(DirectX::XMMATRIX translationMatrix, DirectX::XMMATRIX rotationMatrix,
                     DirectX::XMMATRIX scaleMatrix,
                     DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix, bool bDrawWater);
+    void ComputeChunkVisibility(DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix);
     void Tick();
     void Exit();
     void GenerateChunk(ChunkRef chunk, ChunkKey key);

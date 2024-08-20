@@ -25,7 +25,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
         ReasonString = "Reason Unknown";
     }
 
-    printf("Hello from DllMain: %s\n", ReasonString);
+    //printf("Hello from DllMain: %s\n", ReasonString);
 	
     return TRUE;
 }

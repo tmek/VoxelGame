@@ -1,14 +1,14 @@
-﻿#include "PlatformWindow.h"
+﻿#include "GenericWindow.h"
 
 #include <stdexcept>
 
 #include "Input/InputManager.h"
 #include "HAL/Windows/PlatformWindows.h"  // Include Windows headers here, not in the public header
 
-extern HINSTANCE G_hInstance;
+extern HINSTANCE GInstanceHandle;
 extern bool GIsRequestingExit;
 
-struct PlatformWindow::Impl
+struct GenericWindow::Impl
 {
     inline static const WIDECHAR* WindowClassName = L"VoxelGameWindow"; 
     
@@ -50,27 +50,27 @@ struct PlatformWindow::Impl
     }
 };
 
-PlatformWindow::PlatformWindow(const WindowOptions& options)
+GenericWindow::GenericWindow(const WindowOptions& options)
     : pImpl(std::make_unique<Impl>(options))
 {
     RegisterWindowClass();
     Create();
 }
 
-PlatformWindow::~PlatformWindow()
+GenericWindow::~GenericWindow()
 {
     if (pImpl->Hwnd)
     {
         DestroyWindow(pImpl->Hwnd);
     }
-    UnregisterClass(Impl::WindowClassName, G_hInstance);
+    UnregisterClass(Impl::WindowClassName, GInstanceHandle);
 }
 
-void PlatformWindow::RegisterWindowClass()
+void GenericWindow::RegisterWindowClass()
 {
     WNDCLASS wc = {};
     wc.lpfnWndProc = Impl::WindowProc;  // Use the static method in Impl
-    wc.hInstance = G_hInstance;
+    wc.hInstance = GInstanceHandle;
     wc.lpszClassName = Impl::WindowClassName;
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_MENUTEXT);
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -82,7 +82,7 @@ void PlatformWindow::RegisterWindowClass()
     }
 }
 
-int32_t PlatformWindow::Create()
+int32_t GenericWindow::Create()
 {
     RECT windowRect = { 0, 0, pImpl->Options.Width, pImpl->Options.Height };
     AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, FALSE);
@@ -97,7 +97,7 @@ int32_t PlatformWindow::Create()
         CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight,
         nullptr,
         nullptr,
-        G_hInstance,
+        GInstanceHandle,
         nullptr
     );
 
@@ -112,18 +112,22 @@ int32_t PlatformWindow::Create()
     return 0;
 }
 
-void PlatformWindow::SetTitle(const wchar_t& title) const
+void GenericWindow::SetTitle(const TCHAR* title) const
 {
+#ifdef UNICODE
+    SetWindowText(pImpl->Hwnd, title);
+#else
     SetWindowTextW(pImpl->Hwnd, &title);
+#endif
 }
 
-void PlatformWindow::ForceRepaint() const
+void GenericWindow::ForceRepaint() const
 {
     InvalidateRect(pImpl->Hwnd, nullptr, TRUE);
     UpdateWindow(pImpl->Hwnd);
 }
 
-void PlatformWindow::ProcessMessageQueue() const
+void GenericWindow::ProcessMessageQueue() const
 {
     MSG msg = {};
     while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -133,7 +137,7 @@ void PlatformWindow::ProcessMessageQueue() const
     }
 }
 
-void* PlatformWindow::GetHandle() const
+void* GenericWindow::GetHandle() const
 {
     return pImpl->Hwnd;
 }

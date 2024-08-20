@@ -104,14 +104,14 @@ public:
 
 private:
     std::vector<int> perm;
-    static const std::array<std::array<int, 3>, 12> grad3;
+    static const std::array<std::array<int, 3>, 12> grad3b;
 
     double contribution(int gi, double x, double y, double z) const
     {
         double t = 0.5 - x * x - y * y - z * z;
         if (t < 0) return 0.0;
         t *= t;
-        return t * t * dot(grad3[gi], x, y, z);
+        return t * t * dot(grad3b[gi], x, y, z);
     }
 
     double dot(const std::array<int, 3>& g, double x, double y, double z) const

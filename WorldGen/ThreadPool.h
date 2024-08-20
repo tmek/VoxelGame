@@ -12,6 +12,8 @@
 #include "HAL/Windows/WindowsProcess.h"
 #include "Windows.h" // todo: this is temporary. implement generic platform version.  
 
+#include "Voxel/VoxelDefines.h"
+
 class ThreadPool
 {
 public:
@@ -41,13 +43,30 @@ inline ThreadPool::ThreadPool(size_t numThreads)
             swprintf(threadName, 32, L"Worker Thread %zu", i);
             WindowsPlatformProcess::SetThreadName(threadName);
 
-            VG_LOG(LogCategoryGeneral, LOG_INFO, "Setting worker thread priority to THREAD_PRIORITY_BELOW_NORMAL");
-            ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_BELOW_NORMAL);
+            //VG_LOG(LogCategoryGeneral, LOG_INFO, "Setting worker thread priority to THREAD_PRIORITY_BELOW_NORMAL");
+            //::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 
+            // Calculate the core to assign based on thread ID
+
+            int MaxCoresToUseForThreadPool = 4; // todo: make this configurable
+            int AssignedCore = i % MaxCoresToUseForThreadPool; // 4 cores
+            int SkipCores = 0; // todo: make this configurable
+            int FinalCore =  AssignedCore + SkipCores;
+            uint64_t affinityMask = 1ull << FinalCore;
+            
+            // Set thread affinity to improve cache locality, reducing cache misses by keeping the thread on the same core.
+            //SetThreadAffinityMask(::GetCurrentThread(), affinityMask);
+
+            VG_LOG(LogCategoryGeneral, LOG_INFO, "Worker thread id: %d (%d), affinity mask: %d", i, ::GetCurrentThreadId(), affinityMask);
             
             // worker thread's loop
             while (true)
             {
+                // give some time to OS
+                // it's important to do this before starting a task to make sure this thread
+                // is not running on the same core as the main thread and it's not competing for resources
+                std::this_thread::yield();
+                
                 std::function<void()> task;
 
                 // lock the queue, check if there are any tasks, and pop the task off the queue
@@ -59,8 +78,29 @@ inline ThreadPool::ThreadPool(size_t numThreads)
                     this->tasks.pop();
                 }
 
+                // pin the thread affinity
+                // // get current thread affinity (todo: is this possible? basically we the core that currently has the least load) 
+                // auto threadid = ::GetCurrentThread();
+                // DWORD_PTR CurrentAffinityMask = SetThreadAffinityMask(threadid, 0);
+                //
+                // if(CurrentAffinityMask != 0)
+                // {
+                //     VG_LOG(LogCategoryGeneral, LOG_INFO, "Worker thread id: %d (%d), current affinity mask: %d", i, ::GetCurrentThreadId(), CurrentAffinityMask);
+                // }
+                // else
+                // {
+                //     VG_LOG(LogCategoryGeneral, LOG_INFO, "Worker thread id: %d (%d), current affinity mask: %d", i, ::GetCurrentThreadId(), CurrentAffinityMask);
+                // }
+                //
+                // // pin to current core
+                // SetThreadAffinityMask(threadid, CurrentAffinityMask);
+                
                 // start the task
                 task();
+
+                // unpin
+                // SetThreadAffinityMask(threadid, 0);
+
             }
         });
     }

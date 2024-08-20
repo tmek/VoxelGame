@@ -38,13 +38,13 @@ struct TerrainGeneratorBase
 
     float Sample2D(int x, int z, float freq)
     {
-        return (float)optimizedPerlinNoise.sample3D(x * freq, 0, z * freq);
+        return (float)simplexNoise.sample3D(x * freq, 0, z * freq);
     }
 
     float Sample3D(int x, int y, int z, float freq)
     {
         //return (float)perlinNoise.sample3D(x * freq, y * freq, z * freq);
-        return (float)optimizedPerlinNoise.sample3D(x * freq, y * freq, z * freq);
+        return (float)simplexNoise.sample3D(x * freq, y * freq, z * freq);
     }
 
     Block GetOreBlock(const int y)

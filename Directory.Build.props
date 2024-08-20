@@ -1,5 +1,28 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <Target Name="PrintMessageDirectoryBuildProps" BeforeTargets="Build">
-        <Message Text="Building project: $(MSBuildProjectName) from Directory.Build.props" Importance="high"/>
+
+    <PropertyGroup Label="Globals">
+        <!-- Set the output directory for binaries -->
+        <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
+
+        <!-- Set the intermediate directory -->
+        <IntDir>$(SolutionDir)Intermediate\$(MSBuildProjectName)\$(Platform)\$(Configuration)\</IntDir>
+
+        <!-- Set the target name and extension -->
+        <TargetName>$(MSBuildProjectName)</TargetName>
+
+        <!-- Override the TargetPath to ensure it includes the correct path -->
+<!--        <TargetExt>$(OutDir)$(TargetName)$(TargetExt)</TargetExt>-->
+<!--        <TargetPath>$(OutDir)$(TargetName)$(TargetExt)</TargetPath>-->
+
+        <!-- Redirect .recipe and .FileListAbsolute.txt files -->
+        <TLogLocation>$(IntDir)</TLogLocation>
+        <FileListAbsolutePath>$(IntDir)</FileListAbsolutePath>
+        <LinkIncrementalListFile>$(IntDir)$(MSBuildProjectName).linkincremental.list</LinkIncrementalListFile>
+        <MSBuildProjectExtensionsPath>$(IntDir)</MSBuildProjectExtensionsPath>
+    </PropertyGroup>
+
+    <Target Name="PrintMessageDirectoryBuildProps" BeforeTargets="PrepareForBuild">
+        <Message Text=" !******! Building project: from Directory.Build.props" Importance="high"/>
     </Target>
+    
 </Project>

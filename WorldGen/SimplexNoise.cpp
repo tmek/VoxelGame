@@ -1,12 +1,13 @@
 ﻿#include "SimplexNoise.h"
 
-namespace {
-    const std::array<std::array<int, 3>, 12> grad3 = {{
-        {1,1,0}, {-1,1,0}, {1,-1,0}, {-1,-1,0},
-        {1,0,1}, {-1,0,1}, {1,0,-1}, {-1,0,-1},
-        {0,1,1}, {0,-1,1}, {0,1,-1}, {0,-1,-1}
-    }};
-}
+const std::array<std::array<int, 3>, 12> SimplexNoise::grad3b = {
+    {
+        {1, 1, 0}, {-1, 1, 0}, {1, -1, 0}, {-1, -1, 0},
+        {1, 0, 1}, {-1, 0, 1}, {1, 0, -1}, {-1, 0, -1},
+        {0, 1, 1}, {0, -1, 1}, {0, 1, -1}, {0, -1, -1}
+    }
+};
+
 
 //
 // const std::array<std::array<int, 3>, 12> SimplexNoise::grad3 = {{

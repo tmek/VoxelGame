@@ -7,6 +7,7 @@
 #undef max // Required for std::min
 #undef min // Required for std::max
 #include <algorithm>
+#include <thread>
 
 #include "Voxel/Conversions.h"
 
@@ -82,11 +83,18 @@ struct VOXELCORE_API ChunkUtils
             {
                 return;
             }
+
+            // yield every 24 y layers to avoid hogging the CPU
+            if (y % 16 == 0)
+            {
+                std::this_thread::yield();
+            }
             
             // for each z row in the current y layer
             int row_index = start_index;
             for (int z = 0; z < sub_depth; ++z)
             {
+                
                 // for each x block in the current z row
                 int block_index = row_index;
                 for (int x = 0; x < sub_width; ++x)
