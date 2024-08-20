@@ -1,6 +1,9 @@
 ## Ignore Rider IDE files
 .idea/
 
+## VTUNE
+Intel® VTune™ Profiler Results/
+
 ## Ignore generated exports.h
 [Gg]enerated/[Ee]xports.h
 
