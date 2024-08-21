@@ -4,6 +4,7 @@
 
 struct CORE_API WindowsPlatformProcess
 {
+    static void SetThreadName(const wchar_t* name);
     static void SleepMS(int32 Milliseconds);
     static void ShowConsole();
 
@@ -11,3 +12,4 @@ struct CORE_API WindowsPlatformProcess
     static const char* GetPlatformName();
 };
 
+typedef CORE_API WindowsPlatformProcess PlatformProcess;

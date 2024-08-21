@@ -2,9 +2,10 @@
 
 #pragma once
 
+#include <memory>
+
 #include "Block/Block.h"
 #include "Chunk/ChunkConstants.h"
-#include <memory>
 
 /** A fixed-size 3D 'chunk' of blocks at a particular location in the world. */
 struct alignas(64) VOXELCORE_API Chunk final // cache-line aligned

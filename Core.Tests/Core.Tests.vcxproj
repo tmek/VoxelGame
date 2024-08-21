@@ -36,12 +36,10 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
-    <ClCompile Include="ChunkConstants.Tests.cpp" />
     <ClCompile Include="D3D11Tests.cpp" />
     <ClCompile Include="RHITests.cpp" />
     <ClCompile Include="TasksTests.cpp" />
     <ClCompile Include="test.cpp" />
-    <ClCompile Include="BlockState.Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

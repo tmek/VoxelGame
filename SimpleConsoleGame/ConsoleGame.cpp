@@ -7,6 +7,10 @@
 
 #include "SimpleGameLoop.h"
 
+#include "../Game/WorldGen/BlockTypes.h"
+
+#include "Block/Block.h"
+
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformTime.h"
 #include "Misc/CoreDefines.h"
@@ -34,6 +38,10 @@ int main(int argc, char* argv[])
         TE_LOG(LogTemp, Log, "argv[%d]: %s", i, argv[i]);
     }
 
+    Block block = {};
+    block.Type = STONE;
+    
+    
     // log hardware concurrency
     TE_LOG(LogTemp, Log, "Hardware Concurrency: %d", std::thread::hardware_concurrency());
     

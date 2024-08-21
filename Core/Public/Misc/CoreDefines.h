@@ -1,5 +1,5 @@
 #pragma once
-#include "Generated/Exports.h"
+#include "Generated/CoreExports.h"
 #include <intrin.h> // for __nop()
 
 #define EngineName "TankEngine"

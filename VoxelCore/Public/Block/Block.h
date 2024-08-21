@@ -6,6 +6,7 @@
 #include "Voxel/VoxelDefines.h"
 #include <bit>
 
+#include "Generated/VoxelCoreExports.h"
 
 // aliased field types in case we want to experiment
 struct Block;

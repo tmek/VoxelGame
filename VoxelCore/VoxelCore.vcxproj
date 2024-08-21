@@ -163,7 +163,6 @@
     <ClInclude Include="Public\Chunk\ChunkKeyHash.h" />
     <ClInclude Include="Public\Chunk\ChunkConstants.h" />
     <ClInclude Include="Public\Chunk\ChunkMap.h" />
-    <ClInclude Include="Public\Generated\Exports.h" />
     <ClInclude Include="Public\Utils\ChunkUtils.h" />
     <ClInclude Include="Public\Utils\ChunkCluster.h" />
     <ClInclude Include="Public\Utils\SlidingWindow.h" />
@@ -179,6 +178,15 @@
     <ClCompile Include="Private\Utils\ChunkCluster.cpp" />
     <ClCompile Include="Private\Utils\ChunkUtils.cpp" />
     <ClCompile Include="Private\World\VoxelWorld.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Core.vcxproj">
+      <Project>{c53c4960-f00d-4501-bc00-85d9c1263c94}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Public\Generated\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

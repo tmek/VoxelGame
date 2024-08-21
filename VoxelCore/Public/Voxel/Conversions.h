@@ -4,6 +4,7 @@
 
 #include "VoxelDefines.h"
 
+#include "CoreTypes.h" 
 #include "Block/Block.h"
 #include "Chunk/ChunkConstants.h"
 #include "Chunk/ChunkKey.h"

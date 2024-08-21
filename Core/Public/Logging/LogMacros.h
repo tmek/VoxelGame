@@ -1,6 +1,6 @@
 ﻿#pragma once
 // #include "CoreTypes.h"
-#include "Generated/Exports.h"
+#include "Generated/CoreExports.h"
 #include "LogVerbosity.h"
 
 // Log categories

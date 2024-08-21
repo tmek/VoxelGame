@@ -162,10 +162,21 @@
   <ItemGroup>
     <ClCompile Include="Private\dllmain.cpp" />
     <ClCompile Include="Private\HAL\PlatformTime.cpp" />
+    <ClCompile Include="Private\HAL\PlatformWindow.cpp" />
+    <ClCompile Include="Private\Input\InputManager.cpp" />
+    <ClCompile Include="Private\Logging\Logging.cpp" />
     <ClCompile Include="Private\Logging\LogMacros.cpp" />
     <ClCompile Include="Private\Logging\LogVerbosity.cpp" />
     <ClCompile Include="Private\Math\Noise\OptimizedPerlinNoise.cpp" />
     <ClCompile Include="Private\Math\Noise\SimplexNoise.cpp" />
+    <ClCompile Include="Private\Misc\FrameTiming.cpp" />
+    <ClCompile Include="Private\Misc\PlayerController.cpp" />
+    <ClCompile Include="Private\Misc\StopWatch.cpp" />
+    <ClCompile Include="Private\Misc\ThreadPool.cpp" />
+    <ClCompile Include="Private\RHI\GraphicsDevice.cpp" />
+    <ClCompile Include="Private\RHI\Mesh.cpp" />
+    <ClCompile Include="Private\RHI\MeshAssembler.cpp" />
+    <ClCompile Include="Private\RHI\MeshBuilder.cpp" />
     <ClCompile Include="Private\Tasks\Launch.cpp" />
     <ClCompile Include="Private\Tasks\Pipe.cpp" />
     <ClCompile Include="Private\Tasks\Prerequisites.cpp" />
@@ -174,25 +185,38 @@
     <ClCompile Include="Private\Windows\WindowsPlatformProcess.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Private\Windows\WindowsIncludes.h" />
-    <ClInclude Include="Private\Windows\WindowsIncludesMinimal.h" />
     <ClInclude Include="Public\CoreTypes.h" />
-    <ClInclude Include="Public\Generated\Exports.h" />
+    <ClInclude Include="Public\Generated\CoreExports.h" />
     <ClInclude Include="Public\HAL\Platform.h" />
     <ClInclude Include="Public\HAL\PlatformProcess.h" />
     <ClInclude Include="Public\HAL\PlatformTime.h" />
+    <ClInclude Include="Public\HAL\PlatformWindow.h" />
+    <ClInclude Include="Public\Input\InputManager.h" />
+    <ClInclude Include="Public\Logging\Logging.h" />
     <ClInclude Include="Public\Logging\LogMacros.h" />
     <ClInclude Include="Public\Logging\LogVerbosity.h" />
     <ClInclude Include="Public\Math\Noise\OptimizedPerlinNoise.h" />
     <ClInclude Include="Public\Math\Noise\PerlinNoise.h" />
     <ClInclude Include="Public\Math\Noise\SimplexNoise.h" />
     <ClInclude Include="Public\Misc\CoreDefines.h" />
+    <ClInclude Include="Public\Misc\FrameTiming.h" />
+    <ClInclude Include="Public\Misc\PlayerController.h" />
+    <ClInclude Include="Public\Misc\StopWatch.h" />
+    <ClInclude Include="Public\Misc\ThreadPool.h" />
+    <ClInclude Include="Public\RHI\GraphicsDevice.h" />
+    <ClInclude Include="Public\RHI\Mesh.h" />
+    <ClInclude Include="Public\RHI\MeshAssembler.h" />
+    <ClInclude Include="Public\RHI\MeshBuilder.h" />
     <ClInclude Include="Public\Tasks\Launch.h" />
     <ClInclude Include="Public\Tasks\Pipe.h" />
     <ClInclude Include="Public\Tasks\Prerequisites.h" />
     <ClInclude Include="Public\Tasks\TaskEvent.h" />
     <ClInclude Include="Public\Tasks\TaskPriority.h" />
     <ClInclude Include="Public\Tasks\Task.h" />
+    <ClInclude Include="Public\Windows\PlatformWindows.h" />
+    <ClInclude Include="Public\Windows\PlatformWindowsMinimal.h" />
+    <ClInclude Include="Public\Windows\WindowsIncludes.h" />
+    <ClInclude Include="Public\Windows\WindowsIncludesMinimal.h" />
     <ClInclude Include="Public\Windows\WindowsPlatformProcess.h" />
     <ClInclude Include="Public\Windows\WindowsPlatformTypes.h" />
   </ItemGroup>

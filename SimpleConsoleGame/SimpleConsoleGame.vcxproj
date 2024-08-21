@@ -163,6 +163,10 @@
             <Project>{c53c4960-f00d-4501-bc00-85d9c1263c94}</Project>
             <Name>Core</Name>
         </ProjectReference>
+        <ProjectReference Include="..\VoxelCore\VoxelCore.vcxproj">
+          <Project>{dd3a5b68-0e5d-411a-bd53-dd2c5762576e}</Project>
+          <Name>VoxelCore</Name>
+        </ProjectReference>
     </ItemGroup>
     <ItemGroup>
       <ClCompile Include="ConsoleGame.cpp" />

@@ -1,10 +1,8 @@
-#include "../GameCore/StopWatch.h"
+// Copyright
 
-#include "Misc/CoreDefines.h"
 #include "gtest/gtest.h"
 
-#include "HAL/PlatformProcess.h"
-
+#include "Misc/CoreDefines.h"
 #include "Math/Noise/OptimizedPerlinNoise.h"
 #include "Math/Noise/PerlinNoise.h"
 #include "Math/Noise/SimplexNoise.h"

@@ -47,6 +47,7 @@ void TELog(const char* CategoryString, ELogVerbosity::Type Verbosity, const char
         if (Verbosity == ELogVerbosity::Error)
         {
             (void)fprintf(stderr, "%s: %s: %s\n", CategoryString, VerbosityString, LogMessage);
+            (void)fflush(stderr);
         }
         else
         {
