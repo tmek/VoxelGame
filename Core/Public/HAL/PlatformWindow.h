@@ -1,8 +1,10 @@
-﻿#pragma once
+﻿// Copyright
+
+#pragma once
+
 #include <memory>
 #include "Platform.h"
-#include "CoreTypes.h"
-#include "Windows.h"
+
 
 #ifndef TEXT
     #ifdef _UNICODE
@@ -12,8 +14,6 @@
     #endif
 #endif
 
-extern CORE_API HINSTANCE GInstanceHandle;
-extern CORE_API bool GIsRequestingExit;
 
 /** Represents a generic platform window */
 class CORE_API PlatformWindow
@@ -51,8 +51,11 @@ public:
 private:
     struct Impl;
 
+#pragma warning(push)
+#pragma warning(disable:4251)
     /** Pimpl idiom to hide Windows-specific details */
-    std::unique_ptr<Impl> pImpl; 
+    std::unique_ptr<Impl> pImpl;
+#pragma warning(pop)
 
     void RegisterWindowClass();
     

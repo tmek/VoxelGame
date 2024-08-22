@@ -25,7 +25,7 @@ using BlockRef = Block&;
 struct alignas(4) VOXELCORE_API Block final
 {
     /** Block type */
-    BlockType  Type;                        // The block's type. 16-bits: 0-65535
+    BlockType       TypeIndex;              // runtime index into the block types table. (0-65535). a few special index values are reserved for air=0, stone=1, water=13, etc. the rest are configurable depending on user mods etc.
 
     /** Block properties */
     BlockProperty   RotationIndexY  : 2;    // Multiply by 90 degrees for rotation angle around the Y-axis. (0-3)
@@ -42,8 +42,8 @@ struct alignas(4) VOXELCORE_API Block final
 
     /** Utility */
     constexpr inline float GetRotationYAngle() const noexcept { return static_cast<float>(RotationIndexY) * 90.0f; }
-    constexpr inline bool IsAir() const noexcept { return Type == 0; }
-    constexpr inline bool IsWater() const noexcept { return Type == 13; }
+    constexpr inline bool IsAir() const noexcept { return TypeIndex == 0; }
+    constexpr inline bool IsWater() const noexcept { return TypeIndex == 13; }
     
     /** Interoperability with uint32 */
     // note: If we enable these (or a default constructor), `Block block;` will initialize to zero. Without these, it will be uninitialized. Test performance of both ways.

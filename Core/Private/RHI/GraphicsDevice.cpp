@@ -5,9 +5,13 @@
 #include <vector>
 
 #include <wrl/client.h>
-#include "CoreTypes.h"
 
-#include "Logging/LogMacros.h"
+
+#include "CoreMinimal.h"
+
+
+
+#include "RHI/ImageUtil.h"
 
 
 using Microsoft::WRL::ComPtr;
@@ -29,7 +33,6 @@ struct MyConstantBuffer
     DirectX::XMFLOAT4 TintColor;
 };
 
-bool GShouldRenderTintColor;
 
 void GraphicsDevice::CreateConstantBuffer()
 {
@@ -161,7 +164,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     // at this point we have: a device, context and swap chain
 
     if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, "Failed to create device and swap chain: %x", hr);
+        TE_LOG(LogGraphics, Error, TEXT("Failed to create device and swap chain: %x"), hr);
         return;
     }
 
@@ -169,14 +172,14 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     ComPtr<ID3D11Texture2D> backBuffer;
     hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
     if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, "Failed to get back buffer: %x", hr);
+        TE_LOG(LogGraphics, Error, TEXT("Failed to get back buffer: %x"), hr);
         return;
     }
 
     // create render target view of back buffer
     hr = device->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView.GetAddressOf());
     if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, "Failed to create render target view: %x", hr);
+        TE_LOG(LogGraphics, Error, TEXT("Failed to create render target view: %x"), hr);
         return;
     }
 
@@ -208,7 +211,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     ID3D11Texture2D* depthStencilBuffer;
     hr = device->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencilBuffer);
     if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, "Failed to create depth stencil texture: %x", hr);
+        TE_LOG(LogGraphics, Error, TEXT("Failed to create depth stencil texture: %x"), hr);
         return;
     }
 
@@ -249,7 +252,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     // Create the depth stencil view
     hr = device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
     if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, "Failed to create depth stencil view: %x", hr);
+        TE_LOG(LogGraphics, Error, TEXT("Failed to create depth stencil view: %x"), hr);
         return;
     }
 
@@ -267,7 +270,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     ID3D11DepthStencilState* depthStencilState;
     hr = device->CreateDepthStencilState(&depthStencilStateDesc, &depthStencilState);
     if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, "Failed to create depth stencil view: %x", hr);
+        TE_LOG(LogGraphics, Error, TEXT("Failed to create depth stencil view: %x"), hr);
         return;
     }
 
@@ -316,7 +319,7 @@ void GraphicsDevice::InitD3D(HWND hWnd)
     deviceContext->OMSetBlendState(pBlendState, blendFactor, 0xffffffff);    
     
     // Success
-    TE_LOG(LogGraphics, Log, "Graphics device created");
+    TE_LOG(LogGraphics, Log, TEXT("Graphics device created"));
     isValid = true;
 }
 
@@ -344,7 +347,7 @@ HRESULT GraphicsDevice::CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDev
     // Fill the checkerboard pattern data
     std::vector<UINT> Image32;
     //ImageUtil::CreateCheckerboardPattern(width, height, Image);
-    //ImageUtil::CreateNoisePattern(width, height, Image32);
+    ImageUtil::CreateNoisePattern(width, height, Image32);
 
     // Texture description
     D3D11_TEXTURE2D_DESC desc = {};

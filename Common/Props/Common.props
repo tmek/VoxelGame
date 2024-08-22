@@ -3,7 +3,9 @@
         <Message Text="--- Building $(MSBuildProjectName) with Common.props included! ---" Importance="high" />
     </Target>
 
-    
+    <PropertyGroup>
+        <EnableUnitySupport>false</EnableUnitySupport>
+    </PropertyGroup>
 
 
     <!-- Common compiler settings for all projects -->

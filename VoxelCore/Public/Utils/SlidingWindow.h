@@ -192,16 +192,16 @@ struct ChunkClusterProcessor
 
                     {
                         
-                        if (blockFrontPtr->Type == AIR)
+                        if (blockFrontPtr->TypeIndex == AIR)
                         {
                             // include front face.
                              
 
                             // calculate blocks contributing to ambient occlusion for front face verts
-                            int vertFrontRightTopAOC = blockFrontRightPtr->Type == AIR ? 1 : 0 + blockAboveFrontRightPtr->Type == AIR ? 1 : 0 + blockAboveFrontPtr->Type == AIR ? 1 : 0;
-                            int vertFrontRightBottomAOC = blockFrontRightPtr->Type == AIR ? 1 : 0 + blockBelowFrontRightPtr->Type == AIR ? 1 : 0 + blockBelowFrontPtr->Type == AIR ? 1 : 0;
-                            int vertFrontLeftTopAOC = blockFrontLeftPtr->Type == AIR ? 1 : 0 + blockAboveFrontLeftPtr->Type == AIR ? 1 : 0 + blockAboveFrontPtr->Type == AIR ? 1 : 0;
-                            int vertFrontLeftBottomAOC = blockFrontLeftPtr->Type == AIR ? 1 : 0 + blockBelowFrontLeftPtr->Type == AIR ? 1 : 0 + blockBelowFrontPtr->Type == AIR ? 1 : 0;
+                            int vertFrontRightTopAOC = blockFrontRightPtr->TypeIndex == AIR ? 1 : 0 + blockAboveFrontRightPtr->TypeIndex == AIR ? 1 : 0 + blockAboveFrontPtr->TypeIndex == AIR ? 1 : 0;
+                            int vertFrontRightBottomAOC = blockFrontRightPtr->TypeIndex == AIR ? 1 : 0 + blockBelowFrontRightPtr->TypeIndex == AIR ? 1 : 0 + blockBelowFrontPtr->TypeIndex == AIR ? 1 : 0;
+                            int vertFrontLeftTopAOC = blockFrontLeftPtr->TypeIndex == AIR ? 1 : 0 + blockAboveFrontLeftPtr->TypeIndex == AIR ? 1 : 0 + blockAboveFrontPtr->TypeIndex == AIR ? 1 : 0;
+                            int vertFrontLeftBottomAOC = blockFrontLeftPtr->TypeIndex == AIR ? 1 : 0 + blockBelowFrontLeftPtr->TypeIndex == AIR ? 1 : 0 + blockBelowFrontPtr->TypeIndex == AIR ? 1 : 0;
                         }
                     }
 

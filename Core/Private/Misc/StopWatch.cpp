@@ -12,7 +12,7 @@ StopWatch::StopWatch(): startTime(0.0), elapsedTime(0.0), running(false)
 void StopWatch::Start()
 {
     if (!running) {
-        startTime = PlatformTime::GetTimeInSeconds(); // Use your PlatformTime function
+        startTime = FPlatformTime::Seconds(); // Use your PlatformTime function
         running = true;
     }
 }
@@ -20,7 +20,7 @@ void StopWatch::Start()
 void StopWatch::Stop()
 {
     if (running) {
-        elapsedTime += PlatformTime::GetTimeInSeconds() - startTime; // Calculate elapsed time
+        elapsedTime += FPlatformTime::Seconds() - startTime; // Calculate elapsed time
         running = false;
     }
 }
@@ -35,7 +35,7 @@ void StopWatch::Reset()
 double StopWatch::GetElapsedSeconds() const
 {
     if (running) {
-        return elapsedTime + (PlatformTime::GetTimeInSeconds() - startTime);
+        return elapsedTime + (FPlatformTime::Seconds() - startTime);
     } else {
         return elapsedTime;
     }
@@ -46,12 +46,12 @@ bool StopWatch::IsRunning() const
     return running;
 }
 
-ScopedTimer::ScopedTimer(const std::string& name): name(name), startTime(PlatformTime::GetTimeInSeconds())
+ScopedTimer::ScopedTimer(const std::string& name): name(name), startTime(FPlatformTime::Seconds())
 {}
 
 ScopedTimer::~ScopedTimer()
 {
-    double endTime = PlatformTime::GetTimeInSeconds();
+    double endTime = FPlatformTime::Seconds();
     double elapsedTime = endTime - startTime;
     std::cout << "Timer [" << name << "] elapsed time: " << elapsedTime << " seconds\n";
     std::cout << std::flush;

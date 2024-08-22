@@ -16,12 +16,14 @@
 #include "Misc/CoreDefines.h"
 #include "Logging/LogMacros.h"
 
+#include "Misc/AssertionMacros.h"
+
 class TestClassMain
 {
 public:
     TestClassMain()
     {
-        TE_LOG(LogTemp, Warning, "Hello From (SimpleConsoleGame): %s", "TestClassMain::TestClassMain()");
+        TE_LOG(LogTemp, Warning, TEXT("Hello From (SimpleConsoleGame): %s", "TestClassMain::TestClassMain()"));
     }
 };
 
@@ -30,34 +32,34 @@ TestClassMain testClassMain;
 
 int main(int argc, char* argv[])
 {
-    TE_LOG(LogTemp, Log, "main() entry point");
+    TE_LOG(LogTemp, Log, TEXT("main() entry point"));
 
-    TE_LOG(LogTemp, Log, "argc: %d", argc);
+    TE_LOG(LogTemp, Log, TEXT("argc: %d"), argc);
     for (int i = 0; i < argc; i++)
     {
-        TE_LOG(LogTemp, Log, "argv[%d]: %s", i, argv[i]);
+        TE_LOG(LogTemp, Log, TEXT("argv[%d]: %s"), i, argv[i]);
     }
 
     Block block = {};
-    block.Type = STONE;
+    block.TypeIndex = STONE;
     
     
     // log hardware concurrency
-    TE_LOG(LogTemp, Log, "Hardware Concurrency: %d", std::thread::hardware_concurrency());
+    TE_LOG(LogTemp, Log, TEXT("Hardware Concurrency: %d"), std::thread::hardware_concurrency());
     
     std::thread t([]() {
-        TE_LOG(LogTemp, Log, "Hello from thread");
+        TE_LOG(LogTemp, Log, TEXT("Hello from thread"));
         PlatformProcess::SleepMS(3000);
-        TE_LOG(LogTemp, Log, "done sleeping in thread");
+        TE_LOG(LogTemp, Log, TEXT("done sleeping in thread"));
     });
 
 
-    TE_LOG(LogTemp, Log, "Sleeping for 1 second... %f", PlatformTime::GetTimeInSeconds());
+    TE_LOG(LogTemp, Log, TEXT("Sleeping for 1 second... %f"), FPlatformTime::Seconds());
     PlatformProcess::SleepMS(1000);
     
     PlatformProcess::ShowConsole();
 
-    TE_LOG(LogTemp, Log, "Done Sleeping. %f", PlatformTime::GetTimeInSeconds());
+    TE_LOG(LogTemp, Log, TEXT("Done Sleeping. %f"), FPlatformTime::Seconds());
 
     // TE_LOG(LogTemp, Log, "Joining thread t.");
     // t.join();
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
     PlatformProcess::SleepMS(5000);
 
     // log if thread is joinable
-    TE_LOG(LogTemp, Log, "Thread t is joinable: %d", t.joinable());
+    TE_LOG(LogTemp, Log, TEXT("Thread t is joinable: %d"), t.joinable());
 
     if(t.joinable())
     {
@@ -83,10 +85,10 @@ int main(int argc, char* argv[])
     GameLoop gameLoop;
     
     std::thread t2([&gameLoop]() {
-        TE_LOG(LogTemp, Log, "Stopping game loop in 3 seconds");
+        TE_LOG(LogTemp, Log, TEXT("Stopping game loop in 3 seconds"));
         PlatformProcess::SleepMS(3100);
         gameLoop.bRequestExit = true;
-        TE_LOG(LogTemp, Log, "done in thread 2");
+        TE_LOG(LogTemp, Log, TEXT("done in thread 2"));
     });
 
     t2.detach();

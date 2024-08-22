@@ -4,6 +4,8 @@
 
 #include "Chunk/Chunk.h"
 
+#include "Misc/AssertionMacros.h"
+
 
 /* A cluster of chunks surrounding a center chunk.
  * Used for efficient access of a chunks blocks and the blocks immediately surrounding it. */

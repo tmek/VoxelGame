@@ -1,6 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
     <PropertyGroup Label="Globals">
+        <EnableUnitySupport>true</EnableUnitySupport>
+        
         <!-- Set the output directory for binaries -->
         <OutDir>$(SolutionDir)Bin\$(Platform)\$(Configuration)\</OutDir>
 

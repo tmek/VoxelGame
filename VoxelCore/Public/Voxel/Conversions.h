@@ -9,6 +9,8 @@
 #include "Chunk/ChunkConstants.h"
 #include "Chunk/ChunkKey.h"
 
+#include "Misc/AssertionMacros.h"
+
 /** Using the following naming conventions:
  *  - WorldPosition: A block coordinate position in world space.
  *  - BlockOffset: A block coordinate offset in chunk space.

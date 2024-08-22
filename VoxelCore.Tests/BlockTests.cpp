@@ -4,7 +4,6 @@
 #include <thread>
 
 #include "gtest/gtest.h"
-#include "Block/Block.h"
 
 #include "Chunk/Chunk.h"
 #include "Voxel/Conversions.h"
@@ -16,7 +15,7 @@ TEST(BlockTests, BlockRotation)
     Block Block = {};
 
     // Act
-    Block.Type = 1; // Stone
+    Block.TypeIndex = 1; // Stone
     Block.RotationIndexY = 3; // 3 * 90 = 270 degrees
     Block.IsTransparent = true;
     Block.IsVisible = true;
@@ -25,7 +24,7 @@ TEST(BlockTests, BlockRotation)
     Block.SkyLightLevel = -4; // should wrap around to +12
 
     // Assert
-    EXPECT_EQ(Block.Type, 1);
+    EXPECT_EQ(Block.TypeIndex, 1);
     EXPECT_EQ(Block.RotationIndexY, 3);
     EXPECT_EQ(Block.IsFlipped, false);
     EXPECT_EQ(Block.IsVisible, true);
@@ -113,9 +112,9 @@ TEST(ChunkTests, FillChunkWithRandomBlockTypes)
                 void* pChunk = &NewChunk;
                 EXPECT_EQ(pBlock, pChunk);
             }
-            CurrentBlock.Type = RandomBlockType;
+            CurrentBlock.TypeIndex = RandomBlockType;
             
-            total += CurrentBlock.Type;
+            total += CurrentBlock.TypeIndex;
         }
     }
 

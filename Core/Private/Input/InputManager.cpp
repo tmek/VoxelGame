@@ -1,14 +1,13 @@
 ﻿
-//#include "Windows/PlatformWindows.h"
 
-#include "Logging/LogMacros.h"
 
 #include <Input/InputManager.h>
 
 
-InputManager::InputManager()
+
+InputManager::InputManager(): m_windowCenterX{0}, m_windowCenterY{0}
 {
-    TE_LOG(LogInput, Log, "InputManager instance created.");
+    TE_LOG(LogInput, Log, TEXT("InputManager instance created."));
 
     // Initialize mouse position
     m_mouseX = 0;
@@ -17,7 +16,7 @@ InputManager::InputManager()
 
 InputManager::~InputManager()
 {
-    TE_LOG(LogInput, Log, "InputManager instance destroyed.");
+    TE_LOG(LogInput, Log, TEXT("InputManager instance destroyed."));
 }
 
 void InputManager::Update( UINT uMsg, WPARAM wParam, LPARAM lParam ) {
@@ -132,11 +131,10 @@ InputManager& InputManager::Get()
     return instance;        
 }
 
-extern bool GIsRequestingExit;
 
 void InputManager::OnKeyDown(int32 KeyCode)
 {
-    //VG_LOG(LogCategoryGeneral, LOG_INFO, "Key Down: %d", KeyCode); //TODO: add verbose logging?
+    //TE_LOG(LogTemp, Log, "Key Down: %d", KeyCode); //TODO: add verbose logging?
 
     // escape key
     if (KeyCode == VK_ESCAPE)
@@ -147,5 +145,5 @@ void InputManager::OnKeyDown(int32 KeyCode)
 
 void InputManager::OnKeyUp(int32 KeyCode)
 {
-    //VG_LOG(LOG_CATEGORY_INPUT, LOG_INFO, "Key Up: %d", KeyCode);
+    //TE_LOG(LogTemp, Log, "Key Up: %d", KeyCode); //TODO: add verbose logging?
 }

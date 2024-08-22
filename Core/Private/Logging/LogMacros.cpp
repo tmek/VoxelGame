@@ -1,42 +1,45 @@
-﻿#include "Logging/LogMacros.h"
-#include <cstdio>
+﻿// copyright
+
 #include <cstdarg>
+#include <cstdio>
 #include <mutex>
+
+#include "Logging/LogMacros.h"
 
 // make thread safe when using stdout/stderr
 std::mutex LogMutex;
 
 
-void TELog(const char* CategoryString, ELogVerbosity::Type Verbosity, const char* Format, ...)
+void TELog(const wchar_t* CategoryString, ELogVerbosity::Type Verbosity, const wchar_t* Format, ...)
 {
-    char LogMessage[1024];
+    wchar_t LogMessage[1024];
 
     // Create the formatted message
     va_list args;
     va_start(args, Format);
-    (void)vsprintf_s(LogMessage, Format, args);
+    (void)vswprintf_s(LogMessage, Format, args);
     va_end(args);
 
     // log level
-    auto VerbosityString = "";
+    const wchar_t* VerbosityString = L"";
     switch (Verbosity)
     {
-    case ELogVerbosity::Log: VerbosityString = "Log";
+    case ELogVerbosity::Log: VerbosityString = L"Log";
         break;
-    case ELogVerbosity::Warning: VerbosityString = "Warning";
+    case ELogVerbosity::Warning: VerbosityString = L"Warning";
         break;
-    case ELogVerbosity::Error: VerbosityString = "Error";
+    case ELogVerbosity::Error: VerbosityString = L"Error";
         break;
-    case ELogVerbosity::Display: VerbosityString = "Display";
+    case ELogVerbosity::Display: VerbosityString = L"Display";
         break;
-    case ELogVerbosity::Fatal: VerbosityString = "Fatal";
+    case ELogVerbosity::Fatal: VerbosityString = L"Fatal";
         break;
-    case ELogVerbosity::Verbose: VerbosityString = "Verbose";
+    case ELogVerbosity::Verbose: VerbosityString = L"Verbose";
         break;
-    case ELogVerbosity::VeryVerbose: VerbosityString = "VeryVerbose";
+    case ELogVerbosity::VeryVerbose: VerbosityString = L"VeryVerbose";
         break;
     default:
-        VerbosityString = "Log";
+        VerbosityString = L"Log";
     }
 
 
@@ -46,12 +49,12 @@ void TELog(const char* CategoryString, ELogVerbosity::Type Verbosity, const char
         // output to console
         if (Verbosity == ELogVerbosity::Error)
         {
-            (void)fprintf(stderr, "%s: %s: %s\n", CategoryString, VerbosityString, LogMessage);
+            (void)fwprintf(stderr, L"%s: %s: %s\n", CategoryString, VerbosityString, LogMessage);
             (void)fflush(stderr);
         }
         else
         {
-            (void)fprintf(stdout, "%s: %s: %s\n", CategoryString, VerbosityString, LogMessage);
+            (void)fwprintf(stdout, L"%s: %s: %s\n", CategoryString, VerbosityString, LogMessage);
             (void)fflush(stdout);
         }
     }

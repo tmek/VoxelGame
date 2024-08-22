@@ -3,8 +3,9 @@
 
 #include "Logging/LogMacros.h"
 
-#include "Windows/WindowsIncludes.h"
 #include "Windows/WindowsPlatformProcess.h"
+
+#include "Windows/WindowsHWrapper.h"
 
 void WindowsPlatformProcess::SleepMS(int32 Milliseconds)
 {
@@ -16,7 +17,7 @@ void WindowsPlatformProcess::ShowConsole()
     auto hwnd = GetConsoleWindow();
     if (hwnd)
     {
-        TE_LOG(LogConsole, Log, "Showing existing Console.");
+        TE_LOG(LogConsole, Log, TEXT("Showing existing Console."));
         ShowWindow(hwnd, SW_SHOW);
         return;
     }
@@ -26,28 +27,28 @@ void WindowsPlatformProcess::ShowConsole()
         // Use GetLastError to get the error code
         auto ErrorCode = GetLastError();
         
-        TE_LOG(LogConsole, Error, "Error allocating console: %d", ErrorCode);
+        TE_LOG(LogConsole, Error, TEXT("Error allocating console: %d"), ErrorCode);
         return;
     }
 
     FILE* file_out = nullptr;
     if (freopen_s(&file_out, "CONOUT$", "w", stdout) != 0)
     {
-        TE_LOG(LogConsole, Error, "Error redirecting stdout");
+        TE_LOG(LogConsole, Error, TEXT("Error redirecting stdout"));
         return;
     }
 
     FILE* file_err = nullptr;
     if (freopen_s(&file_err, "CONOUT$", "w", stderr) != 0)
     {
-        TE_LOG(LogConsole, Error, "Error redirecting stderr");
+        TE_LOG(LogConsole, Error, TEXT("Error redirecting stderr"));
         return;
     }
 
     FILE* file_in = nullptr;
     if (freopen_s(&file_in, "CONIN$", "r", stdin) != 0)
     {
-        TE_LOG(LogConsole, Error, "Error redirecting stdin");
+        TE_LOG(LogConsole, Error, TEXT("Error redirecting stdin"));
         return;
     }
 
@@ -66,14 +67,17 @@ void WindowsPlatformProcess::ShowConsole()
         int posY = monitorInfo.rcMonitor.top;
 
         // Move the console window to the desired position
-        SetWindowPos(consoleWindow, NULL, posX, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        SetWindowPos(consoleWindow, NULL, posX-1000, posY, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        // int clientwidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+        // int clientheight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+        // SetWindowPos(consoleWindow, NULL, posX-1000, posY, clientwidth, clientheight, SWP_NOZORDER);
     }
     else
     {
-       TE_LOG(LogConsole, Error, "Error getting monitor info");
+       TE_LOG(LogConsole, Error, TEXT("Error getting monitor info"));
     }
 
-    TE_LOG(LogConsole, Log, "Console initialized successfully!");
+    TE_LOG(LogConsole, Log, TEXT("Console initialized successfully!"));
 }
 
 const char* WindowsPlatformProcess::GetPlatformName()

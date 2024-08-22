@@ -15,11 +15,15 @@ public:
     Mesh AssembleMesh(const std::vector<MeshBuilder<VertexType>>& builders);
 
 private:
-    ComPtr<ID3D11Device> device;
 
+
+#pragma warning(push)
+#pragma warning(disable:4251)
+    ComPtr<ID3D11Device> device;
     template <typename VertexType>
     ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<VertexType>& vertices);
     ComPtr<ID3D11Buffer> CreateIndexBuffer(const std::vector<UINT>& indices);
+#pragma warning(pop)
 };
 
 

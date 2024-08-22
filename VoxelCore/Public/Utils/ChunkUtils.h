@@ -9,8 +9,10 @@
 #include <algorithm>
 #include <thread>
 
+#include "CoreGlobals.h"
+
 #include "Voxel/Conversions.h"
-//#include "HAL/PlatformWindow.h" // TODO: temporary for GIsRequestingExit (ugh globals)
+
 
 
 struct VOXELCORE_API ChunkUtils
@@ -78,10 +80,10 @@ struct VOXELCORE_API ChunkUtils
         for (int y = 0; y < sub_height; ++y)
         {
             // check if we're exiting
-            // if (GIsRequestingExit)
-            // {
-            //     return;
-            // }
+            if (GIsRequestingExit)
+            {
+                return;
+            }
 
             // yield every 24 y layers to avoid hogging the CPU
             if (y % 16 == 0)

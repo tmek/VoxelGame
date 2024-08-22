@@ -10,24 +10,27 @@ using namespace ELogVerbosity;
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
+    const char* ReasonString = nullptr;
+    
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        TE_LOG(LogTemp, Log, "[%s] DllMain: DLL_PROCESS_ATTACH", ModuleName);
+        ReasonString = "DLL_PROCESS_ATTACH";
         break;
     case DLL_THREAD_ATTACH:
-        TE_LOG(LogTemp, Log, "[%s] DllMain: DLL_THREAD_ATTACH", ModuleName);
+        ReasonString = "DLL_THREAD_ATTACH";
         break;
     case DLL_THREAD_DETACH:
-        TE_LOG(LogTemp, Log, "[%s] DllMain: DLL_THREAD_DETACH", ModuleName);
+        ReasonString = "DLL_THREAD_DETACH";
         break;
     case DLL_PROCESS_DETACH:
-        TE_LOG(LogTemp, Log, "[%s] DllMain: DLL_PROCESS_DETACH", ModuleName);
+        ReasonString = "DLL_PROCESS_DETACH";
         break;
     default:
-        TE_LOG(LogTemp, Log, "[%s] DllMain: default", ModuleName);
-        break;
+        ReasonString = "Reason Unknown";
     }
 
+    //TE_LOG(LogTemp, Log, "%s::DllMain: %s", ModuleName, ReasonString);
+    
     return TRUE;
 }

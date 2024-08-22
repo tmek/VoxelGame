@@ -21,18 +21,20 @@ struct SubMesh
 // It is not dependent on any specific vertex format or struct.
 struct CORE_API Mesh
 {
-    ComPtr<ID3D11Buffer> vertexBuffer;
-    ComPtr<ID3D11Buffer> indexBuffer;
     UINT vertexCount = 0;
     UINT indexCount = 0;
     UINT vertexStride = 0;
 
+    // hide Warning C4251 (needs dll-interface) until we have a solution
+#pragma warning(push)
+#pragma warning(disable:4251)
+    ComPtr<ID3D11Buffer> vertexBuffer;
+    ComPtr<ID3D11Buffer> indexBuffer;
     std::vector<SubMesh> SubMeshes;
-
     // text tag for debugging
     std::shared_ptr<std::string> DebugTag;
-
     DirectX::XMFLOAT3 DebugColor = {1.0f, 1.0f, 1.0f};
+#pragma warning(pop)
 
     Mesh()
     {

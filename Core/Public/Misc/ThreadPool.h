@@ -9,11 +9,8 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "Windows/WindowsPlatformProcess.h"
-#include "Windows.h" // todo: this is temporary. implement generic platform version.  
-
-#include "Logging/LogMacros.h"
-
+#include "CoreMinimal.h"
+#include "Windows/WindowsHWrapper.h"
 
 class CORE_API ThreadPool
 {
@@ -25,16 +22,21 @@ public:
     auto Enqueue(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Args...>::type>;
 
 private:
+
+    bool stop = false;
+
+#pragma warning(push)
+#pragma warning(disable:4251)
     std::vector<std::jthread> workers;
     std::queue<std::function<void()>> tasks;
     std::mutex queueMutex;
     std::condition_variable condition;
-    bool stop = false;
+#pragma warning(pop)
 };
 
 inline ThreadPool::ThreadPool(size_t numThreads)
 {
-    TE_LOG(LogGeneral, Log, "Creating ThreadPool with %zu threads...", numThreads);
+    TE_LOG(LogTemp, Log, TEXT("Creating ThreadPool with %zu threads..."), numThreads);
     for (size_t i = 0; i < numThreads; ++i)
     {
         workers.emplace_back([this, i]
@@ -58,7 +60,7 @@ inline ThreadPool::ThreadPool(size_t numThreads)
             // Set thread affinity to improve cache locality, reducing cache misses by keeping the thread on the same core.
             //SetThreadAffinityMask(::GetCurrentThread(), affinityMask);
 
-            TE_LOG(LogGeneral, Log, "Worker thread id: %d (%d), affinity mask: %d", i, ::GetCurrentThreadId(), affinityMask);
+            TE_LOG(LogTemp, Log, TEXT("Worker thread id: %d (%d), affinity mask: %d"), i, ::GetCurrentThreadId(), affinityMask);
             
             // worker thread's loop
             while (true)
@@ -120,7 +122,7 @@ inline ThreadPool::ThreadPool(size_t numThreads)
     for (std::jthread& worker : workers)
     {
         // Each thread should be joinable immediately after being created and added to the `workers` vector
-        TE_LOG(LogGeneral, Log, "Worker thread id: %d", worker.get_id());
+        TE_LOG(LogTemp, Log, TEXT("Worker thread id: %d"), worker.get_id());
     }    
 }
 
@@ -133,7 +135,7 @@ inline ThreadPool::~ThreadPool()
     condition.notify_all();
     for (std::jthread& worker : workers)
     {
-        TE_LOG(LogGeneral, Log, "Joining worker thread id: %d", worker.get_id());        
+        TE_LOG(LogTemp, Log, TEXT("Joining worker thread id: %d"), worker.get_id());        
         worker.join();
     }
 }

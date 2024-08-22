@@ -1,10 +1,15 @@
-﻿#pragma once
-#include "CoreTypes.h"
+﻿// copyright
 
-class CORE_API PlatformTime
+#pragma once
+
+#include <math.h>
+
+#include "Platform.h"
+
+class CORE_API FPlatformTime
 {
 public:
-    static double GetTimeInSeconds()
+    static double Seconds()
     {
         static bool initialized = false;
         if (!initialized)
@@ -19,6 +24,7 @@ public:
     }
     
     static int64 GetCPUCounter();
+    static double_t InitTiming();
 
 private:
     static int64 Frequency;

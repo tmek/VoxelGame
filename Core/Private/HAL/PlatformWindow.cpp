@@ -5,10 +5,8 @@
 #include "Input/InputManager.h"
 #include "HAL/PlatformWindow.h"
 
-#include "Windows/PlatformWindows.h"
+#include "Windows/WindowsHWrapper.h"
 
-CORE_API HINSTANCE GInstanceHandle;
-CORE_API bool GIsRequestingExit;
 
 struct PlatformWindow::Impl
 {
@@ -16,10 +14,12 @@ struct PlatformWindow::Impl
     
     HWND Hwnd;
     WindowOptions Options;
+    HINSTANCE InstanceHandle;
     
     Impl(const WindowOptions& options)
         : Hwnd(nullptr), Options(options)
     {
+        InstanceHandle = GetModuleHandle(nullptr);
     }
 
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -65,14 +65,14 @@ PlatformWindow::~PlatformWindow()
     {
         DestroyWindow(pImpl->Hwnd);
     }
-    UnregisterClass(Impl::WindowClassName, GInstanceHandle);
+    UnregisterClass(Impl::WindowClassName, pImpl->InstanceHandle);
 }
 
 void PlatformWindow::RegisterWindowClass()
 {
     WNDCLASS wc = {};
     wc.lpfnWndProc = Impl::WindowProc;  // Use the static method in Impl
-    wc.hInstance = GInstanceHandle;
+    wc.hInstance = pImpl->InstanceHandle;
     wc.lpszClassName = Impl::WindowClassName;
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_MENUTEXT);
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -99,7 +99,7 @@ int32_t PlatformWindow::Create()
         CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight,
         nullptr,
         nullptr,
-        GInstanceHandle,
+        pImpl->InstanceHandle,
         nullptr
     );
 
