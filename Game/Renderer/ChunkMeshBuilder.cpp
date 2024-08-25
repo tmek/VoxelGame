@@ -79,8 +79,8 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
 
     // setup mesh builders
     WorldOperations world(GWorld);
-    MeshBuilder<VoxelGameMeshVertex> solidMeshBuilder;
-    MeshBuilder<VoxelGameMeshVertex> waterMeshBuilder;
+    TMeshBuilder<VoxelGameMeshVertex> solidMeshBuilder;
+    TMeshBuilder<VoxelGameMeshVertex> waterMeshBuilder;
     BlockMeshBuilder solidBlocksSubMesh(solidMeshBuilder);
     BlockMeshBuilder waterBlocksSubMesh(waterMeshBuilder);
 
@@ -238,7 +238,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
     //Mesh mesh = builder.ToMesh();
 
     MeshAssembler assembler(device);
-    std::vector<MeshBuilder<VoxelGameMeshVertex>> builders = {solidMeshBuilder, waterMeshBuilder};
+    std::vector<TMeshBuilder<VoxelGameMeshVertex>> builders = {solidMeshBuilder, waterMeshBuilder};
     Mesh mesh = assembler.AssembleMesh(builders);
 
     // store the chunk key in the mesh for debugging

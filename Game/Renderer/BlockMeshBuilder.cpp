@@ -1,6 +1,6 @@
 ﻿#include "BlockMeshBuilder.h"
 
-BlockMeshBuilder::BlockMeshBuilder(MeshBuilder<VoxelGameMeshVertex>& meshBuilder)
+BlockMeshBuilder::BlockMeshBuilder(TMeshBuilder<VoxelGameMeshVertex>& meshBuilder)
     : meshBuilder(meshBuilder), Origin(0.0f, 0.0f, 0.0f), mins(0.0f, 0.0f, 0.0f), maxs(1.0f, 1.0f, 1.0f),
       color(1.0f, 1.0f, 1.0f, 1.0f)
 {

@@ -9,7 +9,7 @@
 #include "Math/Noise/PerlinNoise.h"
 #include "Math/Noise/SimplexNoise.h"
 
-#include "Render/BlockMeshBuilder.h"
+#include "Renderer/BlockMeshBuilder.h"
 
 #define sea_level 64
 
@@ -30,7 +30,7 @@ struct TerrainGeneratorBase
     TerrainGeneratorBase()
     {
         // seed the random number generator with time
-        std::srand((uint32)FPlatformTime::GetCPUCounter());
+        std::srand((unsigned int)time(nullptr)); // todo: make this thread safe. use <random> instead
     }
 
     TerrainGeneratorBase(uint32_t seed)

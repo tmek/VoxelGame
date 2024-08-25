@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Windows/WindowsHWrapper.h"
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <memory>

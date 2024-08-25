@@ -1,5 +1,7 @@
 ﻿// Copyright Voxel Games, Inc. All Rights Reserved.
 
+#include "HAL/HackPlatformDefines.h"
+
 #include "CoreMinimal.h"
 
 #include "Windows/WindowsHWrapper.h"
@@ -17,15 +19,16 @@
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformTime.h"
 
-#include "Render/CubeMesh.h"
+#include "Renderer/CubeMesh.h"
 
 #include "Input/InputManager.h"
 
+#include "Misc/Application.h"
 #include "Misc/FrameTiming.h"
 #include "Misc/PlayerController.h"
 #include "Misc/ThreadPool.h"
 
-#include "Render/BoxMeshBuilder.h"
+#include "Renderer/BoxMeshBuilder.h"
 
 #include "Utils/ChunkUtils.h"
 
@@ -34,6 +37,11 @@
 #include "WorldGen/BlockTypes.h"
 #include "WorldGen/TerrainGenerators.h"
 #include "WorldGen/WorldOperations.h"
+
+#include <algorithm>
+#include <execution>
+
+#include "Renderer/Camera.h"
 
 
 // use static initialization to show console early in app startup
@@ -70,8 +78,14 @@ int ChunkDrawRadius = 32;
 
 PlayerController GPlayerController;
 float InitialCameraHeight = static_cast<float>(-(ChunkDepth + 2) * ChunkDrawRadius);
-DirectX::XMVECTOR GCameraPosition = DirectX::XMVectorSet(0.0f, 100.0f, InitialCameraHeight, 0.0f);
+Vector InitialCameraPosition = {0.0f, 100.0f, InitialCameraHeight};
 
+Camera GCamera = Camera(InitialCameraPosition,
+                        Vector(0.0f, 0.0f, 1.0f),
+                        90.0f,
+                        16.0f / 9.0f,
+                        0.1f,
+                        1000.0f);
 
 int WorldBlockCounter = 0;
 
@@ -81,8 +95,80 @@ ThreadPool GThreadPool(std::thread::hardware_concurrency());
 // so we don't queue the same chunk multiple times.
 std::unordered_set<ChunkKey, ChunkKeyHash> ChunkLoadQueue;
 
-#include <algorithm>
-#include <execution>
+void FOldEngineLoop::SetBlocksInFrontOfPlayer()
+{
+
+    // place blocks at player position if keys 1-5 are pressed.
+    // if (true)
+    // {
+    //     BlockType NewBlockType = 0;
+    //     bool KeyPressed = false;
+    //     for (char key = VK_NUMPAD0; key <= VK_NUMPAD5; ++key)
+    //     {
+    //         if (InputManager::Get().IsKeyHeld(key))
+    //         {
+    //             KeyPressed = true;
+    //             NewBlockType = key - VK_NUMPAD0;
+    //             if (NewBlockType == 4) NewBlockType = WATER;
+    //             break;
+    //         }
+    //     }
+    //
+    //     if (KeyPressed)
+    //     {
+    //         // // put the block 10 units in front of the camera
+    //         // XMVECTOR CameraForward = GPlayerController.GetForwardVector();
+    //         // //XMVector3Rotate(
+    //         // //     XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
+    //         // //     XMQuaternionRotationRollPitchYaw(
+    //         // //         XMConvertToRadians(GPlayerController.Pitch),
+    //         // //         XMConvertToRadians(GPlayerController.Yaw), 0.0f));
+    //         //
+    //         // XMVECTOR CameraPosition = GCameraPosition;
+    //         // XMVECTOR BlockPosition = XMVectorAdd(CameraPosition, CameraForward * 10.0f);
+    //         //
+    //         //
+    //         // XMVECTOR BlockPositionRounded = XMVectorRound(BlockPosition);
+    //         //
+    //         // BlockCoordinate blockCursor;
+    //         // blockCursor.X = static_cast<int>(XMVectorGetX(BlockPositionRounded));
+    //         // blockCursor.Y = static_cast<int>(XMVectorGetY(BlockPositionRounded));
+    //         // blockCursor.Z = static_cast<int>(XMVectorGetZ(BlockPositionRounded));
+    //         //
+    //         //
+    //         // ChunkKey centerChunkKey;
+    //         // WorldPositionToChunkKey(blockCursor, centerChunkKey);
+    //
+    //         // if (0)
+    //         // {
+    //         //     // // stale code
+    //         //     // auto Coords = GWorld.GetChunkCoordAndLocal(worldX, worldZ);
+    //         //     // world.SetBlock(worldX, worldY, worldZ, NewBlockType);
+    //         //     // GWorld.GetChunk(Coords.ChunkX, Coords.ChunkZ).RebuildMesh(GGraphicsDevice->GetDevice());
+    //         // }
+    //         // else
+    //         // {
+    //         //     //world.DrawSphere(worldX, worldY, worldZ, 4, NewBlockType);
+    //         //     //TestBigSphere(blockCursor, 4, NewBlockType);
+    //         //
+    //         //     // rebuild chunk and surrounding chunks.
+    //         //     // todo: ideally it should only rebuild the chunks that have been modified.
+    //         //     // for (int dx = -1; dx <= 1; dx++)
+    //         //     // {
+    //         //     //     for (int dz = -1; dz <= 1; dz++)
+    //         //     //     {
+    //         //     //         ChunkKey currentChunkKey = {centerChunkKey.X + dx, centerChunkKey.Z + dz};
+    //         //     //         auto& currentChunk = GWorld.GetChunk(currentChunkKey);
+    //         //     //
+    //         //     //         // todo: ideally should add chunks to a rebuild queue and update a few per frame.
+    //         //     //         ChunkMeshManager::GetInstance().RebuildChunkMesh(
+    //         //     //             currentChunkKey, currentChunk, GGraphicsDevice->GetDevice());
+    //         //     //     }
+    //         //     // }
+    //         // }
+    //     }
+    // }
+}
 
 void FOldEngineLoop::GenerateChunksInBackground(const std::vector<ChunkKey>& ChunkKeys)
 {
@@ -109,9 +195,9 @@ void FOldEngineLoop::GenerateChunksAroundCamera(int RadiusInChunks /*= 32*/)
     // get camera position
 
     BlockCoordinate cameraBlock;
-    cameraBlock.X = static_cast<int>(XMVectorGetX(GCameraPosition));
-    cameraBlock.Y = static_cast<int>(XMVectorGetY(GCameraPosition));
-    cameraBlock.Z = static_cast<int>(XMVectorGetZ(GCameraPosition));
+    cameraBlock.X = static_cast<int>(GCamera.GetPosition().X);
+    cameraBlock.Y = static_cast<int>(GCamera.GetPosition().Y);
+    cameraBlock.Z = static_cast<int>(GCamera.GetPosition().Z);
 
     ChunkKey cameraChunkKey;
     WorldPositionToChunkKey(cameraBlock, cameraChunkKey);
@@ -487,6 +573,7 @@ void FOldEngineLoop::GenerateWorld()
 
 
 double GTime;
+
 void FOldEngineLoop::AddBlockTick()
 {
     return;
@@ -513,7 +600,6 @@ void FOldEngineLoop::AddBlockTick()
 
 void FOldEngineLoop::ClearPendingCleanupObjects()
 {
-    
 }
 
 int32 FOldEngineLoop::Init()
@@ -522,7 +608,7 @@ int32 FOldEngineLoop::Init()
 
     InputManager::Get().ShowCursor(false);
 
-    GTime = FPlatformTime::Seconds();
+    GTime = PlatformTime::Seconds();
 
     GWindow = new PlatformWindow();
 
@@ -550,17 +636,15 @@ int32 FOldEngineLoop::Init()
     //     RebuildChunkMeshes();
     // }
 
-    GEnableVsync = true;
-    
     return 0;
 }
 
 // this was so slow because it was rendering each block individually and doing massive memory reads.
 // it had to scan through # of chunks * 16 * 16 * 384 blocks which was several megabytes of memory.
 
-// int FOldEngineLoop::RenderChunk(Chunk& chunk, DirectX::XMMATRIX translationMatrix, DirectX::XMMATRIX rotationMatrix,
-//                              DirectX::XMMATRIX scaleMatrix, DirectX::XMMATRIX viewMatrix,
-//                              DirectX::XMMATRIX projectionMatrix)
+// int FOldEngineLoop::RenderChunk(Chunk& chunk, XMMATRIX translationMatrix, XMMATRIX rotationMatrix,
+//                              XMMATRIX scaleMatrix, XMMATRIX viewMatrix,
+//                              XMMATRIX projectionMatrix)
 // {
 //     bool ShouldDraw = !InputManager::Get().IsKeyHeld('R');
 //     if(!ShouldDraw) return 1;
@@ -589,14 +673,14 @@ int32 FOldEngineLoop::Init()
 //                     float BlockZ = static_cast<float>(k) + WorldOffsetZ;
 //                     float BlockY = static_cast<float>(j);
 //
-//                     translationMatrix = DirectX::XMMatrixTranslation(BlockX, BlockY, BlockZ);
+//                     translationMatrix = XMMatrixTranslation(BlockX, BlockY, BlockZ);
 //
-//                     DirectX::XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
-//                     DirectX::XMMATRIX WorldViewProjectionMatrix = worldMatrix * viewMatrix * projectionMatrix;
-//                     DirectX::XMMATRIX TransposedWVPMatrix = DirectX::XMMatrixTranspose(WorldViewProjectionMatrix);
+//                     XMMATRIX worldMatrix = scaleMatrix * rotationMatrix * translationMatrix;
+//                     XMMATRIX WorldViewProjectionMatrix = worldMatrix * viewMatrix * projectionMatrix;
+//                     XMMATRIX TransposedWVPMatrix = XMMatrixTranspose(WorldViewProjectionMatrix);
 //
 //                     // create an array of 5 tint colors
-//                     static DirectX::XMFLOAT4 TintColors[] = {
+//                     static XMFLOAT4 TintColors[] = {
 //                         {0.5f, 0.5f, 0.5f, 1.0f}, // stone
 //                         {0.55f, 0.27f, 0.07f, 1.0f}, // dirt
 //                         {0.3f, 0.6f, 0.2f, 1.0f}, // grass
@@ -616,14 +700,14 @@ int32 FOldEngineLoop::Init()
 
 struct Plane
 {
-    DirectX::XMFLOAT3 Normal;
+    XMFLOAT3 Normal;
     float Distance;
 };
 
-void ExtractFrustumPlanes(Plane planes[6], DirectX::XMMATRIX& viewProjMatrix)
+void ExtractFrustumPlanes(Plane planes[6], XMMATRIX& viewProjMatrix)
 {
-    DirectX::XMFLOAT4X4 m;
-    DirectX::XMStoreFloat4x4(&m, viewProjMatrix);
+    XMFLOAT4X4 m;
+    XMStoreFloat4x4(&m, viewProjMatrix);
 
     // Left plane
     planes[0].Normal = {m._14 + m._11, m._24 + m._21, m._34 + m._31};
@@ -663,12 +747,12 @@ void ExtractFrustumPlanes(Plane planes[6], DirectX::XMMATRIX& viewProjMatrix)
 }
 
 
-constexpr inline bool IsBoxInFrustum(const Plane planes[6], const DirectX::XMFLOAT3& minPoint, const DirectX::XMFLOAT3& maxPoint) noexcept
+constexpr inline bool IsBoxInFrustum(const Plane planes[6], const XMFLOAT3& minPoint, const XMFLOAT3& maxPoint) noexcept
 {
     for (int i = 0; i < 6; i++)
     {
         // Find the point in the AABB that is most opposite to the plane normal (i.e., "furthest" from the plane)
-        DirectX::XMFLOAT3 farthestPoint = minPoint;
+        XMFLOAT3 farthestPoint = minPoint;
 
         if (planes[i].Normal.x >= 0) farthestPoint.x = maxPoint.x;
         if (planes[i].Normal.y >= 0) farthestPoint.y = maxPoint.y;
@@ -690,14 +774,14 @@ constexpr inline bool IsBoxInFrustum(const Plane planes[6], const DirectX::XMFLO
 
 int GTotalDrawCalls;
 
-void FOldEngineLoop::DrawChunks(DirectX::XMMATRIX TranslationMatrix, DirectX::XMMATRIX RotationMatrix,
-                                DirectX::XMMATRIX ScaleMatrix, DirectX::XMMATRIX ViewMatrix,
-                                DirectX::XMMATRIX ProjectionMatrix, bool BdrawWater)
+void FOldEngineLoop::DrawChunks(XMMATRIX TranslationMatrix, XMMATRIX RotationMatrix,
+                                XMMATRIX ScaleMatrix, XMMATRIX ViewMatrix,
+                                XMMATRIX ProjectionMatrix, bool BdrawWater)
 {
     // if (0)
     // {
-    //     DirectX::XMMATRIX WorldViewProjectionMatrix = DirectX::XMMatrixIdentity() * viewMatrix * projectionMatrix;
-    //     DirectX::XMMATRIX TransposedWVPMatrix = DirectX::XMMatrixTranspose(WorldViewProjectionMatrix);
+    //     XMMATRIX WorldViewProjectionMatrix = XMMatrixIdentity() * viewMatrix * projectionMatrix;
+    //     XMMATRIX TransposedWVPMatrix = XMMatrixTranspose(WorldViewProjectionMatrix);
     //
     //     GGraphicsDevice->SetConstants(TransposedWVPMatrix, 1, 1, 1);
     //     GBoxMesh.BindToDeviceContext(GGraphicsDevice->GetDeviceContext());
@@ -714,12 +798,12 @@ void FOldEngineLoop::DrawChunks(DirectX::XMMATRIX TranslationMatrix, DirectX::XM
         BlockCoordinate chunkOrigin;
         ChunkKeyToWorldPosition(chunkKey, chunkOrigin);
 
-        TranslationMatrix = DirectX::XMMatrixTranslation(
+        TranslationMatrix = XMMatrixTranslation(
             static_cast<float>(chunkOrigin.X), 0.0f, static_cast<float>(chunkOrigin.Z));
 
-        DirectX::XMMATRIX worldMatrix = ScaleMatrix * RotationMatrix * TranslationMatrix;
-        DirectX::XMMATRIX WorldViewProjectionMatrix = worldMatrix * ViewMatrix * ProjectionMatrix;
-        DirectX::XMMATRIX TransposedWVPMatrix = DirectX::XMMatrixTranspose(WorldViewProjectionMatrix);
+        XMMATRIX worldMatrix = ScaleMatrix * RotationMatrix * TranslationMatrix;
+        XMMATRIX WorldViewProjectionMatrix = worldMatrix * ViewMatrix * ProjectionMatrix;
+        XMMATRIX TransposedWVPMatrix = XMMatrixTranspose(WorldViewProjectionMatrix);
 
 
         Mesh* mesh = ChunkMeshManager::GetInstance().GetChunkMesh(chunkKey);
@@ -759,7 +843,7 @@ void FOldEngineLoop::DrawChunks(DirectX::XMMATRIX TranslationMatrix, DirectX::XM
 }
 
 
-void FOldEngineLoop::ComputeChunkVisibility(DirectX::XMMATRIX ViewMatrix, DirectX::XMMATRIX ProjectionMatrix)
+void FOldEngineLoop::ComputeChunkVisibility(XMMATRIX ViewMatrix, XMMATRIX ProjectionMatrix)
 {
     // build list of visible chunks
     VisibleChunks.clear();
@@ -777,11 +861,11 @@ void FOldEngineLoop::ComputeChunkVisibility(DirectX::XMMATRIX ViewMatrix, Direct
         ChunkKeyToWorldPosition(chunkKey, chunkOrigin);
 
         // get chunk mins and maxs
-        DirectX::XMFLOAT3 BoundingBoxMin = {
+        XMFLOAT3 BoundingBoxMin = {
             static_cast<float>(chunkOrigin.X),
             0.0f,
             static_cast<float>(chunkOrigin.Z)};
-        DirectX::XMFLOAT3 BoundingBoxMax = {
+        XMFLOAT3 BoundingBoxMax = {
             static_cast<float>(chunkOrigin.X + ChunkWidth),
             static_cast<float>(ChunkHeight),
             static_cast<float>(chunkOrigin.Z + ChunkDepth)
@@ -801,174 +885,89 @@ void FOldEngineLoop::Tick()
 
     WorldOperations world(GWorld);
 
-    double PreviousTime = GTime;
-    GTime = FPlatformTime::Seconds();
-    float DeltaTime = static_cast<float>(GTime - PreviousTime);
-
+    // update timing
+    double DeltaTime = Application::GetDeltaTime();
+    GTime = Application::GetCurrentTime();
     FrameTiming::Update(DeltaTime);
 
+    // message pump
     GWindow->ProcessMessageQueue();
 
+    // toggle chunk debug visualization
     if (InputManager::Get().IsKeyPressed(' '))
     {
         InputManager::Get().ClearKeyPressed(' '); // todo: may need a better way to 'consume' input
-
         GShouldRenderTintColor = !GShouldRenderTintColor;
+        TE_LOG(LogTemp, Log, TEXT("GShouldRenderTintColor: %d"), GShouldRenderTintColor);
     }
 
-    AddBlockTick();
+
+    //auto Color = Colors::Red;
+    constexpr float MinecraftSkyColor[] = {0.4706f, 0.6549f, 1.0f, 1.0f};
+    constexpr float ClearColor1[] = {0.4706f, 0.6549f, 1.f, 1.0f}; // minecraft sky
+    constexpr float ClearColor2[] = {0.4f, 0.2f, 0.0f, 1.0f};
 
     // set clear color
     static bool bColor = true;
 
-    //auto Color = DirectX::Colors::Red;
-    float MinecraftSkyColor[] = {0.4706f, 0.6549f, 1.0f, 1.0f};
-    float ClearColor1[] = {0.4706f, 0.6549f, 1.f, 1.0f}; // minecraft sky
-    float ClearColor2[] = {0.4f, 0.2f, 0.0f, 1.0f};
     GGraphicsDevice->Clear(bColor ? MinecraftSkyColor : ClearColor2);
 
-    // update matrix
-    float yaw = static_cast<float>(GTime);
-    float pitch = yaw * 0.5f;
-    DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixIdentity();
-    DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixIdentity();
-    // DirectX::XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f);
-    DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixIdentity();
-
-
-    // input
-    //InputManager::Get().CenterMouse(GWindow->GetHandle());
-
     // movement
-    GPlayerController.ProcessInput(static_cast<float>(DeltaTime));
-    auto MinecraftSprintSpeed = 5.612f;
-    static float DistancePerSecond = MinecraftSprintSpeed;
-    float increase = 2;
+    GPlayerController.Tick(static_cast<float>(DeltaTime));
+    constexpr auto MinecraftSprintSpeed = 5.612f;
+    
+    static float PlayerSpeed = MinecraftSprintSpeed;
+    constexpr float IncreaseSpeedMultiplier = 2;
 
     if (InputManager::Get().IsKeyPressed('R'))
     {
         TE_LOG(LogTemp, Log, TEXT("Increase speed"));
-        DistancePerSecond = DistancePerSecond * increase;
+        PlayerSpeed = PlayerSpeed * IncreaseSpeedMultiplier;
     }
     if (InputManager::Get().IsKeyPressed('F'))
     {
         TE_LOG(LogTemp, Log, TEXT("Decrease speed"));
-        DistancePerSecond = DistancePerSecond / increase;
+        PlayerSpeed = PlayerSpeed / IncreaseSpeedMultiplier;
     }
     InputManager::Get().ClearKeyPressed('R');
     InputManager::Get().ClearKeyPressed('F');
 
 
-    if (DistancePerSecond < MinecraftSprintSpeed) DistancePerSecond = MinecraftSprintSpeed;
+    if (PlayerSpeed < MinecraftSprintSpeed)
+    {
+        PlayerSpeed = MinecraftSprintSpeed;
+    }
 
+    Vector PlayerVelocity = GPlayerController.GetMovementVector() * PlayerSpeed;  
+    
 
-    float MovementScale = static_cast<float>(DeltaTime) * DistancePerSecond;
-    DirectX::FXMVECTOR MoveVector = DirectX::XMVectorMultiply(GPlayerController.MovementVector,
-                                                              DirectX::XMVectorSet(
-                                                                  MovementScale, MovementScale, MovementScale,
-                                                                  0.0f));
-    DirectX::XMVector3Normalize(MoveVector);
-    GCameraPosition = DirectX::XMVectorAdd(GCameraPosition, MoveVector);
-
-    // using player controller yaw AND pitch, create a lookat point in front of the GCameraPosition
-    DirectX::XMVECTOR LookAtPoint = DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-    LookAtPoint = GPlayerController.GetForwardVector();
-    // DirectX::XMVector3Rotate(LookAtPoint,
-    //                                    DirectX::XMQuaternionRotationRollPitchYaw(
-    //                                        DirectX::XMConvertToRadians(GPlayerController.Pitch),
-    //                                        DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
-    LookAtPoint = DirectX::XMVectorAdd(GCameraPosition, LookAtPoint);
-
-    // camera position is known, submit nearby chunks for background generation.
-    //GeneratePerlinTerrain(ChunkDrawRadius);
+    GCamera.SetPosition(GCamera.GetPosition() + PlayerVelocity * static_cast<float>(DeltaTime));
+    GCamera.SetTarget(GCamera.GetPosition() + GPlayerController.GetForwardVector());
 
     // camera matrix (view)
-    float AnimatedSin = static_cast<float>(sin(GTime));
-    DirectX::FXMVECTOR eye = GCameraPosition; // eye 
-    DirectX::FXMVECTOR at = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f); // look at origin
-    DirectX::FXMVECTOR up = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f); // y-up
-    DirectX::XMMATRIX viewMatrix = DirectX::XMMatrixLookAtLH(eye, LookAtPoint, up);
+    const float AnimatedSin = static_cast<float>(sin(GTime));
+
+    const FXMVECTOR EyePosition = XMVectorSet(GCamera.GetPosition().X, GCamera.GetPosition().Y, GCamera.GetPosition().Z, 0.0f);
+    const FXMVECTOR FocusPosition = XMVectorSet(GCamera.GetTarget().X, GCamera.GetTarget().Y, GCamera.GetTarget().Z, 0.0f);
+    const FXMVECTOR UpVector = XMVectorSet(GCamera.GetUp().X, GCamera.GetUp().Y, GCamera.GetUp().Z, 0.0f);
+
+    // update matrix
+    XMMATRIX TranslationMatrix = XMMatrixIdentity();
+    XMMATRIX RotationMatrix = XMMatrixIdentity();
+    XMMATRIX ScaleMatrix = XMMatrixIdentity();
+
+
+    constexpr float WindowWidth = 1280.0f;
+    constexpr float WindowHeight = 720.0f;
 
     // projection
-    float NearZ = 0.1f;
-    float FarZ = 10000.0f;
-    float WindowWidth = 1280.0f;
-    float WindowHeight = 720.0f;
-    float AspectRatio = WindowWidth / WindowHeight;
-    float FovAngleYRadians = DirectX::XMConvertToRadians(70.0f);
-    DirectX::XMMATRIX projectionMatrix = DirectX::XMMatrixPerspectiveFovLH(
-        FovAngleYRadians, AspectRatio, NearZ, FarZ);
+    constexpr float FovAngleY = XMConvertToRadians(70.0f);
+    constexpr float AspectRatio = WindowWidth / WindowHeight;
+    constexpr float NearZ = 0.1f;
+    constexpr float FarZ = 10000.0f;
 
-    // place blocks at player position if keys 1-5 are pressed.
-    if (true)
-    {
-        BlockType NewBlockType = 0;
-        bool KeyPressed = false;
-        for (char key = VK_NUMPAD0; key <= VK_NUMPAD5; ++key)
-        {
-            if (InputManager::Get().IsKeyHeld(key))
-            {
-                KeyPressed = true;
-                NewBlockType = key - VK_NUMPAD0;
-                if (NewBlockType == 4) NewBlockType = WATER;
-                break;
-            }
-        }
-
-        if (KeyPressed)
-        {
-            // put the block 10 units in front of the camera
-            DirectX::XMVECTOR CameraForward = GPlayerController.GetForwardVector();
-            //DirectX::XMVector3Rotate(
-            //     DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
-            //     DirectX::XMQuaternionRotationRollPitchYaw(
-            //         DirectX::XMConvertToRadians(GPlayerController.Pitch),
-            //         DirectX::XMConvertToRadians(GPlayerController.Yaw), 0.0f));
-
-            DirectX::XMVECTOR CameraPosition = GCameraPosition;
-            DirectX::XMVECTOR BlockPosition = DirectX::XMVectorAdd(CameraPosition, CameraForward * 10.0f);
-
-
-            DirectX::XMVECTOR BlockPositionRounded = DirectX::XMVectorRound(BlockPosition);
-
-            BlockCoordinate blockCursor;
-            blockCursor.X = static_cast<int>(DirectX::XMVectorGetX(BlockPositionRounded));
-            blockCursor.Y = static_cast<int>(DirectX::XMVectorGetY(BlockPositionRounded));
-            blockCursor.Z = static_cast<int>(DirectX::XMVectorGetZ(BlockPositionRounded));
-
-
-            ChunkKey centerChunkKey;
-            WorldPositionToChunkKey(blockCursor, centerChunkKey);
-
-            if (0)
-            {
-                // // stale code
-                // auto Coords = GWorld.GetChunkCoordAndLocal(worldX, worldZ);
-                // world.SetBlock(worldX, worldY, worldZ, NewBlockType);
-                // GWorld.GetChunk(Coords.ChunkX, Coords.ChunkZ).RebuildMesh(GGraphicsDevice->GetDevice());
-            }
-            else
-            {
-                //world.DrawSphere(worldX, worldY, worldZ, 4, NewBlockType);
-                //TestBigSphere(blockCursor, 4, NewBlockType);
-
-                // rebuild chunk and surrounding chunks.
-                // todo: ideally it should only rebuild the chunks that have been modified.
-                // for (int dx = -1; dx <= 1; dx++)
-                // {
-                //     for (int dz = -1; dz <= 1; dz++)
-                //     {
-                //         ChunkKey currentChunkKey = {centerChunkKey.X + dx, centerChunkKey.Z + dz};
-                //         auto& currentChunk = GWorld.GetChunk(currentChunkKey);
-                //
-                //         // todo: ideally should add chunks to a rebuild queue and update a few per frame.
-                //         ChunkMeshManager::GetInstance().RebuildChunkMesh(
-                //             currentChunkKey, currentChunk, GGraphicsDevice->GetDevice());
-                //     }
-                // }
-            }
-        }
-    }
+    const XMMATRIX ViewMatrix = XMMatrixLookAtLH(EyePosition, FocusPosition, UpVector);
+    const XMMATRIX ProjectionMatrix = XMMatrixPerspectiveFovLH(FovAngleY, AspectRatio, NearZ, FarZ);
 
 
     // hotkey for clearing the world
@@ -992,7 +991,7 @@ void FOldEngineLoop::Tick()
 
     if (!FreezeFrustumCulling)
     {
-        ComputeChunkVisibility(viewMatrix, projectionMatrix);
+        ComputeChunkVisibility(ViewMatrix, ProjectionMatrix);
     }
 
 
@@ -1000,23 +999,22 @@ void FOldEngineLoop::Tick()
 
     // draw chunks: solid blocks first, then water blocks.
     GTotalDrawCalls = 0;
-    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, false /* solid */);
-    DrawChunks(translationMatrix, rotationMatrix, scaleMatrix, viewMatrix, projectionMatrix, true /* water */);
+    DrawChunks(TranslationMatrix, RotationMatrix, ScaleMatrix, ViewMatrix, ProjectionMatrix, false /* solid */);
+    DrawChunks(TranslationMatrix, RotationMatrix, ScaleMatrix, ViewMatrix, ProjectionMatrix, true /* water */);
 
     // device present
-    GGraphicsDevice->Present(GEnableVsync);
+    GGraphicsDevice->Present(GEnableVSync);
 
-    // yield to other threads
-    if (!GEnableVsync)
+    if (!GEnableVSync)
     {
+        // yield to other threads once per frame
         //std::this_thread::yield();
-        //std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
     // update window title
     constexpr float TimeBetweenUpdates = 0.01f;
     static float UpdateTimeRemaining = TimeBetweenUpdates;
-    UpdateTimeRemaining -= DeltaTime;
+    UpdateTimeRemaining -= (float)DeltaTime;
 
     if (UpdateTimeRemaining <= 0)
     {

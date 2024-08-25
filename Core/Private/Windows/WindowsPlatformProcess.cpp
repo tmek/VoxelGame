@@ -7,6 +7,10 @@
 
 #include "Windows/WindowsHWrapper.h"
 
+void WindowsPlatformProcess::SetThreadName(const wchar_t* name)
+{
+    
+}
 void WindowsPlatformProcess::SleepMS(int32 Milliseconds)
 {
     ::Sleep(Milliseconds);

@@ -160,6 +160,91 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Private\dllmain.cpp" />
+    <ClCompile Include="Private\Engine\Engine.cpp">
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</BrowseInformationFile>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFuzzer>false</EnableFuzzer>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</ModuleDependenciesFile>
+      <ModuleOutputFile>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <Optimization>MaxSpeed</Optimization>
+      <ObjectFileName>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\vc143.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\Core.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDll</RuntimeLibrary>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <TrackerLogDirectory>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</TrackerLogDirectory>
+      <TranslateIncludes>false</TranslateIncludes>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</XMLDocumentationFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <BuildStlModules>false</BuildStlModules>
+      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
+      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
+      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
+      <IncludeInUnityFile>true</IncludeInUnityFile>
+      <UnityFilesDirectory>D:\Projects\Study\VoxelGame\Intermediate\Core\x64\Release\</UnityFilesDirectory>
+      <OrderInUnityFile>100</OrderInUnityFile>
+      <CombineFilesOnlyFromTheSameFolder>false</CombineFilesOnlyFromTheSameFolder>
+      <MinFilesInUnityFile>2</MinFilesInUnityFile>
+      <MaxFilesInUnityFile>0</MaxFilesInUnityFile>
+      <MinUnityFiles>1</MinUnityFiles>
+      <PreprocessorDefinitions>CORE_EXPORTS;NDEBUG;CPPDYNAMICLIBRARYTEMPLATE_EXPORTS;_WINDOWS;_USRDLL;_WINDLL;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>D:\Projects\Study\VoxelGame\Core\\Public;D:\Projects\Study\VoxelGame\Core\\Private;</AdditionalIncludeDirectories>
+      <AdditionalPublicIncludeDirectories>;D:\Projects\Study\VoxelGame\Core\\Public;</AdditionalPublicIncludeDirectories>
+      <LinkCompiled>true</LinkCompiled>
+    </ClCompile>
+    <ClCompile Include="Private\HAL\HackPlatformDefines.cpp" />
     <ClCompile Include="Private\HAL\Platform.cpp" />
     <ClCompile Include="Private\HAL\PlatformTime.cpp" />
     <ClCompile Include="Private\HAL\PlatformWindow.cpp" />
@@ -174,17 +259,19 @@
     <ClCompile Include="Private\Misc\PlayerController.cpp" />
     <ClCompile Include="Private\Misc\StopWatch.cpp" />
     <ClCompile Include="Private\Misc\ThreadPool.cpp" />
+    <ClCompile Include="Private\RHI\D3D12Example.cpp" />
     <ClCompile Include="Private\RHI\GraphicsDevice.cpp" />
     <ClCompile Include="Private\RHI\ImageUtil.cpp" />
     <ClCompile Include="Private\RHI\Mesh.cpp" />
     <ClCompile Include="Private\RHI\MeshAssembler.cpp" />
-    <ClCompile Include="Private\RHI\MeshBuilder.cpp" />
     <ClCompile Include="Private\Tasks\Launch.cpp" />
     <ClCompile Include="Private\Tasks\Pipe.cpp" />
     <ClCompile Include="Private\Tasks\Prerequisites.cpp" />
     <ClCompile Include="Private\Tasks\TaskEvent.cpp" />
     <ClCompile Include="Private\Tasks\Task.cpp" />
     <ClCompile Include="Private\Windows\WindowsPlatformProcess.cpp" />
+    <ClCompile Include="Public\Math\Vector.cpp" />
+    <ClCompile Include="Public\Misc\Application.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\Containers\Array.h" />
@@ -195,6 +282,7 @@
     <ClInclude Include="Public\CoreMinimal.h" />
     <ClInclude Include="Public\CoreSharedPCH.h" />
     <ClInclude Include="Public\CoreTypes.h" />
+    <ClInclude Include="Public\Engine\Engine.h" />
     <ClInclude Include="Public\Generated\CoreExports.h" />
     <ClInclude Include="Public\GenericPlatform\GenericPlatform.h" />
     <ClInclude Include="Public\GenericPlatform\GenericPlatformCompilerPreSetup.h" />
@@ -210,9 +298,14 @@
     <ClInclude Include="Public\Logging\Logging.h" />
     <ClInclude Include="Public\Logging\LogMacros.h" />
     <ClInclude Include="Public\Logging\LogVerbosity.h" />
+    <ClInclude Include="Public\Math\IntVector.h" />
+    <ClInclude Include="Public\Math\Math.h" />
+    <ClInclude Include="Public\Math\Matrix.h" />
     <ClInclude Include="Public\Math\Noise\OptimizedPerlinNoise.h" />
     <ClInclude Include="Public\Math\Noise\PerlinNoise.h" />
     <ClInclude Include="Public\Math\Noise\SimplexNoise.h" />
+    <ClInclude Include="Public\Math\Vector.h" />
+    <ClInclude Include="Public\Misc\Application.h" />
     <ClInclude Include="Public\Misc\AssertionMacros.h" />
     <ClInclude Include="Public\Misc\CoreDefines.h" />
     <ClInclude Include="Public\Misc\EnumClassFlags.h" />
@@ -226,7 +319,7 @@
     <ClInclude Include="Public\RHI\ImageUtil.h" />
     <ClInclude Include="Public\RHI\Mesh.h" />
     <ClInclude Include="Public\RHI\MeshAssembler.h" />
-    <ClInclude Include="Public\RHI\MeshBuilder.h" />
+    <ClInclude Include="Public\RHI\TMeshBuilder.h" />
     <ClInclude Include="Public\Tasks\Launch.h" />
     <ClInclude Include="Public\Tasks\Pipe.h" />
     <ClInclude Include="Public\Tasks\Prerequisites.h" />
@@ -243,6 +336,10 @@
     <ClInclude Include="Public\Windows\WindowsPlatformCompilerPreSetup.h" />
     <ClInclude Include="Public\Windows\WindowsPlatformCompilerSetup.h" />
     <ClInclude Include="Public\Windows\WindowsPlatformProcess.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Private\Renderer\" />
+    <Folder Include="Public\Renderer\" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

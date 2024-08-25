@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Voxel/PrimitiveTypes.h"
+#include "Voxel/VoxelTypes.h"
 
 
 /** Chunk dimensions */

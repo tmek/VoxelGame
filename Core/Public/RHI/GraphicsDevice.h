@@ -15,8 +15,8 @@ public:
     GraphicsDevice(void* WindowHandle);
     ~GraphicsDevice();
 
-    void Clear(const FLOAT color[4]);
-    void Present(bool vsync = false);
+    void Clear(const FLOAT Color[4]);
+    void Present(bool EnableVSync = false) const;
     HRESULT CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDevice,
                                       ComPtr<ID3D11DeviceContext> g_pImmediateContext,
                                       ComPtr<ID3D11Texture2D>& g_pTexture,

@@ -1,12 +1,11 @@
 ﻿
 #include "VoxelGameMeshVertex.h"
 #include "RHI/MeshAssembler.h"
-
 #include "BoxMeshBuilder.h"
 
 Mesh BoxMeshBuilder::Build(ID3D11Device* device)
 {
-    MeshBuilder<VoxelGameMeshVertex> meshBuilder;
+    TMeshBuilder<VoxelGameMeshVertex> meshBuilder;
 
     // XMFLOAT3 BoxOrigin = {0.0f, 0.0f, 0.0f};
     //
@@ -48,7 +47,7 @@ Mesh BoxMeshBuilder::Build(ID3D11Device* device)
     BuildFaceFromUVWAxes(X_AXIS, -Z_AXIS, -Y_AXIS, x, y, z, meshBuilder, {1.0f, 1.0f, 0.0f, 0.5f});
 
     MeshAssembler assembler(device);
-    std::vector<MeshBuilder<VoxelGameMeshVertex>> meshBuilders = {meshBuilder};
+    std::vector<TMeshBuilder<VoxelGameMeshVertex>> meshBuilders = {meshBuilder};
     Mesh mesh = assembler.AssembleMesh(meshBuilders);
 
     return mesh;
@@ -56,7 +55,7 @@ Mesh BoxMeshBuilder::Build(ID3D11Device* device)
 
 void BoxMeshBuilder::BuildFaceFromUVWAxes(const int UAxis, const int VAxis, const int WAxis,
                                           const int localX, const int localY, const int localZ,
-                                          MeshBuilder<VoxelGameMeshVertex>& meshBuilder,
+                                          TMeshBuilder<VoxelGameMeshVertex>& meshBuilder,
                                           XMFLOAT4 color)
 {
     // Assert axes are valid and distinct

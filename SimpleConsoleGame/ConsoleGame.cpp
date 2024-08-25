@@ -23,21 +23,21 @@ class TestClassMain
 public:
     TestClassMain()
     {
-        TE_LOG(LogTemp, Warning, TEXT("Hello From (SimpleConsoleGame): %s", "TestClassMain::TestClassMain()"));
+        TE_LOG(LogTemp, Warning, TEXT("Hello From (SimpleConsoleGame): %s"), "TestClassMain::TestClassMain()");
     }
 };
 
 TestClassMain testClassMain;
 
 
-int main(int argc, char* argv[])
+int main(int Argc, char* ArgV[])
 {
     TE_LOG(LogTemp, Log, TEXT("main() entry point"));
 
-    TE_LOG(LogTemp, Log, TEXT("argc: %d"), argc);
-    for (int i = 0; i < argc; i++)
+    TE_LOG(LogTemp, Log, TEXT("argc: %d"), Argc);
+    for (int i = 0; i < Argc; i++)
     {
-        TE_LOG(LogTemp, Log, TEXT("argv[%d]: %s"), i, argv[i]);
+        TE_LOG(LogTemp, Log, TEXT("argv[%d]: %s"), i, ArgV[i]);
     }
 
     Block block = {};
@@ -54,12 +54,12 @@ int main(int argc, char* argv[])
     });
 
 
-    TE_LOG(LogTemp, Log, TEXT("Sleeping for 1 second... %f"), FPlatformTime::Seconds());
+    TE_LOG(LogTemp, Log, TEXT("Sleeping for 1 second... %f"), PlatformTime::Seconds());
     PlatformProcess::SleepMS(1000);
     
     PlatformProcess::ShowConsole();
 
-    TE_LOG(LogTemp, Log, TEXT("Done Sleeping. %f"), FPlatformTime::Seconds());
+    TE_LOG(LogTemp, Log, TEXT("Done Sleeping. %f"), PlatformTime::Seconds());
 
     // TE_LOG(LogTemp, Log, "Joining thread t.");
     // t.join();

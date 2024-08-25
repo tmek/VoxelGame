@@ -2,48 +2,18 @@
 
 #include <vector>
 
-typedef unsigned int UINT;
-typedef unsigned char BYTE;
-
-#include <windows.h>
-#include <d3d11.h>
-#include <wrl/client.h>
-#include <vector>
-#include <fstream>
-#include <iostream>
-
-using Microsoft::WRL::ComPtr;
-
-#pragma pack(push, 1)
-struct BMPHeader
-{
-    uint16_t bfType;
-    uint32_t bfSize;
-    uint16_t bfReserved1;
-    uint16_t bfReserved2;
-    uint32_t bfOffBits;
-};
-
-struct BMPInfoHeader
-{
-    uint32_t biSize;
-    int32_t biWidth;
-    int32_t biHeight;
-    uint16_t biPlanes;
-    uint16_t biBitCount;
-    uint32_t biCompression;
-    uint32_t biSizeImage;
-    int32_t biXPelsPerMeter;
-    int32_t biYPelsPerMeter;
-    uint32_t biClrUsed;
-    uint32_t biClrImportant;
-};
-#pragma pack(pop)
+#include "HAL/Platform.h"
 
 
 class ImageUtil
 {
+
 public:
-    static void CreateNoisePattern(UINT width, UINT height, std::vector<UINT>& data);
-    static void CreateCheckerboardPattern(UINT width, UINT height, std::vector<UINT>& data);
+
+    /** Fill image with noise */
+    static void FillImageWithNoise(const uint32 ImageWidth, const uint32 ImageHeight, std::vector<uint32>& ImageDataOut) noexcept;
+        
+     
+    /** Fill image with a checkerboard pattern */
+    static void FillImageWithCheckerboardPattern(const uint32 ImageWidth, const uint32 ImageHeight, std::vector<uint32>& ImageDataOut) noexcept;
 };

@@ -6,7 +6,7 @@
 
 #include "Input/InputManager.h"
 
-#include "Render/VoxelGameMeshVertex.h"
+#include "Renderer/VoxelGameMeshVertex.h"
 
 #define MAX_OF_TWO_NUMBERS(a, b) ((a) > (b) ? (a) : (b))
 

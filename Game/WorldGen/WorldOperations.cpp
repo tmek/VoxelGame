@@ -112,7 +112,7 @@ Block& WorldOperations::GetBlockRef(const BlockCoordinate& WorldBlockPosition) c
 
     if(!chunk)
     {
-        return const_cast<Block&>(EmptyBlock);
+        return const_cast<Block&>(Block::Empty);
     }
     
     // Get the block type

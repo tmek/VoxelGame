@@ -357,7 +357,7 @@ bool					GIsPIEUsingPlayerStart			= false;
 /** true if the runtime needs textures to be powers of two													*/
 bool					GPlatformNeedsPowerOfTwoTextures = false;
 /** Time at which FPlatformTime::Seconds() was first initialized (before main)											*/
-double					GStartTime						= FPlatformTime::InitTiming();
+double					GStartTime						= PlatformTime::InitTiming();
 /** System time at engine init.																				*/
 FString					GSystemStartTime;
 /** Whether we are still in the initial loading proces.														*/
@@ -462,7 +462,7 @@ static struct FBootTimingStart
 	double FirstTime;
 
 	FBootTimingStart()
-		: FirstTime(FPlatformTime::Seconds())
+		: FirstTime(PlatformTime::Seconds())
 	{
 	}
 } GBootTimingStart;

@@ -34,14 +34,14 @@ struct VOXELCORE_API ChunkUtils
      * @return true if the point is within or on the sphere, false otherwise.
      */
     static bool IsPointInSphere(const int point_x, const int point_y, const int point_z, const int center_x,
-    const int center_y, const int center_z, const int radius)
+                                const int center_y, const int center_z, const int radius)
     {
         int bias = 1; // Bias to avoid floating point errors
         int distance_squared = (point_x - center_x) * (point_x - center_x) +
-            (point_y - center_y) * (point_y - center_y) +
-            (point_z - center_z) * (point_z - center_z);
+        (point_y - center_y) * (point_y - center_y) +
+        (point_z - center_z) * (point_z - center_z);
 
-        int radius_squared = radius * radius; 
+        int radius_squared = radius * radius;
         return distance_squared <= radius_squared - bias;
     }
 
@@ -72,7 +72,7 @@ struct VOXELCORE_API ChunkUtils
     template <typename T, typename Func>
     static void TFillChunkSubvolume(T* const block_data,
                                     int start_index, // starting block index
-                                    const int sub_width, const int sub_height, const int sub_depth, 
+                                    const int sub_width, const int sub_height, const int sub_depth,
                                     const int world_x, const int world_y, const int world_z, // starting world block
                                     Func&& block_operation) // Pass the block operation as a template parameter
     {
@@ -90,12 +90,11 @@ struct VOXELCORE_API ChunkUtils
             {
                 std::this_thread::yield();
             }
-            
+
             // for each z row in the current y layer
             int row_index = start_index;
             for (int z = 0; z < sub_depth; ++z)
             {
-                
                 // for each x block in the current z row
                 int block_index = row_index;
                 for (int x = 0; x < sub_width; ++x)
@@ -159,7 +158,6 @@ class ChunkVolumeMapper
 {
 public:
 
-    
     // Static method that returns the list of chunks and their corresponding sub-volume dimensions
     static std::vector<BlockRegion> GetChunksAndSubVolumes(const BlockRegion& WorldRegion)
     {
@@ -167,7 +165,7 @@ public:
 
         // Convert the world volume's min and max coordinates to chunk keys
         ChunkKey ChunkKeyMin, ChunkKeyMax;
-        
+
         WorldPositionToChunkKey(WorldRegion.Min, ChunkKeyMin);
         WorldPositionToChunkKey(WorldRegion.Max, ChunkKeyMax);
 
@@ -201,11 +199,11 @@ public:
                 int z_min = std::max(WorldRegion.Min.Z - CurrentChunkOrigin.Z, 0);
                 int z_max = std::min(WorldRegion.Max.Z - CurrentChunkOrigin.Z, ChunkDepth - 1);
 
-                int width = x_max - x_min + 1;
-                int height = y_max - y_min + 1;
-                int depth = z_max - z_min + 1;
-
-                result.push_back({BlockOffset, width, height, depth});
+                BlockCoordinate Min = {x_min, y_min, z_min};
+                BlockCoordinate Max = {x_max, y_max, z_max};
+                BlockRegion Region = {Min, Max};
+                
+                result.push_back(Region);
             }
         }
 

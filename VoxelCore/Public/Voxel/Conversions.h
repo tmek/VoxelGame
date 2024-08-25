@@ -2,40 +2,25 @@
 
 #pragma once
 
-#include "VoxelDefines.h"
-
 #include "CoreTypes.h" 
 #include "Block/Block.h"
 #include "Chunk/ChunkConstants.h"
 #include "Chunk/ChunkKey.h"
-
 #include "Misc/AssertionMacros.h"
 
 /** Using the following naming conventions:
- *  - WorldPosition: A block coordinate position in world space.
- *  - BlockOffset: A block coordinate offset in chunk space.
- *  - BlockIndex: A linear index into a chunk's block array.
+ *  - WorldPosition: A block coordinate explicitly in world space.
+ *  - BlockOffset: A block coordinate explicitly in chunk space.
+ *  - BlockIndex: A block's index in a chunk.
  *  - ChunkKey: A chunk's cx,cz coordinate in the world's chunk grid.
  */
 
+// Represents a block's position in world space
+using WorldBlockCoordinate = BlockCoordinate;
 
-/*
-    // chunkkey <--> worldposition
-    ChunkKeyToWorldPosition
-    WorldPositionToChunkKey
+// Represents a block's position in chunk space
+using ChunkBlockCoordinate = BlockCoordinate;
 
-    // blockindex <--> blockoffset
-    BlockIndexToBlockOffset
-    BlockOffsetToBlockIndex
-
-    // worldposition <--> chunk local variables (chunkkey, blockoffset, blockindex)
-    WorldPositionToBlockOffset (omits the chunk key, should this exist? it is computable without intermediate chunk key)
-
-    WorldPositionToChunkKeyBlockOffsetAndBlockIndex
-
-    ChunkKeyAndBlockOffsetToWorldPosition
-    ChunkKeyAndBlockIndexToWorldPosition
-*/
 
 #define CheckWorldPosition(BlockPosition) check((BlockPosition).X >= MinPlayerWorldPosition && (BlockPosition).X < MaxPlayerWorldPosition); \
     check((BlockPosition).Y >= MinBlockHeight && (BlockPosition).Y <= MaxBlockHeight); \

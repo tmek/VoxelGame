@@ -4,17 +4,34 @@
 
 #include <string>
 #include <tchar.h>
+#include "HAL/Platform.h"
 
 
 class FString : public std::wstring
 {
 public:
+    FString() = default;
+
+    FString(const TCHAR* s)
+    {
+
+        // Assign the std::wstring to the base class
+        this->assign(s);
+    }
+    
+    FString(const ANSICHAR* s)
+    {
+        // Convert ANSI string to wide string
+
+        // use base * operator
+        this->assign(s, s + strlen(s));
+    }
+    
     // * unary operator returns a const TCHAR* (wchar_t*)
     const TCHAR* operator*() const
     {
         return c_str();
     }
-
 };
 
 

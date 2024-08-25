@@ -1,12 +1,12 @@
-﻿#include "ChunkMeshManager.h"
+﻿// copyright
+
+#include "ChunkMeshManager.h"
 
 #include "CoreGlobals.h"
-
 #include "Chunk/Chunk.h"
-
 #include "HAL/PlatformWindow.h"
+#include "Renderer/ChunkMeshBuilder.h"
 
-#include "Render/ChunkMeshBuilder.h"
 
 
 Mesh* ChunkMeshManager::GetChunkMesh(const ChunkKey& key)

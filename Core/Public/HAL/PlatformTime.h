@@ -2,32 +2,35 @@
 
 #pragma once
 
-#include <math.h>
-
 #include "Platform.h"
+#include "Windows/WindowsHWrapper.h" // todo: implement WindowsPlatformTime.h so we don't have to include this
 
-class CORE_API FPlatformTime
+class CORE_API PlatformTime
 {
 public:
-    static double Seconds()
+    
+    static FORCEINLINE double Seconds()
     {
-        static bool initialized = false;
-        if (!initialized)
+        if(SecondsPerCycle == 0.0)
         {
-            Initialize();
-            initialized = true;
+            InitTiming();  // todo: we need to make this called early in Dynamic Initialization instead of here.
         }
+        
+        LARGE_INTEGER Cycles;
+        QueryPerformanceCounter(&Cycles);
 
-        double time = static_cast<double>(GetCPUCounter());
-        double frequency = static_cast<double>(Frequency);
-        return time / frequency;
+        // add big number to make bugs apparent where return value is being passed to float
+        return static_cast<double>(Cycles.QuadPart) * GetSecondsPerCycle() + 16777216.0;
     }
     
-    static int64 GetCPUCounter();
-    static double_t InitTiming();
+    static FORCEINLINE double GetSecondsPerCycle()
+    {
+        return SecondsPerCycle;
+    }
 
+    static double InitTiming();
+    
 private:
-    static int64 Frequency;
-
-    static void Initialize();
+    
+    static double SecondsPerCycle;
 };

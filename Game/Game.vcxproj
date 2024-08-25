@@ -312,11 +312,13 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="Launch\Windows\LaunchWindows.cpp" />
-    <ClCompile Include="Render\BlockMeshBuilder.cpp" />
-    <ClCompile Include="Render\BoxMeshBuilder.cpp" />
-    <ClCompile Include="Render\ChunkMeshBuilder.cpp" />
-    <ClCompile Include="Render\CubeMesh.cpp" />
-    <ClCompile Include="Render\VoxelGameMeshVertex.cpp" />
+    <ClCompile Include="Renderer\BlockMeshBuilder.cpp" />
+    <ClCompile Include="Renderer\BoxMeshBuilder.cpp" />
+    <ClCompile Include="Renderer\Camera.cpp" />
+    <ClCompile Include="Renderer\ChunkMeshBuilder.cpp" />
+    <ClCompile Include="Renderer\CubeMesh.cpp" />
+    <ClCompile Include="Renderer\VoxelGameMeshVertex.cpp" />
+    <ClCompile Include="Renderer\VoxelWorldRenderer.cpp" />
     <ClCompile Include="VoxelMisc\ChunkMeshManager.cpp" />
     <ClCompile Include="WorldGen\BlockTypes.cpp" />
     <ClCompile Include="WorldGen\ForrestBeachGenerator.cpp" />
@@ -338,11 +340,13 @@
     <ClInclude Include="Launch\IEngineLoop.h" />
     <ClInclude Include="Launch\LaunchEngineLoop.h" />
     <ClInclude Include="Launch\LaunchOldEngineLoop.h" />
-    <ClInclude Include="Render\BlockMeshBuilder.h" />
-    <ClInclude Include="Render\BoxMeshBuilder.h" />
-    <ClInclude Include="Render\ChunkMeshBuilder.h" />
-    <ClInclude Include="Render\CubeMesh.h" />
-    <ClInclude Include="Render\VoxelGameMeshVertex.h" />
+    <ClInclude Include="Renderer\BlockMeshBuilder.h" />
+    <ClInclude Include="Renderer\BoxMeshBuilder.h" />
+    <ClInclude Include="Renderer\Camera.h" />
+    <ClInclude Include="Renderer\ChunkMeshBuilder.h" />
+    <ClInclude Include="Renderer\CubeMesh.h" />
+    <ClInclude Include="Renderer\VoxelGameMeshVertex.h" />
+    <ClInclude Include="Renderer\VoxelWorldRenderer.h" />
     <ClInclude Include="VoxelMisc\ChunkMeshManager.h" />
     <ClInclude Include="WorldGen\BlockTypes.h" />
     <ClInclude Include="WorldGen\ForrestBeachGenerator.h" />

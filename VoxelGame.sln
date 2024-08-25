@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VoxelCore.Tests", "VoxelCor
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Launch", "Launch\Launch.vcxproj", "{9A85673D-A117-4C91-9A5B-21AAB3CD27DF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PlatformIncludesConsoleApplication", "PlatformIncludesConsoleApplication\PlatformIncludesConsoleApplication.vcxproj", "{AFADEE95-667E-4E5F-8D5D-9781AC196568}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -85,6 +87,14 @@ Global
 		{9A85673D-A117-4C91-9A5B-21AAB3CD27DF}.Release|x64.Build.0 = Release|x64
 		{9A85673D-A117-4C91-9A5B-21AAB3CD27DF}.Release|x86.ActiveCfg = Release|Win32
 		{9A85673D-A117-4C91-9A5B-21AAB3CD27DF}.Release|x86.Build.0 = Release|Win32
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568}.Debug|x64.ActiveCfg = Debug|x64
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568}.Debug|x64.Build.0 = Debug|x64
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568}.Debug|x86.ActiveCfg = Debug|Win32
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568}.Debug|x86.Build.0 = Debug|Win32
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568}.Release|x64.ActiveCfg = Release|x64
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568}.Release|x64.Build.0 = Release|x64
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568}.Release|x86.ActiveCfg = Release|Win32
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -100,5 +110,6 @@ Global
 		{DD3A5B68-0E5D-411A-BD53-DD2C5762576E} = {122E0DFC-5677-457D-9CA0-2E4C592927DB}
 		{6B655D94-08C5-4246-9122-70A1B8364147} = {122E0DFC-5677-457D-9CA0-2E4C592927DB}
 		{9A85673D-A117-4C91-9A5B-21AAB3CD27DF} = {122E0DFC-5677-457D-9CA0-2E4C592927DB}
+		{AFADEE95-667E-4E5F-8D5D-9781AC196568} = {90997D5E-B96A-4935-8F93-72FE5A57C41B}
 	EndGlobalSection
 EndGlobal

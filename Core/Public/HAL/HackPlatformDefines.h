@@ -4,6 +4,10 @@
 
 #define UBT_COMPILED_PLATFORM Windows
 
+#include "Generated/CoreExports.h"
+#include "Misc/EnumClassFlags.h"
+
+
 #define PLATFORM_WINDOWS 1
 #define PLATFORM_DESKTOP 1
 #define PLATFORM_64BITS 1
@@ -16,14 +20,18 @@
 
 #define IMPLEMENT_MODULE(ImplClass, ModuleImpl)
 #define ACCUM_LOADTIME(StatId, Time)            // ACCUM_LOADTIME(TEXT("EngineInitialization"), EngineInitializationTime);
-#define TRACE_BOOKMARK(x)                       // TRACE_BOOKMARK(TEXT("Tick loop start")); 
+
+#define TRACE_BOOKMARK(Format, ...) \
+    TE_LOG(LogTemp, Log, TEXT("TRACE_BOOKMARK(") Format TEXT(")"), ##__VA_ARGS__)
+
 #define PRAGMA_PUSH_PLATFORM_DEFAULT_PACKING
 #define PRAGMA_POP_PLATFORM_DEFAULT_PACKING
 
 #define THIRD_PARTY_INCLUDES_START
 #define THIRD_PARTY_INCLUDES_END
 
-#define IMPLEMENT_FOREIGN_ENGINE_DIR(X)
+#define IMPLEMENT_FOREIGN_ENGINE_DIR()
+//#define IMPLEMENT_FOREIGN_ENGINE_DIR(X)
 
 #define LOCTEXT(InKey, InTextLiteral)
 
@@ -38,8 +46,6 @@ class FMalloc;
 #endif
 
 
-#include "Generated/CoreExports.h"
-#include "Misc/EnumClassFlags.h"
 
 #define FLazyName FString
 
@@ -56,8 +62,8 @@ class FMalloc;
  };
 
 // todo: these globals are super hacky but temporary while refactoring
-inline bool GShouldRenderTintColor;
-inline bool GEnableVsync = true;
+CORE_API extern bool GShouldRenderTintColor;
+CORE_API extern bool GEnableVSync;
 
 
 

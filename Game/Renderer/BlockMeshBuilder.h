@@ -4,7 +4,7 @@
 
 #include "VoxelGameMeshVertex.h"
 
-#include "RHI/MeshBuilder.h"
+#include "RHI/TMeshBuilder.h"
 
 using namespace DirectX;
 using std::vector;
@@ -14,7 +14,7 @@ using std::vector;
 // Caller can choose which faces to include or exclude.
 class BlockMeshBuilder {
 public:
-    BlockMeshBuilder(MeshBuilder<VoxelGameMeshVertex>& meshBuilder);
+    BlockMeshBuilder(TMeshBuilder<VoxelGameMeshVertex>& meshBuilder);
 
     void SetMeshRelativeBlockOrigin(float x, float y, float z);
     void SetBounds(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
@@ -30,7 +30,7 @@ public:
 private:
     void AppendFace(const std::vector<VoxelGameMeshVertex>& vertices) const;
 
-    MeshBuilder<VoxelGameMeshVertex>& meshBuilder;
+    TMeshBuilder<VoxelGameMeshVertex>& meshBuilder;
     XMFLOAT3 Origin;
     XMFLOAT3 mins;
     XMFLOAT3 maxs;

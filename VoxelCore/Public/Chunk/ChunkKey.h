@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Voxel/PrimitiveTypes.h"
+#include "Voxel/VoxelTypes.h"
 
 /** Uniquely identifies a chunk in the world. */
 struct ChunkKey final

@@ -44,7 +44,7 @@ inline BlockRef ChunkCluster::GetBlockFromCluster(int x, int y, int z) const
     // return empty block (AIR) if y is out of bounds
     if(y < 0 || y >= ChunkHeight)
     {
-        return const_cast<Block&>(EmptyBlock);
+        return const_cast<Block&>(Block::Empty);
     }
 
     // coordinates within the center chunk?
@@ -108,7 +108,7 @@ inline BlockRef ChunkCluster::GetBlockFromCluster(int x, int y, int z) const
     // Return empty block (AIR) if the neighbor chunk doesn't exist
     if (targetChunk == nullptr)
     {
-        return const_cast<Block&>(EmptyBlock);
+        return const_cast<Block&>(Block::Empty);
     }
 
     // Retrieve the block from the appropriate chunk

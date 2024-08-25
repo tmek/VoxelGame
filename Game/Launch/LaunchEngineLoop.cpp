@@ -4,18 +4,26 @@
 
 #include "LaunchOldEngineLoop.h"
 
+#include "Engine/Engine.h"
+
+#include "HAL/PlatformTime.h"
+
+#include "Misc/Application.h"
+
 FEngineLoop::FEngineLoop()
 {
     TE_LOG(LogEngine, Log, TEXT("FEngineLoop::FEngineLoop()"));
 }
 int32 FEngineLoop::PreInit(const TCHAR* CmdLine)
 {
-    TE_LOG(LogEngine, Log, TEXT("FEngineLoop::PreInit()"));
+    TE_LOG(LogEngine, Log, TEXT("FEngineLoop::PreInit() %s"), CmdLine);
     return 0;
 }
 int FEngineLoop::Init()
 {
     TE_LOG(LogEngine, Log, TEXT("FEngineLoop::Init()"));
+
+    Engine::InitializeRHI();
     
     GOldEngineLoop.Init();
     
@@ -23,6 +31,9 @@ int FEngineLoop::Init()
 }
 void FEngineLoop::Tick()
 {
+    Engine::UpdateTimeAndHandleMaxTickRate();
+
+    
     GOldEngineLoop.Tick();
 }
 void FEngineLoop::ClearPendingCleanupObjects()

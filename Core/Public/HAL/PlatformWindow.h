@@ -6,15 +6,6 @@
 #include "Platform.h"
 
 
-#ifndef TEXT
-    #ifdef _UNICODE
-        #define TEXT(x) L##x
-    #else
-        #define TEXT(x) x
-    #endif
-#endif
-
-
 /** Represents a generic platform window */
 class CORE_API PlatformWindow
 {

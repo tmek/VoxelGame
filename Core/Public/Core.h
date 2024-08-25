@@ -306,7 +306,7 @@ MONOLITHIC_HEADER_BOILERPLATE()
 #include "UObject/RenderingObjectVersion.h"
 #include "UObject/SequencerObjectVersion.h"
 #include "UObject/VRObjectVersion.h"
-#include "Misc/App.h"
+#include "Misc/Application.h"
 #include "Misc/OutputDeviceConsole.h"
 #include "Misc/MonitoredProcess.h"
 #include "Misc/Attribute.h"

@@ -1,8 +1,10 @@
 ﻿#pragma once
+
+#include "Windows/WindowsHWrapper.h"
 #include <d3d11.h>
 #include <wrl/client.h>
 #include <vector>
-#include "RHI/MeshBuilder.h"
+#include "RHI/TMeshBuilder.h"
 #include "RHI/Mesh.h"
 
 using Microsoft::WRL::ComPtr;
@@ -12,7 +14,7 @@ public:
     MeshAssembler(ID3D11Device* device);
 
     template <typename VertexType>
-    Mesh AssembleMesh(const std::vector<MeshBuilder<VertexType>>& builders);
+    Mesh AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& builders);
 
 private:
 
@@ -28,7 +30,7 @@ private:
 
 
 template <typename VertexType>
-Mesh MeshAssembler::AssembleMesh(const std::vector<MeshBuilder<VertexType>>& builders) {
+Mesh MeshAssembler::AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& builders) {
     Mesh mesh;
     std::vector<VertexType> combinedVertices;
     std::vector<UINT> combinedIndices;

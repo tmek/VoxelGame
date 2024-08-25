@@ -5,21 +5,15 @@
 
 #include "Windows/WindowsHWrapper.h"
 
-// Define the static member
-int64 FPlatformTime::Frequency = 0;
+double PlatformTime::SecondsPerCycle = 0.0;
 
-void FPlatformTime::Initialize()
+double PlatformTime::InitTiming()
 {
-    QueryPerformanceFrequency(reinterpret_cast<LARGE_INTEGER*>(&Frequency));
-}
+    LARGE_INTEGER Frequency;
+    QueryPerformanceFrequency(&Frequency); // todo: make verify macro and wrap this
+    SecondsPerCycle = 1.0 / static_cast<double>(Frequency.QuadPart);
 
-int64 FPlatformTime::GetCPUCounter()
-{
-    int64 time;
-    QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&time));
-    return time;
-}
-double_t FPlatformTime::InitTiming()
-{
+    check(SecondsPerCycle != 0.0);
+    
     return Seconds();
 }

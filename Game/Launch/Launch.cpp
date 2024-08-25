@@ -173,7 +173,7 @@ int32 GuardedMain( const TCHAR* CmdLine )
 		}
 	}
 
-	double EngineInitializationTime = FPlatformTime::Seconds() - GStartTime;
+	double EngineInitializationTime = PlatformTime::Seconds() - GStartTime;
 	UE_LOG(LogLoad, Log, TEXT("(Engine Initialization) Total time: %.2f seconds"), EngineInitializationTime);
 
 #if WITH_EDITOR

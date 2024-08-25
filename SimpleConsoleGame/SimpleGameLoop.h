@@ -17,7 +17,7 @@ struct GameLoop
             // Update game state
             // Render
             
-            TE_LOG(LogTemp, Log, TEXT("GameLoop::Run() %f"), FPlatformTime::Seconds());
+            TE_LOG(LogTemp, Log, TEXT("GameLoop::Run() %f"), PlatformTime::Seconds());
             PlatformProcess::SleepMS(1000);
         }
     }

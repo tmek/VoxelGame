@@ -77,7 +77,7 @@ void GraphicsDevice::EnableDepthWrite()
     depthStencilDesc.StencilEnable = FALSE;
 
     ComPtr<ID3D11DepthStencilState> depthStencilState;
-    HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, depthStencilState.GetAddressOf());
+    HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, depthStencilState.GetAddressOf()); // todo: these stencil states should only be created once, not every frame.
     if (SUCCEEDED(hr)) {
         deviceContext->OMSetDepthStencilState(depthStencilState.Get(), 0);
     } else {
@@ -97,7 +97,7 @@ void GraphicsDevice::DisableDepthWrite()
     depthStencilDesc.StencilEnable = FALSE;
 
     ComPtr<ID3D11DepthStencilState> depthStencilState;
-    HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, depthStencilState.GetAddressOf());
+    HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, depthStencilState.GetAddressOf()); // todo: these stencil states should only be created once, not every frame.
     if (SUCCEEDED(hr)) {
         deviceContext->OMSetDepthStencilState(depthStencilState.Get(), 0);
     } else {
@@ -334,25 +334,26 @@ void GraphicsDevice::Clear(const FLOAT color[4])
     deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
-void GraphicsDevice::Present(bool vsync)
+void GraphicsDevice::Present(bool EnableVSync) const
 {
-    swapChain->Present(vsync, 0);
+    uint32 SyncInterval = EnableVSync ? 1 : 0;
+    
+    swapChain->Present(SyncInterval, 0);
 }
 
 HRESULT GraphicsDevice::CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDevice, ComPtr<ID3D11DeviceContext> g_pImmediateContext, ComPtr<ID3D11Texture2D>& g_pTexture, ComPtr<ID3D11ShaderResourceView>& g_pTextureView)
 {
-    UINT width = 16;
-    UINT height = 16;
+    UINT ImageWidth = 16;
+    UINT ImageHeight = 16;
 
-    // Fill the checkerboard pattern data
-    std::vector<UINT> Image32;
-    //ImageUtil::CreateCheckerboardPattern(width, height, Image);
-    ImageUtil::CreateNoisePattern(width, height, Image32);
+    // Create an RGBA image and fill it with noise.
+    std::vector<UINT> RGBAImage;
+    ImageUtil::FillImageWithNoise(ImageWidth, ImageHeight, RGBAImage);
 
     // Texture description
     D3D11_TEXTURE2D_DESC desc = {};
-    desc.Width = width;
-    desc.Height = height;
+    desc.Width = ImageWidth;
+    desc.Height = ImageHeight;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -363,8 +364,8 @@ HRESULT GraphicsDevice::CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDev
     
     // Subresource data
     D3D11_SUBRESOURCE_DATA initData = {};
-    initData.pSysMem = Image32.data();
-    initData.SysMemPitch = width * sizeof(UINT);
+    initData.pSysMem = RGBAImage.data();
+    initData.SysMemPitch = ImageWidth * sizeof(UINT);
 
     // Create texture
     HRESULT hr = g_pd3dDevice->CreateTexture2D(&desc, &initData, &g_pTexture);
@@ -382,7 +383,7 @@ HRESULT GraphicsDevice::CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDev
     hr = g_pd3dDevice->CreateShaderResourceView(g_pTexture.Get(), &srvDesc, &g_pTextureView);
 
     // Generate mipmaps
-    g_pImmediateContext->UpdateSubresource(g_pTexture.Get(), 0, nullptr, Image32.data(), width * sizeof(UINT), 0);
+    g_pImmediateContext->UpdateSubresource(g_pTexture.Get(), 0, nullptr, RGBAImage.data(), ImageWidth * sizeof(UINT), 0);
     g_pImmediateContext->GenerateMips(g_pTextureView.Get());
 
     // void CreateSamplerState()

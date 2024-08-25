@@ -1,10 +1,7 @@
-#include <cstdio>
-#include <windows.h>
-
 #include "Logging/LogMacros.h"
 
 #include "HAL/Platform.h"
-#include "HAL/PlatformProcess.h"
+#include "Windows/WindowsHWrapper.h"
 
 using namespace ELogVerbosity;
 

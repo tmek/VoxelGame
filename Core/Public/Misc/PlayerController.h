@@ -1,21 +1,34 @@
-﻿#pragma once
+﻿// Copyright
 
-#include "DirectXMath.h"
-#include "CoreTypes.h"
+#pragma once
+
+#include "Math/Vector.h"
 
 class CORE_API PlayerController
 {
 public:
-    void ProcessInput(float DeltaTime);
 
-    DirectX::XMVECTOR GetForwardVector();
-    DirectX::XMVECTOR GetRightVector();
-    DirectX::XMVECTOR GetUpVector();
+    // Tick the player controller
+    void Tick(float DeltaTime);
 
-    // movement vector
-    DirectX::XMVECTOR MovementVector = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
+    // Get the right vector based on player controller orientation
+    [[nodiscard]] Vector GetRightVector() const;
+
+    // Get the up vector based on player controller orientation
+    [[nodiscard]] Vector GetUpVector() const;
+
+    // Get the forward vector based on player controller orientation
+    [[nodiscard]] Vector GetForwardVector() const;
+
+    [[nodiscard]] Vector GetMovementVector() const { return MovementVector_; }
+
+    [[nodiscard]] float GetYaw() const { return Yaw_; }
     
-    // Orientation
-    float Yaw;
-    float Pitch;
+    [[nodiscard]] float GetPitch() const { return Pitch_; }
+
+private:
+
+    Vector MovementVector_ = Vector::ZeroVector;
+    float Yaw_ = 0.0f;
+    float Pitch_ = 0.0f;
 };

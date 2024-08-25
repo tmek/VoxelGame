@@ -13,8 +13,6 @@
 
 #include "WorldGen/WorldOperations.h"
 
-#include "Voxel/VoxelDefines.h"
-
 
 struct ChunkOld;
 class FOldEngineLoop;
@@ -36,6 +34,8 @@ public:
     void Tick() override;
     void Exit();
     void GenerateChunk(ChunkRef Chunk, ChunkKey Key);
+
+    void SetBlocksInFrontOfPlayer();
 
     void GenerateChunksInBackground(const std::vector<ChunkKey>& ChunkKeys);
     void GenerateChunksAroundCamera(int RadiusInChunks);

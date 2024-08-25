@@ -1,6 +1,5 @@
 // copyright
 
-#include "CoreMinimal.h"
 #include "HAL/Platform.h"
 #include "Windows/WindowsHWrapper.h"
 
