@@ -16,9 +16,9 @@ public:
     // Getters
     [[nodiscard]] inline const Vector& GetPosition() const;
 
-    [[nodiscard]] inline const Vector& GetTarget() const;
+    [[nodiscard]] inline const Vector& GetFocusPosition() const;
 
-    [[nodiscard]] inline const Vector& GetUp() const;
+    [[nodiscard]] inline const Vector& GetUpDirection() const;
 
     [[nodiscard]] inline float GetFieldOfViewY() const;
 
@@ -80,8 +80,8 @@ Camera::Camera(const Vector& Position, const Vector& Target, const float FieldOf
 }
 
 const Vector& Camera::GetPosition() const { return Position_; }
-const Vector& Camera::GetTarget() const { return Target_; }
-const Vector& Camera::GetUp() const { return Up_; }
+const Vector& Camera::GetFocusPosition() const { return Target_; }
+const Vector& Camera::GetUpDirection() const { return Up_; }
 float Camera::GetFieldOfViewY() const { return FieldOfViewY_; }
 float Camera::GetAspectRatio() const { return AspectRatio_; }
 float Camera::GetNearPlane() const { return NearPlane_; }

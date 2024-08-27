@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include <vector>
 #include <DirectXMath.h>
+#include <vector>
 
 #include "VoxelGameMeshVertex.h"
 

@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include <vector>
 #include <functional>  // For std::reference_wrapper
+#include <vector>
 #include "Tasks/Task.h"
 /*
 namespace TE::Tasks

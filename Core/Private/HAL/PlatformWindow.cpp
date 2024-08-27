@@ -2,8 +2,8 @@
 
 #include <stdexcept>
 
-#include "Input/InputManager.h"
 #include "HAL/PlatformWindow.h"
+#include "Input/InputManager.h"
 
 #include "Windows/WindowsHWrapper.h"
 

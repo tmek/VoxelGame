@@ -1,7 +1,7 @@
 ﻿#include "CubeMesh.h"
 #include <d3dcompiler.h>
-#include <iostream>
 #include <DirectXColors.h>
+#include <iostream>
 #include "RHI/GraphicsDevice.h"
 
 #include "Input/InputManager.h"
@@ -162,7 +162,31 @@ void CubeMesh::InitResources()
         return;
     }
 
-    hr = D3DCompileFromFile(VertexShaderPath, nullptr, nullptr, "main", "vs_5_0", 0, 0, &vsBlob, &errorBlob);
+    hr = D3DCompileFromFile(
+        VertexShaderPath,        // Path to shader file
+        nullptr,               // Optional macros
+        nullptr,               // Optional include handler
+        "main",                // Entry point
+        "vs_5_0",              // Target profile (e.g., vs_5_0 for Vertex Shader)
+        D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_DEBUG, // Flags to disable optimization
+        0,                     // Additional flags (none in this case)
+        &vsBlob,          // Compiled shader bytecode
+        &errorBlob            // Error messages
+    );
+    
+    // hr = D3DCompileFromFile(
+    //     VertexShaderPath,
+    //     nullptr,
+    //     nullptr,
+    //     "main",
+    //     "vs_5_0",
+    //     0,
+    //     0,
+    //      &vsBlob,
+    //      &errorBlob);
+
+
+    
     if (FAILED(hr))
     {
         if (errorBlob)

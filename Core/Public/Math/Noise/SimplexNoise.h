@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include <array>
-#include <vector>
 #include <numeric>
 #include <random>
+#include <vector>
 
 
 

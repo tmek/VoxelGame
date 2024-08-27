@@ -1,7 +1,7 @@
 ﻿
+#include "BoxMeshBuilder.h"
 #include "VoxelGameMeshVertex.h"
 #include "RHI/MeshAssembler.h"
-#include "BoxMeshBuilder.h"
 
 Mesh BoxMeshBuilder::Build(ID3D11Device* device)
 {

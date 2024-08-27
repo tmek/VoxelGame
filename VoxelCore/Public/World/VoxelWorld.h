@@ -9,6 +9,8 @@
 
 #include <mutex>
 
+#include "Logging/LogMacros.h"
+
 /*
     todo: Need to think more about const for Chunks and ChunkMap.
     
@@ -36,7 +38,10 @@ public:
     VOXELCORE_API VoxelWorld& operator=(VoxelWorld&&) = default;
 
     // destruct
-    VOXELCORE_API ~VoxelWorld() = default; // Destructor
+    VOXELCORE_API ~VoxelWorld()
+    {
+        TE_LOG(LogTemp, Log, TEXT("VoxelWorld::~VoxelWorld()"));
+    }
 
 public:
     // Get a chunk or loads/generates it if it doesn't exist

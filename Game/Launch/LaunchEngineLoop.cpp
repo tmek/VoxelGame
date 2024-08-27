@@ -23,6 +23,8 @@ int FEngineLoop::Init()
 {
     TE_LOG(LogEngine, Log, TEXT("FEngineLoop::Init()"));
 
+    Engine::UpdateTimeAndHandleMaxTickRate();
+
     Engine::InitializeRHI();
     
     GOldEngineLoop.Init();
@@ -32,7 +34,6 @@ int FEngineLoop::Init()
 void FEngineLoop::Tick()
 {
     Engine::UpdateTimeAndHandleMaxTickRate();
-
     
     GOldEngineLoop.Tick();
 }

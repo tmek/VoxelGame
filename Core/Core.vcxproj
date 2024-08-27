@@ -270,8 +270,10 @@
     <ClCompile Include="Private\Tasks\TaskEvent.cpp" />
     <ClCompile Include="Private\Tasks\Task.cpp" />
     <ClCompile Include="Private\Windows\WindowsPlatformProcess.cpp" />
+    <ClCompile Include="Public\Math\Matrix.cpp" />
     <ClCompile Include="Public\Math\Vector.cpp" />
     <ClCompile Include="Public\Misc\Application.cpp" />
+    <ClCompile Include="Public\RHI\PipelineState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Public\Containers\Array.h" />
@@ -319,6 +321,7 @@
     <ClInclude Include="Public\RHI\ImageUtil.h" />
     <ClInclude Include="Public\RHI\Mesh.h" />
     <ClInclude Include="Public\RHI\MeshAssembler.h" />
+    <ClInclude Include="Public\RHI\PipelineState.h" />
     <ClInclude Include="Public\RHI\TMeshBuilder.h" />
     <ClInclude Include="Public\Tasks\Launch.h" />
     <ClInclude Include="Public\Tasks\Pipe.h" />

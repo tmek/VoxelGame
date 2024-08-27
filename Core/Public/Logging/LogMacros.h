@@ -1,8 +1,8 @@
 ﻿// copyright
 
 #pragma once
-#include "Generated/CoreExports.h"
 #include "LogVerbosity.h"
+#include "Generated/CoreExports.h"
 
 // Log categories
 

@@ -2,8 +2,8 @@
 #include <iostream>
 #include <string>
 
-#include "HAL/PlatformTime.h"
 #include "Misc/StopWatch.h"
+#include "HAL/PlatformTime.h"
 
 
 StopWatch::StopWatch(): startTime(0.0), elapsedTime(0.0), running(false)

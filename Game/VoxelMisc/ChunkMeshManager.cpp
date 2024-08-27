@@ -25,7 +25,7 @@ Mesh* ChunkMeshManager::GetChunkMesh(const ChunkKey& key)
 }
 
 
-void ChunkMeshManager::RebuildChunkMesh(const ChunkKey& key, ChunkRef chunk, ID3D11Device* device)
+void ChunkMeshManager::RebuildChunkMesh(const ChunkKey& key, const ChunkRef chunk, ID3D11Device* device)
 {
     if (!device || GIsRequestingExit)
     {
@@ -43,6 +43,13 @@ void ChunkMeshManager::RebuildChunkMesh(const ChunkKey& key, ChunkRef chunk, ID3
     }
     
     ChunkMeshes[key] = std::move(newMesh);
+}
+
+void ChunkMeshManager::DeleteChunkMesh(ChunkKey Key)
+{
+    // lock the unordered_map and delete the mesh
+    std::lock_guard<std::mutex> lock(chunkMeshesMutex); // Lock the mutex
+    ChunkMeshes.erase(Key);
 }
 
 ChunkMeshManager& ChunkMeshManager::GetInstance()

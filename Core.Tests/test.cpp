@@ -2,10 +2,10 @@
 
 #include "gtest/gtest.h"
 
-#include "Misc/CoreDefines.h"
 #include "Math/Noise/OptimizedPerlinNoise.h"
 #include "Math/Noise/PerlinNoise.h"
 #include "Math/Noise/SimplexNoise.h"
+#include "Misc/CoreDefines.h"
 
 #define NoiseLoopCount 100000000
 

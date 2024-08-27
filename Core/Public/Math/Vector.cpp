@@ -1,6 +1,7 @@
 #include "Math/Vector.h"
 
 
+
 // floats
 template<> const Vector3f Vector3f::ZeroVector(0.0f, 0.0f, 0.0f);
 template<> const Vector3f Vector3f::OneVector(1.0f, 1.0f, 1.0f);
@@ -35,3 +36,4 @@ template<> const Vector3d Vector3d::LeftVector(-1, 0, 0);
 template<> const Vector3d Vector3d::XAxisVector(1, 0, 0);
 template<> const Vector3d Vector3d::YAxisVector(0, 1, 0);
 template<> const Vector3d Vector3d::ZAxisVector(0, 0, 1);
+

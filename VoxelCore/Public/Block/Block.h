@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "Voxel/VoxelTypes.h"
 #include <bit>
+#include "Voxel/VoxelTypes.h"
 
 #include "Generated/VoxelCoreExports.h"
 

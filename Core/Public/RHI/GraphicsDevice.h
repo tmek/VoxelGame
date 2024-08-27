@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <wrl/client.h>
 #include "CoreTypes.h"
+#include "PipelineState.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -12,48 +13,77 @@ using namespace DirectX;
 class CORE_API GraphicsDevice
 {
 public:
+
     GraphicsDevice(void* WindowHandle);
+
     ~GraphicsDevice();
 
     void Clear(const FLOAT Color[4]);
+
     void Present(bool EnableVSync = false) const;
-    HRESULT CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDevice,
-                                      ComPtr<ID3D11DeviceContext> g_pImmediateContext,
-                                      ComPtr<ID3D11Texture2D>& g_pTexture,
-                                      ComPtr<ID3D11ShaderResourceView>& g_pTextureView);
+
+    ID3D11SamplerState* CreateBaseSamplerState();
+
+    void CreateSimpleNoiseTextureAndShaderResourceView();
 
     bool IsValid() const { return isValid; }
 
     // get device and device context
-    ID3D11Device* GetDevice() { return device.Get(); }
-    ID3D11DeviceContext* GetDeviceContext() { return deviceContext.Get(); }
+    ID3D11Device* GetDevice() { return D3D11Device_.Get(); }
 
-    void CreateConstantBuffer();
-    //todo: don't leave constant buffer here
-    void SetConstants(const XMMATRIX& viewProjMatrix, float TintR, float TintG, float TintB);
-    void EnableDepthWrite();
-    void DisableDepthWrite();
+    ID3D11DeviceContext* GetDeviceContext() { return GraphicsPipeline_.Get(); }
+
+    void UpdateVertexShaderConstantBuffer(const XMMATRIX& WorldViewProjection, float TintR, float TintG, float TintB);
+
+    void SetOpaquePassState() {};
+
+    void SetTransparencyPassState() {};
+
+    void SetPreDepthPrePassStates() {};
 
 private:
-    void InitD3D(HWND hWnd);
+
+    void DefineBasePassPSO();
+
+    void InitD3D11();
+
+    void GetWindowClientArea();
+
+    void CreateDeviceAndContext();
+
+    void CreateSwapChain();
+
     void CleanupD3D();
 
-    // hide Warning C4251 (needs dll-interface) until we have a solution
+    void CheckHR(HRESULT HR);
+
+private:
+
+    // device / swapchain params
+    HWND WindowHandle_;
+    int WindowClientWidth_ = 800; // fallback values
+    int WindowClientHeight_ = 600;
+    UINT SampleCount_ = 4; // 4x MSAA
+    UINT MSAAQuality_ = 0;
+
 #pragma warning(push)
-#pragma warning(disable:4251)    
-    ComPtr<ID3D11Device> device;
-    ComPtr<ID3D11DeviceContext> deviceContext;
-    ComPtr<IDXGISwapChain> swapChain;
-    ComPtr<ID3D11RenderTargetView> renderTargetView;
-    ComPtr<ID3D11DepthStencilView> depthStencilView;
-    ComPtr<ID3D11SamplerState> g_pSamplerLinear;
-    ComPtr<ID3D11Texture2D> g_pTexture;
-    ComPtr<ID3D11ShaderResourceView> g_pTextureView;
-    ComPtr<ID3D11SamplerState> g_pSamplerPoint;
-    D3D11_VIEWPORT viewport;
-    // ----- temporary tech debt ----
-    ID3D11Buffer* constantBuffer;
+#pragma warning(disable:4251)  // hide Warning C4251 (needs dll-interface) until we have a solution
+
+    // Device, Context, SwapChain
+    ComPtr<ID3D11Device> D3D11Device_;
+    ComPtr<ID3D11DeviceContext> GraphicsPipeline_;
+    ComPtr<IDXGISwapChain> DxgiSwapChain_;
+
+    // Textures
+    ComPtr<ID3D11Texture2D> NoiseTexture_;
+
 #pragma warning(pop)
-    
+
+    std::unique_ptr<PipelineStateManager> PipelineStateManager_;
+    PipelineState InitialPipelineState_;
+    PipelineState DepthPrePassPso_;
+    PipelineState BasePassPso_;
+    PipelineState MainTransparencyPassPso_;
+
     bool isValid;
 };

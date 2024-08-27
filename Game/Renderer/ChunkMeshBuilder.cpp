@@ -22,7 +22,7 @@
 
 
 
-extern VoxelWorld GWorld;
+extern std::shared_ptr<VoxelWorld> GWorld;
 
 static DirectX::XMFLOAT4 TintColors[] = {
     {0.5f, 0.5f, 0.5f, 1.0f}, // stone 1
@@ -73,12 +73,12 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
                 continue;
 
             ChunkKey neighborKey = {chunkKey.X + i, chunkKey.Z + j};
-            ChunkPtr neighbor = GWorld.TryGetChunk(neighborKey);
+            ChunkPtr neighbor = GWorld->TryGetChunk(neighborKey);
             localChunks.SetNeighbor(neighbor, i, j);
         }
 
     // setup mesh builders
-    WorldOperations world(GWorld);
+    //WorldOperations world(GWorld);
     TMeshBuilder<VoxelGameMeshVertex> solidMeshBuilder;
     TMeshBuilder<VoxelGameMeshVertex> waterMeshBuilder;
     BlockMeshBuilder solidBlocksSubMesh(solidMeshBuilder);

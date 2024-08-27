@@ -1,4 +1,4 @@
-﻿
+﻿// copyright
 
 #include "RHI/GraphicsDevice.h"
 
@@ -6,20 +6,23 @@
 
 #include <wrl/client.h>
 
-
 #include "CoreMinimal.h"
 
-
-
 #include "RHI/ImageUtil.h"
-
 
 using Microsoft::WRL::ComPtr;
 
 
+struct MyConstantBuffer // todo: this shouldn't be defined here.
+{
+    DirectX::XMMATRIX WorldViewProjection;
+    DirectX::XMFLOAT4 TintColor;
+};
+
 GraphicsDevice::GraphicsDevice(void* WindowHandle)
 {
-    InitD3D((HWND)WindowHandle);
+    WindowHandle_ = static_cast<HWND>(WindowHandle);
+    InitD3D11();
 }
 
 GraphicsDevice::~GraphicsDevice()
@@ -27,112 +30,54 @@ GraphicsDevice::~GraphicsDevice()
     CleanupD3D();
 }
 
-struct MyConstantBuffer
-{
-    DirectX::XMMATRIX WorldViewProjection;
-    DirectX::XMFLOAT4 TintColor;
-};
-
-
-void GraphicsDevice::CreateConstantBuffer()
-{
-    // Create constant buffer
-    // todo: belongs elsewhere
-    D3D11_BUFFER_DESC bufferDesc = {};
-    bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    bufferDesc.ByteWidth = sizeof(MyConstantBuffer);
-    bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-    HRESULT hr = device->CreateBuffer(&bufferDesc, nullptr, &constantBuffer);
-    check(hr == S_OK); 
-}
-
-void GraphicsDevice::SetConstants(const XMMATRIX& viewProjMatrix, float TintR, float TintG, float TintB)
+void GraphicsDevice::UpdateVertexShaderConstantBuffer(const XMMATRIX& WorldViewProjection, float TintR, float TintG, float TintB)
 {
     // update constant buffer
-    MyConstantBuffer cb;
-    cb.WorldViewProjection = viewProjMatrix;
-    if (GShouldRenderTintColor)
+    MyConstantBuffer VertexShaderConstants;
+
+    VertexShaderConstants.WorldViewProjection = WorldViewProjection;
+
+    XMFLOAT4 TintColor =  {TintR, TintG, TintB, 1.0f};
+    XMFLOAT4 BlackColor = {0.0f, 0.0f, 0.0f, 1.0f};
+    VertexShaderConstants.TintColor = (GEnableDebugTint) ? TintColor : BlackColor ;  
+
+    // using map/unmap with write_discard to update constant buffers (should be faster than updatesubresource.
+    D3D11_MAPPED_SUBRESOURCE MappedConstantBuffer;
+
+    ID3D11Resource* Buffer = BasePassPso_.VertexConstantBuffers[0].Get();
+    HRESULT hr = GraphicsPipeline_->Map(Buffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedConstantBuffer);
+    if (SUCCEEDED(hr))
     {
-        cb.TintColor = {TintR, TintG, TintB, 1.0f};
+        // Copy the new data into the constant buffer
+        memcpy(MappedConstantBuffer.pData, &VertexShaderConstants, sizeof(VertexShaderConstants));
+
+        // Unmap the buffer to indicate that the data is ready to be used
+        GraphicsPipeline_->Unmap(Buffer, 0);
     }
-    else
+}
+
+void GraphicsDevice::CheckHR(HRESULT HR)
+{
+    if (FAILED(HR))
     {
-        cb.TintColor = {0.0f, 0.0f, 0.0f, 1.0f};
-    }
-    
-    deviceContext->UpdateSubresource(constantBuffer, 0, nullptr, &cb, 0, 0);
-    deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);    
-}
-
-void GraphicsDevice::EnableDepthWrite()
-{
-    D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-    ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
-    
-    // Enable depth testing and depth writes
-    depthStencilDesc.DepthEnable = TRUE;
-    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-    depthStencilDesc.StencilEnable = FALSE;
-
-    ComPtr<ID3D11DepthStencilState> depthStencilState;
-    HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, depthStencilState.GetAddressOf()); // todo: these stencil states should only be created once, not every frame.
-    if (SUCCEEDED(hr)) {
-        deviceContext->OMSetDepthStencilState(depthStencilState.Get(), 0);
-    } else {
-        check(hr);
+        TE_LOG(LogGraphics, Error, TEXT("Graphics Device Error. HRESULT=%x"), HR);
     }
 }
 
-void GraphicsDevice::DisableDepthWrite()
+
+void GraphicsDevice::GetWindowClientArea()
 {
-    D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-    ZeroMemory(&depthStencilDesc, sizeof(depthStencilDesc));
-    
-    // Disable depth writes but keep depth testing
-    depthStencilDesc.DepthEnable = TRUE;
-    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
-    depthStencilDesc.DepthFunc = D3D11_COMPARISON_LESS;
-    depthStencilDesc.StencilEnable = FALSE;
-
-    ComPtr<ID3D11DepthStencilState> depthStencilState;
-    HRESULT hr = device->CreateDepthStencilState(&depthStencilDesc, depthStencilState.GetAddressOf()); // todo: these stencil states should only be created once, not every frame.
-    if (SUCCEEDED(hr)) {
-        deviceContext->OMSetDepthStencilState(depthStencilState.Get(), 0);
-    } else {
-        check(hr);
-    }
-}
-
-void GraphicsDevice::InitD3D(HWND hWnd)
-{
-    isValid = false;
-
-    // get hwnd client area
     RECT clientRect;
-    int WindowClientWidth = 800; // fallback values
-    int WindowClientHeight = 600;
-    if (GetClientRect(hWnd, &clientRect))
+    if (GetClientRect(WindowHandle_, &clientRect))
     {
-        WindowClientWidth = clientRect.right - clientRect.left;
-        WindowClientHeight = clientRect.bottom - clientRect.top;
+        WindowClientWidth_ = clientRect.right - clientRect.left;
+        WindowClientHeight_ = clientRect.bottom - clientRect.top;
     }
+}
 
-    // set swap chain description struct
-    DXGI_SWAP_CHAIN_DESC swapChainDesc = {};
-    swapChainDesc.BufferCount = 1;
-    swapChainDesc.BufferDesc.Width = WindowClientWidth; // Set to the window's width
-    swapChainDesc.BufferDesc.Height = WindowClientHeight; // Set to the window's height
-    swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.OutputWindow = hWnd;
-    swapChainDesc.SampleDesc.Count = 1;
-    swapChainDesc.Windowed = TRUE;
-
-    // create device, context and swap chain 
-    // it is possible to create a device and context separately from the swapchain, but this is the most common way)
-    HRESULT hr = D3D11CreateDeviceAndSwapChain(
+void GraphicsDevice::CreateDeviceAndContext()
+{
+    HRESULT HR = D3D11CreateDevice(
         nullptr,
         D3D_DRIVER_TYPE_HARDWARE,
         nullptr,
@@ -140,208 +85,208 @@ void GraphicsDevice::InitD3D(HWND hWnd)
         nullptr,
         0,
         D3D11_SDK_VERSION,
-        &swapChainDesc,
-        swapChain.GetAddressOf(),
-        device.GetAddressOf(),
+        D3D11Device_.GetAddressOf(),
         nullptr,
-        deviceContext.GetAddressOf()
+        GraphicsPipeline_.GetAddressOf()
     );
+    CheckHR(HR);
+}
 
-    // Creating the Direct3D device.
-    // VERIFYD3D11RESULT(D3D11CreateDevice(
-    //     Adapter.DXGIAdapter,
-    //     DriverType,
-    //     NULL,
-    //     DeviceFlags,
-    //     &FeatureLevel,
-    //     1,
-    //     D3D11_SDK_VERSION,
-    //     Direct3DDevice.GetInitReference(),
-    //     &ActualFeatureLevel,
-    //     Direct3DDeviceIMContext.GetInitReference()
-    // ));
-    
-    // at this point we have: a device, context and swap chain
+void GraphicsDevice::CreateSwapChain()
+{
+    // Get the IDXGIFactory
+    IDXGIDevice* DXGIDevice = nullptr;
+    CheckHR(D3D11Device_->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&DXGIDevice)));
 
-    if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, TEXT("Failed to create device and swap chain: %x"), hr);
-        return;
+    IDXGIAdapter* DXGIAdapter = nullptr;
+    CheckHR(DXGIDevice->GetAdapter(&DXGIAdapter));
+
+    IDXGIFactory* DXGIFactory = nullptr;
+    CheckHR(DXGIAdapter->GetParent(__uuidof(IDXGIFactory), reinterpret_cast<void**>(&DXGIFactory)));
+
+    // Describe Swap Chain
+    DXGI_SWAP_CHAIN_DESC sd = {};
+    sd.BufferCount = 1;
+    sd.BufferDesc.Width = WindowClientWidth_;
+    sd.BufferDesc.Height = WindowClientHeight_;
+    sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    sd.BufferDesc.RefreshRate.Numerator = 60;
+    sd.BufferDesc.RefreshRate.Denominator = 1;
+    sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    sd.OutputWindow = WindowHandle_;
+    sd.Windowed = true;
+
+    // Check MSAA Support
+
+    D3D11Device_->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, SampleCount_, &MSAAQuality_);
+    if (MSAAQuality_ > 0)
+    {
+        sd.SampleDesc.Count = SampleCount_;
+        sd.SampleDesc.Quality = MSAAQuality_ - 1; // Use the highest quality level
+    }
+    else
+    {
+        sd.SampleDesc.Count = 1; // No MSAA support, fallback
+        sd.SampleDesc.Quality = 0;
     }
 
-    // get backBuffer 
-    ComPtr<ID3D11Texture2D> backBuffer;
-    hr = swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), &backBuffer);
-    if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, TEXT("Failed to get back buffer: %x"), hr);
-        return;
-    }
+    CheckHR(DXGIFactory->CreateSwapChain(DXGIDevice, &sd, &DxgiSwapChain_));
 
-    // create render target view of back buffer
-    hr = device->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView.GetAddressOf());
-    if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, TEXT("Failed to create render target view: %x"), hr);
-        return;
-    }
+    // Cleanup
+    DXGIDevice->Release();
+    DXGIAdapter->Release();
+    DXGIFactory->Release();
+}
 
-    viewport.Width = static_cast<FLOAT>(swapChainDesc.BufferDesc.Width);
-    viewport.Height = static_cast<FLOAT>(swapChainDesc.BufferDesc.Height);
-    viewport.TopLeftX = 0;
-    viewport.TopLeftY = 0;
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
 
-    //deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), nullptr);
-    deviceContext->RSSetViewports(1, &viewport);
 
-    // Define the depth stencil texture description
-    D3D11_TEXTURE2D_DESC depthStencilDesc;
-    depthStencilDesc.Width = WindowClientWidth; // Set the width of the texture
-    depthStencilDesc.Height = WindowClientHeight; // Set the height of the texture
-    depthStencilDesc.MipLevels = 1; // We don't need mipmaps for the depth buffer
-    depthStencilDesc.ArraySize = 1; // We need only one texture
-    depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Use a 24-bit depth buffer and 8-bit stencil buffer
-    depthStencilDesc.SampleDesc.Count = 1; // Use no multi-sampling
-    depthStencilDesc.SampleDesc.Quality = 0; // Quality level of the multi-sampling
-    depthStencilDesc.Usage = D3D11_USAGE_DEFAULT; // Default usage
-    depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL; // Bind as a depth stencil texture
-    depthStencilDesc.CPUAccessFlags = 0; // CPU does not need access
-    depthStencilDesc.MiscFlags = 0; // No additional flags
 
-    // Create the depth stencil texture
-    ID3D11Texture2D* depthStencilBuffer;
-    hr = device->CreateTexture2D(&depthStencilDesc, nullptr, &depthStencilBuffer);
-    if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, TEXT("Failed to create depth stencil texture: %x"), hr);
-        return;
-    }
 
-    // std::atomic<bool> atomic_bool;
-    // std::atomic<float> atomic_float;
-    // std::atomic<int> atomic_int;
-    // std::atomic<int*> atomic_int_ptr;
-    //
-    // atomic_int.fetch_add(5, std::memory_order_relaxed);
-    // atomic_int_ptr.fetch_add(5, std::memory_order_relaxed);
-    // atomic_bool.store(true, std::memory_order_relaxed);
-    // // atomic_bool.fetch_add( won't compile
-    // atomic_float.store(3.14f, std::memory_order_relaxed);
-    // atomic_float.fetch_add(3.14f, std::memory_order_relaxed);
-    //     
+void GraphicsDevice::InitD3D11()
+{
+    isValid = false;
+
+    GetWindowClientArea();
+
+    CreateDeviceAndContext();
+    CreateSwapChain();
+
+    PipelineStateManager_ = std::make_unique<PipelineStateManager>(GraphicsPipeline_);
+    PipelineStateManager_->Initialize();
+    InitialPipelineState_ = PipelineStateManager_->GetCurrentState();
+    BasePassPso_ = InitialPipelineState_;
+
+    DefineBasePassPSO();
     
-
-    // // find ref count?
-    // depthStencilBuffer->AddRef();
+    CreateSimpleNoiseTextureAndShaderResourceView();
     
-    
+    // apply base state
+    PipelineStateManager_->ApplyPipelineState(BasePassPso_);
 
-    D3D11_DEPTH_STENCIL_DESC depthStencilDesc2 = {};
-    depthStencilDesc2.DepthEnable = TRUE;
-    depthStencilDesc2.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // Disable depth writing
-    depthStencilDesc2.DepthFunc = D3D11_COMPARISON_LESS;
-    ID3D11DepthStencilState* pDepthStencilState = nullptr;
-    device->CreateDepthStencilState(&depthStencilDesc2, &pDepthStencilState);
-    deviceContext->OMSetDepthStencilState(pDepthStencilState, 0);
-    
-
-    // Define the depth stencil view description
-    D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc = {};
-    depthStencilViewDesc.Format = depthStencilDesc.Format; // Same format as the depth stencil texture
-    depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D; // Use 2D texture
-    depthStencilViewDesc.Texture2D.MipSlice = 0; // Mipmap slice index
-
-    // Create the depth stencil view
-    hr = device->CreateDepthStencilView(depthStencilBuffer, &depthStencilViewDesc, &depthStencilView);
-    if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, TEXT("Failed to create depth stencil view: %x"), hr);
-        return;
-    }
-
-    // Release the depth stencil buffer since it's now referenced by the view
-    depthStencilBuffer->Release();
-
-    // Define the depth stencil state description
-    D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
-    depthStencilStateDesc.DepthEnable = TRUE; // Enable depth testing
-    depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL; // Allow writing to the depth buffer
-    depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS; // Use standard depth test (less is closer)
-    depthStencilStateDesc.StencilEnable = FALSE; // Disable stencil testing for now
-
-    // Create the depth stencil state
-    ID3D11DepthStencilState* depthStencilState;
-    hr = device->CreateDepthStencilState(&depthStencilStateDesc, &depthStencilState);
-    if (FAILED(hr)) {
-        TE_LOG(LogGraphics, Error, TEXT("Failed to create depth stencil view: %x"), hr);
-        return;
-    }
-
-    // Set the depth stencil state
-    deviceContext->OMSetDepthStencilState(depthStencilState, 1);
-
-    // Bind the Depth Stencil View to the Output Merger Stage
-    deviceContext->OMSetRenderTargets(1, renderTargetView.GetAddressOf(), depthStencilView.Get());
-
-    D3D11_RASTERIZER_DESC rasterDesc;
-    ZeroMemory(&rasterDesc, sizeof(D3D11_RASTERIZER_DESC));
-    rasterDesc.FillMode = D3D11_FILL_SOLID;
-    rasterDesc.CullMode = D3D11_CULL_BACK;
-    rasterDesc.FrontCounterClockwise = TRUE; // Use counter-clockwise vertices as the front face
-    rasterDesc.DepthClipEnable = TRUE;
-
-    ID3D11RasterizerState* rasterState;
-    device->CreateRasterizerState(&rasterDesc, &rasterState);
-    deviceContext->RSSetState(rasterState);
-
-    // create texture
-    CreateCheckerboardTexture(device, deviceContext, g_pTexture, g_pTextureView);
-    
-    // Bind the texture and sampler state
-    deviceContext->PSSetShaderResources(0, 1, g_pTextureView.GetAddressOf());
-    //deviceContext->PSSetSamplers(0, 1, g_pSamplerLinear.GetAddressOf());    
-
-    CreateConstantBuffer();
-
-    // setup alpha blending
-    D3D11_BLEND_DESC blendDesc = {};
-    blendDesc.RenderTarget[0].BlendEnable = TRUE;
-    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-    ID3D11BlendState* pBlendState = nullptr;
-    device->CreateBlendState(&blendDesc, &pBlendState);
-
-    // Set the blend state
-    float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    deviceContext->OMSetBlendState(pBlendState, blendFactor, 0xffffffff);    
-    
     // Success
     TE_LOG(LogGraphics, Log, TEXT("Graphics device created"));
     isValid = true;
 }
 
+
 void GraphicsDevice::CleanupD3D()
 {
-    if (deviceContext) deviceContext->ClearState();
+    if (GraphicsPipeline_) GraphicsPipeline_->ClearState();
 }
 
 void GraphicsDevice::Clear(const FLOAT color[4])
 {
-    deviceContext->ClearRenderTargetView(renderTargetView.Get(), color);
-    deviceContext->ClearDepthStencilView(depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    // TODO: we shouldn't be referencing base pass PSO, but rather a "current" pass PSO
+    GraphicsPipeline_->ClearRenderTargetView(BasePassPso_.RenderTargetViews[0].Get(), color);
+    GraphicsPipeline_->ClearDepthStencilView(BasePassPso_.DepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void GraphicsDevice::Present(bool EnableVSync) const
 {
     uint32 SyncInterval = EnableVSync ? 1 : 0;
-    
-    swapChain->Present(SyncInterval, 0);
+
+    DxgiSwapChain_->Present(SyncInterval, 0);
 }
 
-HRESULT GraphicsDevice::CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDevice, ComPtr<ID3D11DeviceContext> g_pImmediateContext, ComPtr<ID3D11Texture2D>& g_pTexture, ComPtr<ID3D11ShaderResourceView>& g_pTextureView)
+
+
+
+void GraphicsDevice::DefineBasePassPSO()
+{
+    // render target from swap chain back buffer
+    ComPtr<ID3D11Texture2D> SwapChainBackBuffer;
+    CheckHR(DxgiSwapChain_->GetBuffer(0, __uuidof(ID3D11Texture2D), &SwapChainBackBuffer));
+    CheckHR(D3D11Device_->CreateRenderTargetView(SwapChainBackBuffer.Get(), nullptr, BasePassPso_.RenderTargetViews[0].GetAddressOf()));
+
+
+    // depth/stencil texture and DSV
+    D3D11_TEXTURE2D_DESC DepthStencilTextureDesc = {};
+    DepthStencilTextureDesc.Width = WindowClientWidth_; // Set the width of the texture
+    DepthStencilTextureDesc.Height = WindowClientHeight_; // Set the height of the texture
+    DepthStencilTextureDesc.MipLevels = 1; // We don't need mipmaps for the depth buffer
+    DepthStencilTextureDesc.ArraySize = 1; // We need only one texture
+    DepthStencilTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; // Use a 24-bit depth buffer and 8-bit stencil buffer
+    DepthStencilTextureDesc.SampleDesc.Count = SampleCount_;
+    DepthStencilTextureDesc.SampleDesc.Quality = MSAAQuality_ - 1;
+    DepthStencilTextureDesc.Usage = D3D11_USAGE_DEFAULT; // Default usage
+    DepthStencilTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL; // Bind as a depth stencil texture
+    DepthStencilTextureDesc.CPUAccessFlags = 0; // CPU does not need access
+    DepthStencilTextureDesc.MiscFlags = 0; // No additional flags
+    ComPtr<ID3D11Texture2D> DepthStencilTexture;
+    CheckHR(D3D11Device_->CreateTexture2D(&DepthStencilTextureDesc, nullptr, DepthStencilTexture.GetAddressOf()));
+    D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
+    DSVDesc.Format = DepthStencilTextureDesc.Format; // Same format as the depth stencil texture
+    DSVDesc.ViewDimension = (SampleCount_ > 1) ? D3D11_DSV_DIMENSION_TEXTURE2DMS : D3D11_DSV_DIMENSION_TEXTURE2D;
+    DSVDesc.Texture2D.MipSlice = 0; // Mipmap slice index
+    CheckHR(D3D11Device_->CreateDepthStencilView(DepthStencilTexture.Get(), &DSVDesc, BasePassPso_.DepthStencilView.GetAddressOf()));
+
+    // constant buffer
+    D3D11_BUFFER_DESC BufferDesc = {};
+    BufferDesc.Usage = D3D11_USAGE_DYNAMIC; // usage dynamic required for map/unmap
+    BufferDesc.ByteWidth = sizeof(MyConstantBuffer);
+    BufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    BufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    CheckHR(D3D11Device_->CreateBuffer(&BufferDesc, nullptr, BasePassPso_.VertexConstantBuffers[0].GetAddressOf()));
+    
+
+    // viewport
+    D3D11_VIEWPORT Viewport;
+    Viewport.Width = static_cast<FLOAT>(WindowClientWidth_);
+    Viewport.Height = static_cast<FLOAT>(WindowClientHeight_);
+    Viewport.TopLeftX = 0;
+    Viewport.TopLeftY = 0;
+    Viewport.MinDepth = 0.0f;
+    Viewport.MaxDepth = 1.0f;
+    BasePassPso_.Viewports.push_back(Viewport); // todo: should probably use a map or c array.
+
+
+    // rasterizer state
+    D3D11_RASTERIZER_DESC RasterizerDesc = {};
+    RasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    RasterizerDesc.CullMode = D3D11_CULL_BACK;
+    RasterizerDesc.FrontCounterClockwise = TRUE; // Use counter-clockwise vertices as the front face
+    RasterizerDesc.DepthClipEnable = TRUE;
+    CheckHR(D3D11Device_->CreateRasterizerState(&RasterizerDesc, BasePassPso_.RasterizerState.GetAddressOf()));
+
+    
+    // create blend state
+    D3D11_BLEND_DESC BlendStateDesc = {};
+    // BlendStateDesc.IndependentBlendEnable = 1;
+    // BlendStateDesc.AlphaToCoverageEnable = 1;
+    BlendStateDesc.RenderTarget[0].BlendEnable = 1;
+    BlendStateDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    BlendStateDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    BlendStateDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    BlendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    BlendStateDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    BlendStateDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    BlendStateDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+    CheckHR(D3D11Device_->CreateBlendState(&BlendStateDesc, BasePassPso_.BlendState.GetAddressOf()));
+
+    // normal read/write depth/stencil state
+    D3D11_DEPTH_STENCIL_DESC DepthStencilStateDesc = {};
+    DepthStencilStateDesc.DepthEnable = TRUE; // Enable depth testing
+    DepthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL; // Allow writing to the depth buffer
+    DepthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS; // Use standard depth test (less is closer)
+    DepthStencilStateDesc.StencilEnable = FALSE; // Disable stencil testing for now
+    CheckHR(D3D11Device_->CreateDepthStencilState(&DepthStencilStateDesc, BasePassPso_.DepthStencilState.GetAddressOf()));
+
+    // creates 'Minecraft' style pixelated texture sampler
+    D3D11_SAMPLER_DESC BlockTextureSamplerState = {};
+    BlockTextureSamplerState.Filter = D3D11_FILTER_MIN_LINEAR_MAG_POINT_MIP_LINEAR;
+    BlockTextureSamplerState.Filter = D3D11_FILTER_ANISOTROPIC;
+    BlockTextureSamplerState.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    BlockTextureSamplerState.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    BlockTextureSamplerState.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    BlockTextureSamplerState.MipLODBias = 0.0f; // No additional LOD bias
+    BlockTextureSamplerState.MaxAnisotropy = 8; // Max anisotropy level for best quality
+    BlockTextureSamplerState.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    BlockTextureSamplerState.MinLOD = 0; // Start at the base mip level
+    BlockTextureSamplerState.MaxLOD = D3D11_FLOAT32_MAX; // Use all mip levels
+    CheckHR(D3D11Device_->CreateSamplerState(&BlockTextureSamplerState, BasePassPso_.PixelSamplerStates[0].GetAddressOf()));
+}
+
+void GraphicsDevice::CreateSimpleNoiseTextureAndShaderResourceView()
 {
     UINT ImageWidth = 16;
     UINT ImageHeight = 16;
@@ -354,23 +299,19 @@ HRESULT GraphicsDevice::CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDev
     D3D11_TEXTURE2D_DESC desc = {};
     desc.Width = ImageWidth;
     desc.Height = ImageHeight;
-    desc.MipLevels = 1;
+    desc.MipLevels = 0;
     desc.ArraySize = 1;
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;// | D3D11_BIND_RENDER_TARGET;
-    //desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
-    
-    // Subresource data
-    D3D11_SUBRESOURCE_DATA initData = {};
-    initData.pSysMem = RGBAImage.data();
-    initData.SysMemPitch = ImageWidth * sizeof(UINT);
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
-    // Create texture
-    HRESULT hr = g_pd3dDevice->CreateTexture2D(&desc, &initData, &g_pTexture);
-    if (FAILED(hr))
-        return hr;
+    // Create texture with no data, we'll update resource and generate mips later.
+    CheckHR(D3D11Device_->CreateTexture2D(&desc, nullptr, NoiseTexture_.GetAddressOf()));
+
+    // Update texture data
+    GraphicsPipeline_->UpdateSubresource(NoiseTexture_.Get(), 0, nullptr, RGBAImage.data(), ImageWidth * sizeof(UINT), 0);
 
     // Shader resource view description
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
@@ -378,26 +319,8 @@ HRESULT GraphicsDevice::CreateCheckerboardTexture(ComPtr<ID3D11Device> g_pd3dDev
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MostDetailedMip = 0;
     srvDesc.Texture2D.MipLevels = -1; // Use all mipmap levels
+    CheckHR(D3D11Device_->CreateShaderResourceView(NoiseTexture_.Get(), &srvDesc, BasePassPso_.PixelShaderResourceViews[0].GetAddressOf()));
 
-    // Create shader resource view
-    hr = g_pd3dDevice->CreateShaderResourceView(g_pTexture.Get(), &srvDesc, &g_pTextureView);
-
-    // Generate mipmaps
-    g_pImmediateContext->UpdateSubresource(g_pTexture.Get(), 0, nullptr, RGBAImage.data(), ImageWidth * sizeof(UINT), 0);
-    g_pImmediateContext->GenerateMips(g_pTextureView.Get());
-
-    // void CreateSamplerState()
-    D3D11_SAMPLER_DESC sampDesc = {};
-    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-    sampDesc.MinLOD = 0;
-    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-    g_pd3dDevice->CreateSamplerState(&sampDesc, &g_pSamplerPoint);
-
-    g_pImmediateContext->PSSetSamplers(0, 1, g_pSamplerPoint.GetAddressOf());
-    
-    return hr;
+    // Generate mips
+    GraphicsPipeline_->GenerateMips(BasePassPso_.PixelShaderResourceViews[0].Get());
 }

@@ -1,8 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 #pragma once
 
-#include "Containers/UnrealString.h"
 #include "CoreTypes.h"
+#include "Containers/UnrealString.h"
 //#include "HAL/PlatformTLS.h"
 #include "Logging/LogMacros.h"
 // #include "Misc/Build.h"

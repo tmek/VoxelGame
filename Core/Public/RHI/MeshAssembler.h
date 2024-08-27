@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include "Windows/WindowsHWrapper.h"
 #include <d3d11.h>
-#include <wrl/client.h>
 #include <vector>
-#include "RHI/TMeshBuilder.h"
+#include <wrl/client.h>
 #include "RHI/Mesh.h"
+#include "RHI/TMeshBuilder.h"
+#include "Windows/WindowsHWrapper.h"
 
 using Microsoft::WRL::ComPtr;
 

@@ -62,9 +62,10 @@ class FMalloc;
  };
 
 // todo: these globals are super hacky but temporary while refactoring
-CORE_API extern bool GShouldRenderTintColor;
+CORE_API extern bool GEnableDebugTint;
 CORE_API extern bool GEnableVSync;
-
+CORE_API extern bool GFreezeFrustumCulling;
+CORE_API extern int GTotalDrawCalls;
 
 
 // #define PLATFORM_CAN_SUPPORT_EDITORONLY_DATA 1

@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "ChunkKey.h"
 #include <bit>
+#include "ChunkKey.h"
 
 
 /** Computes a hash for a ChunkKey */

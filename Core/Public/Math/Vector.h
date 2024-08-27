@@ -2,13 +2,17 @@
 
 #pragma once
 
-#include <cmath>
+#pragma warning(disable: 4251) // 'type' needs to have dll-interface to be used by clients of 'type'								https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4251
+
 #include <cassert>
+#include <cmath>
 #include <type_traits> // Ensure to include this for static_assert
-
-#include "Matrix.h"
-
 #include "Generated/CoreExports.h"
+
+// Forward declaration
+template <typename T>
+struct TMatrix;
+
 
 // 3D vector template for floating-point types (float, double)
 template <typename T>
@@ -17,6 +21,8 @@ struct TVector
     static_assert(std::is_floating_point_v<T>, "TVector should only be used with floating-point types");
 
 public:
+
+    using FReal = T;
 
     union
     {
@@ -78,14 +84,26 @@ public:
         return TVector<T>(X + Other.X, Y + Other.Y, Z + Other.Z);
     }
 
+    // Negate
+    TVector<T> operator-() const
+    {
+        return TVector<T>(-X, -Y, -Z);
+    }
+    
     // Subtraction
     TVector<T> operator-(const TVector<T>& Other) const
     {
         return TVector<T>(X - Other.X, Y - Other.Y, Z - Other.Z);
     }
 
+    // Multiplication
+    TVector<T> operator*(const TVector<T>& Other) const
+    {
+        return TVector<T>(X * Other.X, Y * Other.Y, Z * Other.Z);
+    }
+
     // Scalar multiplication
-    TVector<T> operator*(T Scalar) const
+    TVector<T> operator*(const FReal Scalar) const
     {
         return TVector<T>(X * Scalar, Y * Scalar, Z * Scalar);
     }
@@ -150,6 +168,8 @@ public:
 };
 
 // Aliases for floating-point 3D vectors
-using Vector3f = TVector<float>;
-using Vector3d = TVector<double>;
-using Vector = Vector3f; // Generally, Vector is assumed to be float in many systems
+using Vector3f = CORE_API TVector<float>;
+using Vector3d = CORE_API TVector<double>;
+using Vector = CORE_API Vector3f; // Generally, Vector is assumed to be float in many systems
+
+

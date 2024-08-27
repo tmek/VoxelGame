@@ -1,9 +1,9 @@
 #include <algorithm>
+#include <execution>
 #include <iostream>
+#include <sstream>
 #include <thread>
 #include <vector>
-#include <execution>
-#include <sstream>
 
 #include "SimpleGameLoop.h"
 
@@ -13,8 +13,8 @@
 
 #include "HAL/PlatformProcess.h"
 #include "HAL/PlatformTime.h"
-#include "Misc/CoreDefines.h"
 #include "Logging/LogMacros.h"
+#include "Misc/CoreDefines.h"
 
 #include "Misc/AssertionMacros.h"
 

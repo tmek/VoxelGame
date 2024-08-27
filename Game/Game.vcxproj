@@ -144,6 +144,10 @@
       <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);d3d11.lib;d3dcompiler.lib;C:\Program Files (x86)\Intel\oneAPI\vtune\2024.2\lib64\libittnotify.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <FxCompile>
+      <ShaderModel>5.0</ShaderModel>
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Launch\Launch.cpp">

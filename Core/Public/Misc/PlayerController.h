@@ -28,7 +28,7 @@ public:
 
 private:
 
-    Vector MovementVector_ = Vector::ZeroVector;
+    TVector<float> MovementVector_ = {0,0,0};
     float Yaw_ = 0.0f;
     float Pitch_ = 0.0f;
 };

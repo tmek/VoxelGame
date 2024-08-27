@@ -4,9 +4,9 @@
 
 #include "Chunk/Chunk.h"
 
-#include "RHI/Mesh.h"
 #include "Chunk/ChunkKey.h"
 #include "Chunk/ChunkKeyHash.h"
+#include "RHI/Mesh.h"
 
 struct Chunk;
 
@@ -17,7 +17,9 @@ class ChunkMeshManager
 public:
     Mesh* GetChunkMesh(const ChunkKey& key);
 
-    void RebuildChunkMesh(const ChunkKey& key, ChunkRef, ID3D11Device* device);
+    void RebuildChunkMesh(const ChunkKey& key, const ChunkRef, ID3D11Device* device);
+
+    void DeleteChunkMesh(ChunkKey Key);
 
     static ChunkMeshManager& GetInstance();
     

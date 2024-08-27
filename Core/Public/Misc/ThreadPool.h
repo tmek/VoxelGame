@@ -1,13 +1,13 @@
 ﻿#pragma once
 
+#include <condition_variable>
 #include <functional>
 #include <future>
-#include <type_traits>
-#include <utility>
+#include <mutex>
 #include <queue>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
+#include <type_traits>
+#include <utility>
 
 #include "CoreMinimal.h"
 #include "Windows/WindowsHWrapper.h"

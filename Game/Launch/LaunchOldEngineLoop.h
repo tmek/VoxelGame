@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include "Windows/WindowsHWrapper.h"
-
-#include <DirectXMath.h>
 #include <vector>
 
 #include "CoreTypes.h"
@@ -11,46 +8,53 @@
 #include "Chunk/Chunk.h"
 #include "Chunk/ChunkKey.h"
 
-#include "WorldGen/WorldOperations.h"
+template <typename T>
+struct TMatrix;
+using Matrix = TMatrix<float>;
 
+template <typename T>
+using TArray = std::vector<T>;
 
-struct ChunkOld;
-class FOldEngineLoop;
-
-extern FOldEngineLoop GOldEngineLoop;
 
 class FOldEngineLoop : public IEngineLoop
 {
 public:
-    void ClearPendingCleanupObjects() override;
 
     int32 Init() override;
+
+    void InitializeGraphics();
+
+    void GenerateChunksAroundCamera(const int RadiusInChunks);
+
+    void GenerateChunksInBackground(const TArray<ChunkKey>& ChunkKeys);
+
+    //void GenerateChunk(const ChunkKey Key, ChunkRef Chunk);
     
-    void DrawChunks(DirectX::XMMATRIX TranslationMatrix, DirectX::XMMATRIX RotationMatrix,
-                    DirectX::XMMATRIX ScaleMatrix,
-                    DirectX::XMMATRIX ViewMatrix, DirectX::XMMATRIX ProjectionMatrix, bool bDrawWater);
+public:
     
-    void ComputeChunkVisibility(DirectX::XMMATRIX ViewMatrix, DirectX::XMMATRIX ProjectionMatrix);
     void Tick() override;
+
+    void HandleInput(double DeltaTime);
+
+    void UpdateCamera(double DeltaTime);
+    
+    Matrix CreateViewMatrix();
+
+    Matrix CreateProjectionMatrix();
+
+    void UpdateChunkVisibility(const Matrix& ViewMatrix, const Matrix& ProjectionMatrix);
+    
+    void DrawChunks(const Matrix& ViewMatrix, const Matrix& ProjectionMatrix, const bool bDrawWater);
+
+    void UpdateWindowTitle(const double DeltaTime);
+
+public:
+
     void Exit();
-    void GenerateChunk(ChunkRef Chunk, ChunkKey Key);
-
-    void SetBlocksInFrontOfPlayer();
-
-    void GenerateChunksInBackground(const std::vector<ChunkKey>& ChunkKeys);
-    void GenerateChunksAroundCamera(int RadiusInChunks);
-    void AddTrees(WorldOperations World, int Size);
-
-    // todo: move this to a world gen class
-    void GenerateWorld();
-
-    // todo: move to chunk mesh manager
-    //void RebuildChunkMeshes();
-    void AddBlockTick();
-
-    // int RenderChunk(Chunk2& chunk, DirectX::XMMATRIX translationMatrix,
-    //                 DirectX::XMMATRIX rotationMatrix,
-    //                 DirectX::XMMATRIX scaleMatrix, DirectX::XMMATRIX viewMatrix, DirectX::XMMATRIX projectionMatrix);
+    
+    void ClearPendingCleanupObjects() override
+    {
+    };
 
 private:
 
@@ -62,4 +66,4 @@ private:
 #endif
 };
 
-
+extern FOldEngineLoop GOldEngineLoop;

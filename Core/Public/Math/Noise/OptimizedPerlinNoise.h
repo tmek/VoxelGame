@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include <vector>
 #include <cmath>
 #include <numeric>
 #include <random>
+#include <vector>
 
 class OptimizedPerlinNoise
 {

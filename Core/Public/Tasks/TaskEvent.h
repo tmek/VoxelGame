@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <vector>
 #include <atomic>
 #include <string>
+#include <vector>
 #include "Tasks/Task.h"
 /*
 namespace TE::Tasks
