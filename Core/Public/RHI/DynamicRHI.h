@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "Windows/WindowsHWrapper.h"
+
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <wrl/client.h>
@@ -10,40 +12,57 @@ using Microsoft::WRL::ComPtr;
 using namespace DirectX;
 
 
-class CORE_API GraphicsDevice
+class CORE_API DynamicRHI
 {
 public:
 
-    GraphicsDevice(void* WindowHandle);
 
-    ~GraphicsDevice();
+    static void SetDebugName(ID3D11DeviceChild* resource, const char* format, ...);
+    void BeginPass(const wchar_t* Name);
+    void EndPass();
+    
+    DynamicRHI(void* WindowHandle);
 
-    void Clear(const FLOAT Color[4]);
+    ~DynamicRHI();
+
+    void Clear(const float ColorClear[4], float DepthClear = 1.0f, UINT8 StencilClear = 0) const;
 
     void Present(bool EnableVSync = false) const;
-
-    ID3D11SamplerState* CreateBaseSamplerState();
 
     void CreateSimpleNoiseTextureAndShaderResourceView();
 
     bool IsValid() const { return isValid; }
 
-    // get device and device context
-    ID3D11Device* GetDevice() { return D3D11Device_.Get(); }
+    ID3D11Device* GetDevice() { return GraphicsFactory_.Get(); }
 
     ID3D11DeviceContext* GetDeviceContext() { return GraphicsPipeline_.Get(); }
 
     void UpdateVertexShaderConstantBuffer(const XMMATRIX& WorldViewProjection, float TintR, float TintG, float TintB);
 
-    void SetOpaquePassState() {};
+    void SetOpaquePassState()
+    {
+        PipelineStateManager_->ApplyPipelineState(OpaquePassPSO_);
+    };
 
-    void SetTransparencyPassState() {};
+    void SetTransparencyPassState()
+    {
+        PipelineStateManager_->ApplyPipelineState(TransparencyPassPSO_);
+    };
 
-    void SetPreDepthPrePassStates() {};
+    void SetPreDepthPrePassStates()
+    {
+        PipelineStateManager_->ApplyPipelineState(DepthPrePassPSO_);
+    };
 
+  
 private:
 
-    void DefineBasePassPSO();
+
+    void DefineOpaquePassPSO();
+
+    void DefineTransparencyPassPSO();
+
+    void DefineDepthPrePassPSO();
 
     void InitD3D11();
 
@@ -52,6 +71,9 @@ private:
     void CreateDeviceAndContext();
 
     void CreateSwapChain();
+
+    void SetDebugName(ComPtr<ID3D11DeviceChild> resource, const char* format, ...);
+
 
     void CleanupD3D();
 
@@ -63,27 +85,27 @@ private:
     HWND WindowHandle_;
     int WindowClientWidth_ = 800; // fallback values
     int WindowClientHeight_ = 600;
-    UINT SampleCount_ = 4; // 4x MSAA
+    UINT SampleCount_ = 2; // 4x MSAA
     UINT MSAAQuality_ = 0;
 
 #pragma warning(push)
 #pragma warning(disable:4251)  // hide Warning C4251 (needs dll-interface) until we have a solution
 
     // Device, Context, SwapChain
-    ComPtr<ID3D11Device> D3D11Device_;
+    ComPtr<ID3D11Device> GraphicsFactory_;
     ComPtr<ID3D11DeviceContext> GraphicsPipeline_;
     ComPtr<IDXGISwapChain> DxgiSwapChain_;
 
     // Textures
     ComPtr<ID3D11Texture2D> NoiseTexture_;
 
-#pragma warning(pop)
-
     std::unique_ptr<PipelineStateManager> PipelineStateManager_;
+#pragma warning(pop)
+    
     PipelineState InitialPipelineState_;
-    PipelineState DepthPrePassPso_;
-    PipelineState BasePassPso_;
-    PipelineState MainTransparencyPassPso_;
+    PipelineState DepthPrePassPSO_;
+    PipelineState OpaquePassPSO_;
+    PipelineState TransparencyPassPSO_;
 
     bool isValid;
 };

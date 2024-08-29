@@ -3,7 +3,6 @@
 #include <vector>
 #include "Chunk/ChunkConstants.h"
 
-
 #undef max // Required for std::min
 #undef min // Required for std::max
 #include <algorithm>
@@ -13,7 +12,7 @@
 
 #include "Voxel/Conversions.h"
 
-
+#include "Generated/VoxelCoreExports.h"
 
 struct VOXELCORE_API ChunkUtils
 {
@@ -166,8 +165,8 @@ public:
         // Convert the world volume's min and max coordinates to chunk keys
         ChunkKey ChunkKeyMin, ChunkKeyMax;
 
-        WorldPositionToChunkKey(WorldRegion.Min, ChunkKeyMin);
-        WorldPositionToChunkKey(WorldRegion.Max, ChunkKeyMax);
+        WorldToChunkKey(WorldRegion.Min, ChunkKeyMin);
+        WorldToChunkKey(WorldRegion.Max, ChunkKeyMax);
 
         // Iterate over each chunk in the range
         for (int cx = ChunkKeyMin.X; cx <= ChunkKeyMax.X; ++cx)
@@ -178,7 +177,7 @@ public:
 
                 // Get chunk origin in world space
                 BlockCoordinate CurrentChunkOrigin;
-                ChunkKeyToWorldPosition(CurrentChunkKey, CurrentChunkOrigin);
+                ChunkKeyToWorld(CurrentChunkKey, CurrentChunkOrigin);
 
                 // Calculate the sub-volume starting block and dimensions within the current chunk
                 BlockCoordinate StartBlockWorldPosition;

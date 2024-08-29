@@ -26,12 +26,12 @@ public:
 
     [[nodiscard]] uint32 GetIndexCount() const;
 
-    [[nodiscard]] const std::vector<uint32>& GetIndices() const;
+    [[nodiscard]] const std::vector<uint16>& GetIndices() const;
 
 private:
 
     TArray<VertexType> VertexList_;
-    TArray<uint32> IndexList_;
+    TArray<uint16> IndexList_;
 };
 
 
@@ -47,14 +47,16 @@ void TMeshBuilder<VertexType>::Clear()
 template <typename VertexType>
 void TMeshBuilder<VertexType>::Append(const std::vector<VertexType>& Vertices, const std::vector<uint32>& Indices)
 {
+    size_t PreviousVertexCount = VertexList_.size();
+    
     // Append vertices
     VertexList_.insert(VertexList_.end(), Vertices.begin(), Vertices.end());
 
     // Append indices
-    uint32 IndexOffset = static_cast<uint32>(VertexList_.size());
     for (uint32 index : Indices)
     {
-        IndexList_.push_back(IndexOffset + index);
+        uint16 NewVertexIndex = static_cast<uint16>(PreviousVertexCount + index);
+        IndexList_.push_back(NewVertexIndex);
     }
 }
 
@@ -77,7 +79,7 @@ uint32 TMeshBuilder<VertexType>::GetIndexCount() const
 }
 
 template <typename VertexType>
-const std::vector<uint32>& TMeshBuilder<VertexType>::GetIndices() const
+const std::vector<uint16>& TMeshBuilder<VertexType>::GetIndices() const
 {
     return IndexList_;
 }

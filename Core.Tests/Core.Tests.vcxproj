@@ -37,6 +37,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
     <ClCompile Include="D3D11Tests.cpp" />
+    <ClCompile Include="NewBlockAddress\BlockAddressTest.cpp" />
     <ClCompile Include="RHITests.cpp" />
     <ClCompile Include="TasksTests.cpp" />
     <ClCompile Include="test.cpp" />
@@ -53,6 +54,7 @@
   <ItemGroup>
     <ClInclude Include="D3D11\D3D11Renderer.h" />
     <ClInclude Include="D3D11\PrintDeviceAndContextInfo.h" />
+    <ClInclude Include="NewBlockAddress\BlockAddress.h" />
   </ItemGroup>
   <ItemDefinitionGroup />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -136,7 +136,7 @@ void WorldOperations::SetBlockType(const BlockCoordinate& worldBlock, const Bloc
 int WorldOperations::GetHighestBlockHeightAt(int x, int z)
 {
     // Get the chunk
-    BlockCoordinate WorldBlockPosition = {x, MaxBlockHeight, z};
+    BlockCoordinate WorldBlockPosition = {x, MaxBlockY, z};
 
     ChunkKey ChunkKey;
     BlockCoordinate HighestBlockOffset;
@@ -146,14 +146,14 @@ int WorldOperations::GetHighestBlockHeightAt(int x, int z)
     // if the block index is invalid, return bottom layer Y height
     if (HighestBlockIndex <= 0 || HighestBlockIndex >= ChunkSize)
     {
-        return MinBlockHeight;
+        return MinBlockY;
     }
 
     // try to get the chunk
     ChunkPtr Chunk = world_.TryGetChunk(ChunkKey);
     if(!Chunk)
     {
-        return MaxBlockHeight; 
+        return MaxBlockY; 
     }
 
 

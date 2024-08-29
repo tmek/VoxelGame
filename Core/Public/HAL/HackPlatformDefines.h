@@ -66,6 +66,7 @@ CORE_API extern bool GEnableDebugTint;
 CORE_API extern bool GEnableVSync;
 CORE_API extern bool GFreezeFrustumCulling;
 CORE_API extern int GTotalDrawCalls;
+CORE_API extern bool GUseDepthPass;
 
 
 // #define PLATFORM_CAN_SUPPORT_EDITORONLY_DATA 1

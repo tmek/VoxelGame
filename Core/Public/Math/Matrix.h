@@ -10,6 +10,12 @@
 template <typename T>
 struct TVector;
 
+// todo: move this to more appropriate location
+inline bool NearlyEqual(float a, float b, float epsilon) noexcept 
+{
+    return std::fabs(a - b) <= epsilon;
+}
+
 
 // A 4X4 Matrix for floating point types (float, double).
 template <typename T>
@@ -219,7 +225,7 @@ public:
                |    0        0        0         1         | // homogeneous coordinates
                
          * ------------------------------------------------------------------------------- */
-        
+
 
         // Step 4: Construct the LookAt matrix
         TMatrix<T> LookAtMatrix;
@@ -362,12 +368,12 @@ public:
         
 */
         assert(NearZ > 0.f && FarZ > 0.f);
-        assert(!XMScalarNearEqual(FovAngleY, 0.0f, 0.00001f * 2.0f));
-        assert(!XMScalarNearEqual(AspectRatio, 0.0f, 0.00001f));
-        assert(!XMScalarNearEqual(FarZ, NearZ, 0.00001f));
-        
-        float    SinFov;
-        float    CosFov;
+        assert(!NearlyEqual(FovAngleY, 0.0f, 0.00001f * 2.0f));
+        assert(!NearlyEqual(AspectRatio, 0.0f, 0.00001f));
+        assert(!NearlyEqual(FarZ, NearZ, 0.00001f));
+
+        float SinFov;
+        float CosFov;
 
         const float HalfFovAngleY = 0.5f * FovAngleY;
         SinFov = sinf(HalfFovAngleY);
@@ -377,7 +383,7 @@ public:
 
         float Height = InvTan;  // inv tan?
         float Width = Height / AspectRatio;
-        
+
         float fRange = FarZ / (FarZ - NearZ);
 
         TMatrix<T> M;
@@ -385,28 +391,28 @@ public:
         M.M[0][1] = 0.0f;
         M.M[0][2] = 0.0f;
         M.M[0][3] = 0.0f;
-          
+
         M.M[1][0] = 0.0f;
         M.M[1][1] = Height;
         M.M[1][2] = 0.0f;
         M.M[1][3] = 0.0f;
-          
+
         M.M[2][0] = 0.0f;
         M.M[2][1] = 0.0f;
         M.M[2][2] = fRange;
         M.M[2][3] = 1.0f;
-          
+
         M.M[3][0] = 0.0f;
         M.M[3][1] = 0.0f;
         M.M[3][2] = -fRange * NearZ;
         M.M[3][3] = 0.0f;
-        
+
         return M;
 
-        
+
 
         TMatrix<T> Result;
-    
+
         // Step 1: Calculate the vertical scaling factor based on the field of view
         T yScale = static_cast<T>(1) / std::tan(FovAngleY / static_cast<T>(2));
 
@@ -437,10 +443,7 @@ public:
         Result.M[3][2] = -(FarZ * NearZ) / zRange;  // Z translation
         Result.M[3][3] = 0.0f;           // Final row for homogeneous coordinates
 
-        return Result;        
- 
-        
-     
+        return Result;
     }
 
     // PerspectiveFov function for right-handed (RH) coordinate system

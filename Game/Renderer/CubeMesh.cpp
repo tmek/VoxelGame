@@ -2,7 +2,7 @@
 #include <d3dcompiler.h>
 #include <DirectXColors.h>
 #include <iostream>
-#include "RHI/GraphicsDevice.h"
+#include "RHI/DynamicRHI.h"
 
 #include "Input/InputManager.h"
 
@@ -263,7 +263,7 @@ void CubeMesh::Select()
     UINT offset = 0;
     context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
     context->IASetInputLayout(inputLayout.Get());
-    context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    // context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void CubeMesh::SetShaders()

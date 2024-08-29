@@ -18,3 +18,12 @@ struct BlockRegion
     BlockCoordinate Min;
     BlockCoordinate Max;
 };
+
+
+// could use the following subtypes to distinguish between world and chunk space
+
+// Represents a block's position in world space
+using WorldBlockCoordinate = BlockCoordinate;
+
+// Represents a block's position in chunk space
+using ChunkBlockCoordinate = BlockCoordinate;

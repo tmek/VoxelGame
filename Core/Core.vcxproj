@@ -77,9 +77,9 @@
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);Public;Private</IncludePath>
     <ExternalIncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</ExternalIncludePath>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -113,11 +113,10 @@
       <PreprocessorDefinitions>_DEBUG;CPPDYNAMICLIBRARYTEMPLATE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -260,7 +259,7 @@
     <ClCompile Include="Private\Misc\StopWatch.cpp" />
     <ClCompile Include="Private\Misc\ThreadPool.cpp" />
     <ClCompile Include="Private\RHI\D3D12Example.cpp" />
-    <ClCompile Include="Private\RHI\GraphicsDevice.cpp" />
+    <ClCompile Include="Private\RHI\DynamicRHI.cpp" />
     <ClCompile Include="Private\RHI\ImageUtil.cpp" />
     <ClCompile Include="Private\RHI\Mesh.cpp" />
     <ClCompile Include="Private\RHI\MeshAssembler.cpp" />
@@ -317,7 +316,7 @@
     <ClInclude Include="Public\Misc\ThreadPool.h" />
     <ClInclude Include="Public\MSVC\MSVCPlatform.h" />
     <ClInclude Include="Public\PixelFormat.h" />
-    <ClInclude Include="Public\RHI\GraphicsDevice.h" />
+    <ClInclude Include="Public\RHI\DynamicRHI.h" />
     <ClInclude Include="Public\RHI\ImageUtil.h" />
     <ClInclude Include="Public\RHI\Mesh.h" />
     <ClInclude Include="Public\RHI\MeshAssembler.h" />

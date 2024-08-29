@@ -14,21 +14,23 @@ struct PS_INPUT
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
+    //return float4(1,0,0,1);
+    
 #define DEBUG_UV 0
 #if DEBUG_UV
     // render the UVs for debugging
-    return float4(input.TexCoord, 0.0f, input.Color.a);
+    return float4(input.TexCoord, 0.0f, 1.0f);
 #else
 
     
     
-    float depth = input.Pos.z / input.Pos.w;
-
-    float b1 = sin(input.Pos.x / 1920.0f * PI);
-    float b2 = sin(input.Pos.y / 1080.0f * PI);
-    float b = b1*b2;
-    
-    float vinette_mul = float4(b,b,b,1.0f);
+    // float depth = input.Pos.z / input.Pos.w;
+    //
+    // float b1 = sin(input.Pos.x / 1920.0f * PI);
+    // float b2 = sin(input.Pos.y / 1080.0f * PI);
+    // float b = b1*b2;
+    //
+    // float vinette_mul = float4(b,b,b,1.0f);
     
     // Calculate linear depth
     // float depth = input.Pos.z / input.Pos.w;
@@ -76,20 +78,22 @@ float4 main(PS_INPUT input) : SV_TARGET
     float4 TexelColor = txDiffuse.Sample(samLinear, input.TexCoord) / 2 + 0.5f;
     float4 TintedColor = input.Color * TexelColor;
     
-    // calculate fog based on distance, 1 unit = 1 meter
-    float4 FogColor = float4(0.4706f, 0.6549f, 1.0f, 1.0f);
-    
-    // Define the fog parameters
-    float FogEnd = 32 * 16; // assuming 32 chunks wide
-    float FogStart = FogEnd * 0.25f;
-    
-    // Calculate the fog factor
-    float FogDistance = input.Depth * input.Pos.w;
-    float FogFactor = 1.0f - saturate((FogEnd - FogDistance) / (FogEnd - FogStart));
+    // // calculate fog based on distance, 1 unit = 1 meter
+    // float4 FogColor = float4(0.4706f, 0.6549f, 1.0f, 1.0f);
+    //
+    // // Define the fog parameters
+    // float FogEnd = 32 * 16; // assuming 32 chunks wide
+    // float FogStart = FogEnd * 0.25f;
+    //
+    // // Calculate the fog factor
+    // float FogDistance = input.Depth * input.Pos.w;
+    // float FogFactor = 1.0f - saturate((FogEnd - FogDistance) / (FogEnd - FogStart));
+    //
+    // // Interpolate between the vertex color and the fog color
+    // FogFactor = 0.0f;
+    // float4 finalColor = lerp(TintedColor, FogColor, FogFactor);
 
-    // Interpolate between the vertex color and the fog color
-    FogFactor = 0.0f;
-    float4 finalColor = lerp(TintedColor, FogColor, FogFactor);
+    float4 finalColor = TintedColor;
     
     return finalColor ;
 #endif

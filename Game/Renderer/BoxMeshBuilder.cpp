@@ -1,4 +1,5 @@
-﻿
+﻿// copyright
+
 #include "BoxMeshBuilder.h"
 #include "VoxelGameMeshVertex.h"
 #include "RHI/MeshAssembler.h"
@@ -48,7 +49,7 @@ Mesh BoxMeshBuilder::Build(ID3D11Device* device)
 
     MeshAssembler assembler(device);
     std::vector<TMeshBuilder<VoxelGameMeshVertex>> meshBuilders = {meshBuilder};
-    Mesh mesh = assembler.AssembleMesh(meshBuilders);
+    Mesh mesh = assembler.AssembleMesh(meshBuilders, "BoxMesh");
 
     return mesh;
 }

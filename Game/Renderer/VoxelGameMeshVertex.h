@@ -1,4 +1,6 @@
 ﻿#pragma once
+
+#include "windows\WindowsHWrapper.h"
 #include <DirectXMath.h>
 
 using namespace DirectX;

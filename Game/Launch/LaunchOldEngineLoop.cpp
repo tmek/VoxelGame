@@ -55,7 +55,7 @@ constexpr int ChunkDrawRadius = 32;
 
 
 // globals
-ThreadPool GThreadPool(std::thread::hardware_concurrency());
+ThreadPool GThreadPool(std::thread::hardware_concurrency() / 2);
 
 PlatformWindow* GWindow = nullptr;
 VoxelWorldRenderer GRenderer;
@@ -70,14 +70,16 @@ std::shared_ptr<VoxelWorld> GWorld = std::make_unique<VoxelWorld>();
 
 std::unordered_set<ChunkKey, ChunkKeyHash> ChunkLoadQueue;
 
-float               GPlayerSpeed = MinecraftSprintSpeed;
-PlayerController    GPlayerController;
-Camera              GCamera = Camera(Vector(0.0f, 100.0f, -1152.0f),
+float GPlayerSpeed = MinecraftSprintSpeed;
+PlayerController GPlayerController;
+Camera StartingCameraState =  Camera(Vector(0.0f, 100.0f, -1152.0f),
                         Vector::ForwardVector,
                         70.0f,
                         16.0f / 10.0f,
                         0.1f,
                         10000.0f);
+
+Camera GCamera = StartingCameraState;
 
 
 // Biome generator
@@ -93,19 +95,11 @@ ForestBeachBiomeGenerator GBiome;
 
 void FOldEngineLoop::InitializeGraphics()
 {
-     GWindow = new PlatformWindow();
-     GRenderer.Initialize(GWindow->GetHandle());
-    
-    // GGraphicsDevice = new GraphicsDevice(GWindow->GetHandle());
-    // assert(GGraphicsDevice->IsValid());
-    //
-    // BoxMeshBuilder boxMeshBuilder;
-    // GBoxMesh = boxMeshBuilder.Build(GGraphicsDevice->GetDevice());
-    //
-    // GCubeMesh = new CubeMesh(GGraphicsDevice->GetDevice(), GGraphicsDevice->GetDeviceContext());
-    //
-    // GCubeMesh->SetShaders(); // sets general shaders
-    // GCubeMesh->Select();     // sets general input layout and topology
+    PlatformWindow::WindowOptions options;
+    options.Width = 800;
+    options.Height = 600;
+    GWindow = new PlatformWindow();
+    GRenderer.Initialize(GWindow->GetHandle());
 }
 
 void FOldEngineLoop::GenerateChunksInBackground(const TArray<ChunkKey>& ChunkKeys)
@@ -117,11 +111,11 @@ void FOldEngineLoop::GenerateChunksInBackground(const TArray<ChunkKey>& ChunkKey
             // GWorld can be destroyed before the thread finishes.
             // todo: may need a more graceful way to handle this.
             // todo: may need to add a mutex to GWorld, just checking GWorld == nullptr is not enough.
-            if(GIsRequestingExit)
+            if (GIsRequestingExit)
             {
                 return;
             }
-            
+
             ChunkRef GeneratedChunk = GWorld->GetChunk(GeneratedChunkKey);
             ChunkUtils::TFillChunkSubvolume(GeneratedChunk->Blocks, 0,
                                             ChunkWidth, ChunkHeight, ChunkDepth,
@@ -150,7 +144,7 @@ void FOldEngineLoop::GenerateChunksAroundCamera(const int RadiusInChunks)
     };
 
     ChunkKey CameraChunkKey;
-    WorldPositionToChunkKey(cameraBlock, CameraChunkKey);
+    WorldToChunkKey(cameraBlock, CameraChunkKey);
 
     TArray<ChunkKey> ChunksAroundCamera;
     int radiusSquared = RadiusInChunks * RadiusInChunks;
@@ -182,48 +176,35 @@ void FOldEngineLoop::GenerateChunksAroundCamera(const int RadiusInChunks)
     GenerateChunksInBackground(ChunksAroundCamera);
 }
 
-
-void FOldEngineLoop::UpdateChunkVisibility(const Matrix& ViewMatrix, const Matrix& ProjectionMatrix)
-{
-    // if (GFreezeFrustumCulling) { return; }
-    //
-    // //VisibleChunks.clear();
-    // Plane FrustumPlanes[6];
-    //
-    // Matrix ViewProjMatrix = ViewMatrix * ProjectionMatrix;
-    //
-    // Math::ExtractFrustumPlanes(ViewProjMatrix, FrustumPlanes);
-    //
-    // for (auto& ChunkEntry : *GWorld)
-    // {
-    //     const auto& ChunkKey = ChunkEntry.first;
-    //
-    //     BlockCoordinate ChunkOrigin;
-    //     ChunkKeyToWorldPosition(ChunkKey, ChunkOrigin);
-    //
-    //     Vector BoundsMin = {
-    //         static_cast<float>(ChunkOrigin.X),
-    //         0.0f,
-    //         static_cast<float>(ChunkOrigin.Z)
-    //     };
-    //     Vector BoundsMax = { 
-    //         static_cast<float>(ChunkOrigin.X + ChunkWidth),
-    //         static_cast<float>(ChunkHeight),
-    //         static_cast<float>(ChunkOrigin.Z + ChunkDepth)};
-    //
-    //     if (Math::IsBoxInFrustum(FrustumPlanes, BoundsMin, BoundsMax))
-    //     {
-    //         VisibleChunks.push_back(ChunkKey);
-    //     }
-    // }
-}
-
 void FOldEngineLoop::HandleInput(const double DeltaTime)
 {
     GWindow->ProcessMessageQueue();
-    
+
     GPlayerController.Tick(static_cast<float>(DeltaTime));
 
+    if (InputManager::Get().IsKeyPressed('O'))
+    {
+        InputManager::Get().ClearKeyPressed('O');
+        GCamera = StartingCameraState;
+        TE_LOG(LogTemp, Log, TEXT("Camera reset to world origin"));
+    }
+
+    if (InputManager::Get().IsKeyPressed('V'))
+    {
+        InputManager::Get().ClearKeyPressed('V');
+        GEnableVSync = !GEnableVSync;
+        TE_LOG(LogTemp, Log, TEXT("Toggle VSync"));
+    }
+
+    
+    // if (InputManager::Get().IsKeyPressed('L'))
+    // {
+    //     InputManager::Get().ClearKeyPressed('L');
+    //     //GCamera = StartingCameraState;
+    //     TE_LOG(LogTemp, Log, TEXT("Camera reset to world origin"));
+    // }
+
+    
     if (InputManager::Get().IsKeyPressed('C'))
     {
         InputManager::Get().ClearKeyPressed('C');
@@ -273,39 +254,17 @@ void FOldEngineLoop::UpdateCamera(const double DeltaTime)
     GCamera.SetTarget(GCamera.GetPosition() + GPlayerController.GetForwardVector());
 }
 
-Matrix FOldEngineLoop::CreateViewMatrix()
-{
-    XMVECTOR Eye = XMVectorSet(GCamera.GetPosition().X, GCamera.GetPosition().Y, GCamera.GetPosition().Z, 0.0f);
-    XMVECTOR At = XMVectorSet(GCamera.GetFocusPosition().X, GCamera.GetFocusPosition().Y, GCamera.GetFocusPosition().Z, 0.0f);
-    XMVECTOR Up = XMVectorSet(GCamera.GetUpDirection().X, GCamera.GetUpDirection().Y, GCamera.GetUpDirection().Z, 0.0f);
-    
-    XMMATRIX View = XMMatrixLookAtLH(Eye, At, Up);
-
-    return *reinterpret_cast<Matrix*>(&View);
-}
-
-Matrix FOldEngineLoop::CreateProjectionMatrix()
-{
-    XMMATRIX Projection = XMMatrixPerspectiveFovLH(
-        Math::ConvertToRadians(GCamera.GetFieldOfViewY()),
-        GCamera.GetAspectRatio(),
-        GCamera.GetNearPlane(),
-        GCamera.GetFarPlane());
-
-    // return std::bit_cast<Matrix>(Projection);
-    return *reinterpret_cast<Matrix*>(&Projection);
-}
-
 
 void FOldEngineLoop::UpdateWindowTitle(const double DeltaTime)
 {
-    constexpr float TimeBetweenUpdates = 0.01f;
-    static float UpdateTimeRemaining = TimeBetweenUpdates;
-    UpdateTimeRemaining -= static_cast<float>(DeltaTime);
+    constexpr float TimeBetweenUpdates = 0.1f;
+    static float UpdateTimeElapsed = 0;
+    UpdateTimeElapsed += static_cast<float>(DeltaTime);
 
-    if (UpdateTimeRemaining <= 0)
+    if (UpdateTimeElapsed >= TimeBetweenUpdates)
     {
-        UpdateTimeRemaining = TimeBetweenUpdates;
+        UpdateTimeElapsed = 0;
+        
         int ChunkCount = static_cast<int>(GWorld->GetChunkCount());
         int MouseX;
         int MouseY;
@@ -314,10 +273,12 @@ void FOldEngineLoop::UpdateWindowTitle(const double DeltaTime)
         constexpr int buffer_count = 256;
         static WIDECHAR TempBuffer[buffer_count];
 
+        const TCHAR* PlatformName = PlatformProcess::GetPlatformName();
+        
         auto FPS = FrameTiming::GetFPS();
         swprintf(TempBuffer, buffer_count,
-                 L"Voxel Game: FPS=%.2f, Chunks=%d, DrawCalls=%d, Mouse={%d, %d}, MouseDown=%d",
-                 FPS, ChunkCount, GTotalDrawCalls, MouseX, MouseY, MouseDown);
+                 L"Voxel Game: FPS=%.2f, Chunks=%d, DrawCalls=%d, Mouse={%d, %d}, MouseDown=%d, VSync=%d, Platform=%s",
+                 FPS, ChunkCount, GTotalDrawCalls, MouseX, MouseY, MouseDown, GEnableVSync, PlatformName);
 
         GWindow->SetTitle(TempBuffer);
     }
@@ -345,22 +306,8 @@ void FOldEngineLoop::Tick()
     FrameTiming::Update(DeltaTime);
 
     HandleInput(DeltaTime);
+    
     UpdateCamera(DeltaTime);
-
-    // const Matrix ViewMatrix = CreateViewMatrix();
-    // const Matrix ProjectionMatrix = CreateProjectionMatrix();
-
-//    UpdateChunkVisibility(ViewMatrix, ProjectionMatrix);
-
-    // set to minecraft sky blue
-    // constexpr float MinecraftSkyColor[] = {0.4706f, 0.6549f, 1.0f, 1.0f};
-    // GGraphicsDevice->Clear(MinecraftSkyColor);
-    //
-    // GTotalDrawCalls = 0;
-    // DrawChunks(ViewMatrix, ProjectionMatrix, false);
-    // DrawChunks(ViewMatrix, ProjectionMatrix, true);
-
-    //GGraphicsDevice->Present(GEnableVSync);
 
     GRenderer.RenderScene(GWorld.get(), GCamera);
 
@@ -371,71 +318,5 @@ void FOldEngineLoop::Exit()
 {
     TE_LOG(LogTemp, Log, TEXT("FOldEngineLoop::Exit()"));
 }
-
-void FOldEngineLoop::DrawChunks(const Matrix& ViewMatrix, const Matrix& ProjectionMatrix, const bool bDrawWater)
-{
-    // for (ChunkKey& chunkKey : VisibleChunks)
-    // {
-    //     BlockCoordinate ChunkOrigin;
-    //     ChunkKeyToWorldPosition(chunkKey, ChunkOrigin);
-    //
-    //     Matrix TranslationMatrix = { 1.0f, 0.0f, 0.0f, 0.0f,
-    //                                  0.0f, 1.0f, 0.0f, 0.0f,
-    //                                  0.0f, 0.0f, 1.0f, 0.0f,
-    //                                  static_cast<float>(ChunkOrigin.X), 0.0f, static_cast<float>(ChunkOrigin.Z), 1.0f };
-    //
-    //     const Matrix WorldMatrix = TranslationMatrix;
-    //     const Matrix WorldViewProjectionMatrix = WorldMatrix * ViewMatrix * ProjectionMatrix;
-    //     Matrix TransposedWVPMatrix = WorldViewProjectionMatrix.Transpose();
-    //
-    //     if (Mesh* ChunkMesh = ChunkMeshManager::GetInstance().GetChunkMesh(chunkKey))
-    //     {
-    //         XMMATRIX XMTransposedWVPMatrix = *reinterpret_cast<XMMATRIX*>(&TransposedWVPMatrix);
-    //         
-    //         GGraphicsDevice->SetConstants(XMTransposedWVPMatrix, ChunkMesh->DebugColor.x, ChunkMesh->DebugColor.y, ChunkMesh->DebugColor.z);
-    //         ChunkMesh->BindToDeviceContext(GGraphicsDevice->GetDeviceContext());
-    //
-    //         constexpr int SolidBlocksSubMesh = 0;
-    //         constexpr int WaterBlocksSubMesh = 1;
-    //
-    //         if (bDrawWater)
-    //         {
-    //             GGraphicsDevice->DisableDepthWrite();
-    //             if (ChunkMesh->SubMeshes[WaterBlocksSubMesh].indexCount > 0)
-    //             {
-    //                 ChunkMesh->DrawSubMesh(GGraphicsDevice->GetDeviceContext(), WaterBlocksSubMesh);
-    //             }
-    //         }
-    //         else
-    //         {
-    //             GGraphicsDevice->EnableDepthWrite();
-    //             ChunkMesh->DrawSubMesh(GGraphicsDevice->GetDeviceContext(), SolidBlocksSubMesh);
-    //         }
-    //
-    //         GTotalDrawCalls++;
-    //     }
-    // }
-}
-
-
-// void FOldEngineLoop::GenerateChunk(const ChunkKey Key, ChunkRef Chunk)
-// {
-//     ChunkUtils::TFillChunkSubvolume(Chunk->Blocks,
-//                                     0,
-//                                     ChunkWidth, ChunkHeight, ChunkDepth,
-//                                     Key.X * ChunkWidth, 0, Key.Z * ChunkDepth,
-//                                     [&](auto* block_states, int index, int world_x, int world_y,
-//                                         int world_z)
-//                                     {
-//                                         const Block block_type1 = biome.GetBlock(
-//                                             world_x, world_y, world_z);
-//
-//                                         // set only non-air blocks (to prevent drawing air blocks over something that was drawn to the chunk previously)
-//                                         if (!block_type1.IsAir())
-//                                         {
-//                                             block_states[index] = block_type1;
-//                                         }
-//                                     });
-// }
 
 FOldEngineLoop GOldEngineLoop;

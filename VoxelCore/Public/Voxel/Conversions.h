@@ -2,146 +2,184 @@
 
 #pragma once
 
-#include "CoreTypes.h" 
-#include "Block/Block.h"
+#include "CoreTypes.h"
 #include "Chunk/ChunkConstants.h"
 #include "Chunk/ChunkKey.h"
-#include "Misc/AssertionMacros.h"
+#include "VoxelDefines.h"
 
-/** Using the following naming conventions:
- *  - WorldPosition: A block coordinate explicitly in world space.
- *  - BlockOffset: A block coordinate explicitly in chunk space.
- *  - BlockIndex: A block's index in a chunk.
- *  - ChunkKey: A chunk's cx,cz coordinate in the world's chunk grid.
- */
+#undef TE_ENABLE_CONVERSION_OPTIMIZATIONS
 
-// Represents a block's position in world space
-using WorldBlockCoordinate = BlockCoordinate;
+/* Optimization Notes:
 
-// Represents a block's position in chunk space
-using ChunkBlockCoordinate = BlockCoordinate;
+    bitwise '&' can be used like a wrap-around modulo that works as desired with negative numbers:
+        a & (b-1)
+        - Requires b is positive and a power of 2
+        - Gives the same result as = (a % b + b) % b 
+
+    bitwise shift >> can be used as a fast division by a power of 2 that works as desired with negative numbers:
+        a >> log2(b)
+        - Requires b is positive and a power of 2
+        - Gives the same result as (a >= 0) ? (a / b) : ((a - (b - 1)) / b);
+
+    bitwise shift << can be used as a fast multiplication by a power of 2: 
+        a << log2(b)
+        - Requires b is positive and a power of 2
+        - Gives the same result as a * b 
+*/
 
 
-#define CheckWorldPosition(BlockPosition) check((BlockPosition).X >= MinPlayerWorldPosition && (BlockPosition).X < MaxPlayerWorldPosition); \
-    check((BlockPosition).Y >= MinBlockHeight && (BlockPosition).Y <= MaxBlockHeight); \
-    check((BlockPosition).Z >= MinPlayerWorldPosition && (BlockPosition).Z < MaxPlayerWorldPosition)
+/** Convert world coordinate to chunk grid coordinate. */
+inline void WorldToChunkGrid(const int32& WorldCoordinateIn, int32& ChunkCoordinateOut) noexcept
+{
+    // requires division that rounds towards negative infinity
+#ifdef TE_ENABLE_CONVERSION_OPTIMIZATIONS
+    ChunkCoordinateOut = WorldCoordinateIn >> ChunkWidthLog2;
+#else
+    ChunkCoordinateOut = (WorldCoordinateIn >= 0)
+                             ? (WorldCoordinateIn / ChunkWidth)
+                             : ((WorldCoordinateIn - (ChunkWidth - 1)) / ChunkWidth);
+#endif
+}
 
-#define CheckBlockIndex(BlockIndex) check((BlockIndex) < ChunkSize && (BlockIndex) >= 0)
 
-#define CheckBlockOffset(BlockOffset) check((BlockOffset).X >= 0 && (BlockOffset).X < ChunkWidth); \
-    check((BlockOffset).Y >= 0 && (BlockOffset).Y < ChunkHeight); \
-    check((BlockOffset).Z >= 0 && (BlockOffset).Z < ChunkDepth)
+/** Convert world position to chunk key. */
+inline void WorldToChunkKey(const BlockCoordinate& WorldPositionIn, ChunkKey& ChunkKeyOut) noexcept
+{
+    CheckWorldPosition(WorldPositionIn);
 
-#define CheckChunkKey(ChunkKey) check((ChunkKey).X >= WorldChunkMin && (ChunkKey).X < WorldChunkMax); \
-    check((ChunkKey).Z >= WorldChunkMin && (ChunkKey).Z < WorldChunkMax)
+    WorldToChunkGrid(WorldPositionIn.X, ChunkKeyOut.X);
+    WorldToChunkGrid(WorldPositionIn.Z, ChunkKeyOut.Z);
 
+    CheckChunkKey(ChunkKeyOut);
+}
 
 /** Convert chunk key to chunk origin in world space. */
-constexpr inline void ChunkKeyToWorldPosition(
-    const ChunkKey& ChunkKeyIn,
-    BlockCoordinate& ChunkWorldPositionOut) noexcept
+inline void ChunkKeyToWorld(const ChunkKey& ChunkKeyIn, BlockCoordinate& ChunkWorldPositionOut) noexcept
 {
     CheckChunkKey(ChunkKeyIn);
-    
+
+#ifdef TE_ENABLE_CONVERSION_OPTIMIZATIONS
+    ChunkWorldPositionOut.X = ChunkKeyIn.X << ChunkWidthLog2;
+    ChunkWorldPositionOut.Y = 0;
+    ChunkWorldPositionOut.Z = ChunkKeyIn.Z << ChunkDepthLog2;
+#else
     ChunkWorldPositionOut.X = ChunkKeyIn.X * ChunkWidth;
     ChunkWorldPositionOut.Y = 0;
     ChunkWorldPositionOut.Z = ChunkKeyIn.Z * ChunkDepth;
+#endif
 
     CheckWorldPosition(ChunkWorldPositionOut);
 }
 
 
-/** Convert world position to chunk key. */
-constexpr inline void WorldPositionToChunkKey(const BlockCoordinate& WorldPositionIn,
-                                              ChunkKey& ChunkKeyOut) noexcept
+/** Convert world coordinate to local coordinate within a chunk. */
+inline void WorldToLocal(const int32& WorldCoordinateIn, int32& LocalCoordinateOut) noexcept
 {
-    CheckWorldPosition(WorldPositionIn);
-
-    const int32 SignMaskX = WorldPositionIn.X >> 31; // Extract the sign bit (0 if positive, -1 if negative)
-    const int32 SignMaskZ = WorldPositionIn.Z >> 31; // Extract the sign bit (0 if positive, -1 if negative)
-    ChunkKeyOut.X = (WorldPositionIn.X + SignMaskX) >> 4; // Equivalent to dividing by ChunkWidth (16)
-    ChunkKeyOut.Z = (WorldPositionIn.Z + SignMaskZ) >> 4; // Equivalent to dividing by ChunkDepth (16)
-
-    CheckChunkKey(ChunkKeyOut);
+#ifdef TE_ENABLE_CONVERSION_OPTIMIZATIONS
+    LocalCoordinateOut = WorldCoordinateIn & MaxBlockX;
+#else
+    LocalCoordinateOut = (WorldCoordinateIn % ChunkWidth + ChunkWidth) % ChunkWidth;
+#endif
 }
-static_assert(ChunkWidth == 16, "ChunkWidth must be 16 for bitwise version");
-static_assert(ChunkDepth == 16, "ChunkDepth must be 16 for bitwise version");
 
 
-/** Convert world position to block offset. */
-constexpr inline void WorldPositionToBlockOffset(
-    const BlockCoordinate& WorldPositionIn, BlockCoordinate& BlockOffsetOut) noexcept
+/** Convert world coordinates to block local coordinates within a chunk. */
+inline void WorldToLocal(const BlockCoordinate& WorldPositionIn, BlockCoordinate& BlockOffsetOut) noexcept
 {
     CheckWorldPosition(WorldPositionIn);
 
-    // get local coordinates within the chunk and account for negative values
-    // to do this we add 1 to the negative worldIn value and then mod by the chunk size
-    // otherwise we just mod by the chunk size
-    BlockOffsetOut.X = WorldPositionIn.X < 0
-                           ? (WorldPositionIn.X + 1) % ChunkWidth + ChunkWidth - 1
-                           : WorldPositionIn.X % ChunkWidth;
+    WorldToLocal(WorldPositionIn.X, BlockOffsetOut.X);
     BlockOffsetOut.Y = WorldPositionIn.Y;
-    BlockOffsetOut.Z = WorldPositionIn.Z < 0
-                           ? (WorldPositionIn.Z + 1) % ChunkDepth + ChunkDepth - 1
-                           : WorldPositionIn.Z % ChunkDepth;
+    WorldToLocal(WorldPositionIn.Z, BlockOffsetOut.Z);
 
     CheckBlockOffset(BlockOffsetOut);
 }
 
 
-/** Convert block index to block offset. */
-constexpr inline void BlockIndexToBlockOffset(const BlockIndex& BlockIndexIn, BlockCoordinate& BlockOffsetOut) noexcept
+inline void IndexToLocal(const BlockIndex& BlockIndexIn, int& X, int& Y, int& Z) noexcept
 {
     CheckBlockIndex(BlockIndexIn);
 
-    const int32 Int32Index = static_cast<int32>(BlockIndexIn);
+    const int32& Int32Index = static_cast<int32>(BlockIndexIn);
 
-    // get the block offset using block index in YZX order (x increases fastest, y increases slowest)
-    BlockOffsetOut.Y = Int32Index / ChunkLayerSize;
-    BlockOffsetOut.Z = (Int32Index / ChunkWidth) % ChunkDepth;
+#ifdef TE_ENABLE_CONVERSION_OPTIMIZATIONS
+    X = Int32Index & MaxBlockX;
+    Y = Int32Index >> ChunkLayerSizeLog2;
+    Z = (Int32Index >> ChunkWidthLog2) & MaxBlockZ;
+#else
+    X = Int32Index % ChunkWidth;
+    Y = Int32Index / ChunkLayerSize;
+    Z = (Int32Index / ChunkDepth) % ChunkDepth;
+#endif
+
+    CheckBlockXYZ(X, Y, Z);
+}
+
+/** Convert block index to local coordinates within a chunk (in XZY order: x increases fastest, y increases slowest). */
+
+inline void IndexToLocal(const BlockIndex& BlockIndexIn, BlockCoordinate& BlockOffsetOut) noexcept
+{
+    CheckBlockIndex(BlockIndexIn);
+
+    const int32& Int32Index = static_cast<int32>(BlockIndexIn);
+
+#ifdef TE_ENABLE_CONVERSION_OPTIMIZATIONS
+    BlockOffsetOut.X = Int32Index & MaxBlockX;
+    BlockOffsetOut.Y = Int32Index >> ChunkLayerSizeLog2;
+    BlockOffsetOut.Z = (Int32Index >> ChunkDepthLog2) & MaxBlockZ;
+#else
     BlockOffsetOut.X = Int32Index % ChunkWidth;
+    BlockOffsetOut.Y = Int32Index / ChunkLayerSize;
+    BlockOffsetOut.Z = (Int32Index / ChunkDepth) % ChunkDepth;
+#endif
 
     CheckBlockOffset(BlockOffsetOut);
 }
 
 
-/** Convert block offset to block index. */
-constexpr inline void BlockOffsetToBlockIndex(const BlockCoordinate& BlockOffsetIn, BlockIndex& BlockIndexOut) noexcept
+inline void LocalToIndex(const int& X, const int& Y, const int& Z, BlockIndex& BlockIndexOut) noexcept
 {
-    CheckBlockOffset(BlockOffsetIn);
+    CheckBlockXYZ(X, Y, Z);
 
-    // get the block index within chunk in YZX order (x increases fastest, y increases slowest)
+#ifdef TE_ENABLE_CONVERSION_OPTIMIZATIONS
     BlockIndexOut =
-        BlockOffsetIn.Y * ChunkLayerSize +
-        BlockOffsetIn.Z * ChunkWidth +
-        BlockOffsetIn.X;
+    X +
+    (Y << ChunkLayerSizeLog2) +
+    (Z << ChunkWidthLog2);
+#else
+    BlockIndexOut =
+    X +
+    Y * ChunkLayerSize +
+    Z * ChunkWidth;
+#endif
 
     CheckBlockIndex(BlockIndexOut);
 }
 
-
+/** Convert block local coordinates to block index within chunk (in XZY order: x increases fastest, y increases slowest). */
+inline void LocalToIndex(const BlockCoordinate& BlockOffsetIn, BlockIndex& BlockIndexOut) noexcept
+{
+    LocalToIndex(BlockOffsetIn.X, BlockOffsetIn.Y, BlockOffsetIn.Z, BlockIndexOut);
+}
 
 /** Convert world position to chunk key, block offset, and block index. */
-constexpr inline void WorldPositionToChunkKeyBlockOffsetAndBlockIndex(
+inline void WorldPositionToChunkKeyBlockOffsetAndBlockIndex(
     const BlockCoordinate& BlockWorldPositionIn,
     ChunkKey& ChunkKeyOut, BlockCoordinate& BlockOffsetOut, BlockIndex& BlockIndexOut) noexcept
 {
-    WorldPositionToChunkKey(BlockWorldPositionIn, ChunkKeyOut);
-    WorldPositionToBlockOffset(BlockWorldPositionIn, BlockOffsetOut);
-    BlockOffsetToBlockIndex(BlockOffsetOut, BlockIndexOut);
+    WorldToChunkKey(BlockWorldPositionIn, ChunkKeyOut);
+    WorldToLocal(BlockWorldPositionIn, BlockOffsetOut);
+    LocalToIndex(BlockOffsetOut, BlockIndexOut);
 }
 
-
-
-
-
 /** Convert chunk key and block offset to world position */
-constexpr inline void ChunkKeyAndBlockOffsetToWorldPosition(
+inline void ChunkKeyAndBlockOffsetToWorldPosition(
     const ChunkKey& ChunkKeyIn, const BlockCoordinate& BlockOffsetIn,
     BlockCoordinate& WorldPositionOut) noexcept
 {
-    // get the world position of the chunk origin
-    ChunkKeyToWorldPosition(ChunkKeyIn, WorldPositionOut);
+    ChunkKeyToWorld(ChunkKeyIn, WorldPositionOut);
+
+    CheckBlockOffset(BlockOffsetIn);
 
     // offset the chunk origin by the block offset
     WorldPositionOut.X += BlockOffsetIn.X;
@@ -153,32 +191,11 @@ constexpr inline void ChunkKeyAndBlockOffsetToWorldPosition(
 
 
 /** Convert chunk key and block index to world position */
-constexpr inline void ChunkKeyAndBlockIndexToWorldPosition(
+inline void ChunkKeyAndBlockIndexToWorldPosition(
     const ChunkKey& ChunkKeyIn, const BlockIndex& BlockIndexIn,
     BlockCoordinate& BlockWorldPositionOut) noexcept
 {
     BlockCoordinate BlockOffset;
-    BlockIndexToBlockOffset(BlockIndexIn, BlockOffset);
+    IndexToLocal(BlockIndexIn, BlockOffset);
     ChunkKeyAndBlockOffsetToWorldPosition(ChunkKeyIn, BlockOffset, BlockWorldPositionOut);
 }
-
-
-// /** Get the chunk key for a world block coordinate */
-// constexpr inline void WorldPositionToChunkKeyBranching(const BlockCoordinate& BlockWorldPostionIn,
-//     ChunkKey& ChunkKeyOut) noexcept
-// {
-//     // get chunk key accounting for negative worldIn coordinates
-//     ChunkKeyOut.X = BlockWorldPostionIn.X < 0 ? (BlockWorldPostionIn.X + 1) / ChunkWidth - 1 : BlockWorldPostionIn.X / ChunkWidth;
-//     ChunkKeyOut.Z = BlockWorldPostionIn.Z < 0 ? (BlockWorldPostionIn.Z + 1) / ChunkDepth - 1 : BlockWorldPostionIn.Z / ChunkDepth;
-// }
-//
-//
-// /** Get the chunk key for a world block coordinate. Non-branching version */
-// constexpr inline void WorldPositionToChunkKeyNonBranching(const BlockCoordinate& BlockWorldPostionIn,
-//     ChunkKey& ChunkKeyOut) noexcept
-// {
-//     int OneIfNegX = (BlockWorldPostionIn.X < 0);
-//     int OneIfNegZ = (BlockWorldPostionIn.Z < 0);
-//     ChunkKeyOut.X = (BlockWorldPostionIn.X + OneIfNegX) / ChunkWidth - OneIfNegX;
-//     ChunkKeyOut.Z = (BlockWorldPostionIn.Z + OneIfNegZ) / ChunkDepth - OneIfNegZ;
-// }

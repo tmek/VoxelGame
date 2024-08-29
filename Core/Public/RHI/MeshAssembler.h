@@ -1,43 +1,54 @@
 ﻿#pragma once
 
+#include "Windows/WindowsHWrapper.h"
+
 #include <d3d11.h>
 #include <vector>
 #include <wrl/client.h>
+
+#include "DynamicRHI.h"
+
 #include "RHI/Mesh.h"
 #include "RHI/TMeshBuilder.h"
-#include "Windows/WindowsHWrapper.h"
 
 using Microsoft::WRL::ComPtr;
 
-class CORE_API MeshAssembler {
+class CORE_API MeshAssembler
+{
 public:
+
     MeshAssembler(ID3D11Device* device);
 
-    template <typename VertexType>
-    Mesh AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& builders);
+    template <class VertexType>
+    Mesh AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& builders, const char* DebugName);
+
 
 private:
-
 
 #pragma warning(push)
 #pragma warning(disable:4251)
     ComPtr<ID3D11Device> device;
+
+
     template <typename VertexType>
     ComPtr<ID3D11Buffer> CreateVertexBuffer(const std::vector<VertexType>& vertices);
+
     ComPtr<ID3D11Buffer> CreateIndexBuffer(const std::vector<UINT>& indices);
 #pragma warning(pop)
 };
 
 
 template <typename VertexType>
-Mesh MeshAssembler::AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& builders) {
+Mesh MeshAssembler::AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& builders, const char* DebugName)
+{
     Mesh mesh;
     std::vector<VertexType> combinedVertices;
     std::vector<UINT> combinedIndices;
     UINT vertexOffset = 0;
     UINT indexOffset = 0;
 
-    for (const auto& builder : builders) {
+    for (const auto& builder : builders)
+    {
         SubMesh subMesh;
         const auto& vertices = builder.GetVertices();
         const auto& indices = builder.GetIndices();
@@ -47,7 +58,8 @@ Mesh MeshAssembler::AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& bu
         subMesh.baseVertexLocation = vertexOffset;
 
         combinedVertices.insert(combinedVertices.end(), vertices.begin(), vertices.end());
-        for (UINT index : indices) {
+        for (UINT index : indices)
+        {
             combinedIndices.push_back(index + vertexOffset);
         }
 
@@ -59,6 +71,9 @@ Mesh MeshAssembler::AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& bu
 
     mesh.vertexBuffer = CreateVertexBuffer(combinedVertices);
     mesh.indexBuffer = CreateIndexBuffer(combinedIndices);
+    DynamicRHI::SetDebugName(mesh.vertexBuffer.Get(), "%s:VB", DebugName);
+    DynamicRHI::SetDebugName(mesh.indexBuffer.Get(), "%s:IB", DebugName);
+
     mesh.vertexCount = vertexOffset;
     mesh.indexCount = indexOffset;
     mesh.vertexStride = sizeof(VertexType);
@@ -67,8 +82,10 @@ Mesh MeshAssembler::AssembleMesh(const std::vector<TMeshBuilder<VertexType>>& bu
 }
 
 template <typename VertexType>
-ComPtr<ID3D11Buffer> MeshAssembler::CreateVertexBuffer(const std::vector<VertexType>& vertices) {
-    if (vertices.empty()) {
+ComPtr<ID3D11Buffer> MeshAssembler::CreateVertexBuffer(const std::vector<VertexType>& vertices)
+{
+    if (vertices.empty())
+    {
         return nullptr;
     }
 
@@ -86,4 +103,3 @@ ComPtr<ID3D11Buffer> MeshAssembler::CreateVertexBuffer(const std::vector<VertexT
 
     return buffer;
 }
-

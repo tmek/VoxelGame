@@ -47,7 +47,7 @@ TEST(ChunkTests, ChunkConstants)
     EXPECT_EQ(ChunkHeight, 384);
     EXPECT_EQ(ChunkLayerSize, 16*16);
     EXPECT_EQ(ChunkSize, 16*384*16);
-    EXPECT_EQ(MaxBlockHeight, 383);
+    EXPECT_EQ(MaxBlockY, 383);
 }
 
 TEST(ChunkTests, ChunkIsCacheLineAligned)

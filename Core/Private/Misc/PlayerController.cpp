@@ -7,6 +7,9 @@
 #include "Math/Math.h"
 
 
+constexpr float MaxPitch = 89.0f; 
+
+
 void PlayerController::Tick(const float DeltaTime)
 {
     InputManager& Input = InputManager::Get();
@@ -67,12 +70,22 @@ void PlayerController::Tick(const float DeltaTime)
     if (Input.IsKeyHeld('I') || Input.IsKeyHeld(VK_UP))
     {
         Pitch_ -= TurnSpeed * DeltaTime * 0.5f;
+
+        // clamp pitch 
+        Pitch_ = Pitch_ > MaxPitch ? MaxPitch :
+                 Pitch_ < -MaxPitch ? -MaxPitch :
+                 Pitch_;
     }
 
     // turn down
     if (Input.IsKeyHeld('K') || Input.IsKeyHeld(VK_DOWN))
     {
         Pitch_ += TurnSpeed * DeltaTime * 0.5f;
+
+        // clamp pitch
+        Pitch_ = Pitch_ > MaxPitch ? MaxPitch :
+                 Pitch_ < -MaxPitch ? -MaxPitch :
+                 Pitch_;
     }
 }
 

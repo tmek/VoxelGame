@@ -9,7 +9,7 @@ struct CORE_API WindowsPlatformProcess
     static void ShowConsole();
 
     // function to get platform name
-    static const char* GetPlatformName();
+    static const TCHAR* GetPlatformName();
 };
 
 typedef CORE_API WindowsPlatformProcess PlatformProcess;

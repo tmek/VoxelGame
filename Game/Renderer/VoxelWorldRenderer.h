@@ -11,7 +11,7 @@
 
 #include "RHI/Mesh.h"
 
-class GraphicsDevice;
+class DynamicRHI;
 class CubeMesh;
 struct Mesh;
 
@@ -42,11 +42,9 @@ private:
 
     void RenderDepthPrePass();
 
-    void RenderMainPass();
+    void RenderOpaquePass();
 
-    void RenderOpaqueGeometry();
-
-    void RenderTransparentGeometry();
+    void RenderTransparencyPass();
 
     // Draws all chunks, first opaque then translucent meshes.
     void DrawChunks(int PassIndex);
@@ -56,7 +54,7 @@ private:
 
 private:
 
-    GraphicsDevice* GraphicsDevice_ = nullptr;
+    DynamicRHI* GraphicsDevice_ = nullptr;
     CubeMesh* CubeMesh_ = nullptr;
     Mesh BoxMesh_;
     TArray<ChunkKey> VisibleChunks_;

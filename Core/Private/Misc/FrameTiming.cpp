@@ -30,7 +30,7 @@ double FrameTiming::GetFrameTimeInMS()
 
 void FrameTiming::Update(double DeltaTime)
 {
-    constexpr double SamplePeriod = 1.0;
+    constexpr double SamplePeriod = 0.1;
     SampleDuration += DeltaTime;
     SampleFrames++;
         

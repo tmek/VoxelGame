@@ -18,9 +18,11 @@ struct PipelineState
     static constexpr UINT MaxConstantBuffers = D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT; // 14
     static constexpr UINT MaxRenderTargets = D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; // 8
     static constexpr UINT MaxUAVs = D3D11_PS_CS_UAV_REGISTER_COUNT; // 8
-    static constexpr UINT MaxViewports = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE; // 16
+    static constexpr UINT MaxViewportsAndScissorRects = D3D11_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE; // 16
     static constexpr UINT MaxVertexBuffers = D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT; // 32 
 
+    const TCHAR* Name = TEXT("(None)");
+    
 #pragma region(Input Assembler)
 
     // Input Layout
@@ -93,8 +95,8 @@ struct PipelineState
 
 #pragma region(Output Merger)
 
-    UINT NumRenderTargetViews = MaxRenderTargets;
-    ComPtr<ID3D11RenderTargetView> RenderTargetViews[MaxRenderTargets];
+    UINT NumRenderTargets = MaxRenderTargets;
+    ComPtr<ID3D11RenderTargetView> RenderTargetViews[MaxRenderTargets]; // todo: this reads and writes all 8 RTV pointers, but RTV count is the only thing that doesn't return a count. could use a map to store sparse list more effectively.
     ComPtr<ID3D11DepthStencilView> DepthStencilView;
     ComPtr<ID3D11DepthStencilState> DepthStencilState;
     ComPtr<ID3D11BlendState> BlendState;
@@ -126,7 +128,7 @@ public:
         QueryPipelineState(CurrentState_);
     }
 
-    PipelineState GetCurrentState()
+    const PipelineState& GetCurrentState() const 
     {
         return CurrentState_;
     }
@@ -171,13 +173,17 @@ private:
         Context_->OMGetDepthStencilState(state.DepthStencilState.GetAddressOf(), nullptr);
 
         // Query Viewports
-        UINT numViewports = PipelineState::MaxViewports;
+        UINT numViewports = PipelineState::MaxViewportsAndScissorRects;
+        D3D11_VIEWPORT Viewports[PipelineState::MaxViewportsAndScissorRects];
+        Context_->RSGetViewports(&numViewports, Viewports);
         state.Viewports.resize(numViewports);
-        Context_->RSGetViewports(&numViewports, state.Viewports.data());
+        for (UINT i = 0; i < numViewports; i++)
+        {
+            state.Viewports[i] = Viewports[i];
+        }
 
         // Query Render Targets
-        state.NumRenderTargetViews = PipelineState::MaxRenderTargets;
-        Context_->OMGetRenderTargets(state.NumRenderTargetViews, state.RenderTargetViews->GetAddressOf(), state.DepthStencilView.GetAddressOf());
+        Context_->OMGetRenderTargets(state.NumRenderTargets, state.RenderTargetViews->GetAddressOf(), state.DepthStencilView.GetAddressOf());
 
         // Query Constant Buffers
         for (UINT i = 0; i < PipelineState::MaxConstantBuffers; ++i)
@@ -260,9 +266,14 @@ private:
         Context_->IAGetPrimitiveTopology(&state.PrimitiveTopology);
 
         // Query Scissor Rects
-        UINT numRects = PipelineState::MaxViewports;
+        UINT numRects = PipelineState::MaxViewportsAndScissorRects;
+        D3D11_RECT Rects[PipelineState::MaxViewportsAndScissorRects];
+        Context_->RSGetScissorRects(&numRects, Rects);
         state.ScissorRects.resize(numRects);
-        Context_->RSGetScissorRects(&numRects, state.ScissorRects.data());
+        for (UINT i = 0; i < numRects; i++)
+        {
+            state.ScissorRects[i] = Rects[i];
+        }
     }
 
     void SetShadersIfDifferent(const PipelineState& NewState)
@@ -345,10 +356,17 @@ private:
 
     void SetRenderTargetsIfDifferent(const PipelineState& NewState)
     {
-        if (NewState.NumRenderTargetViews != CurrentState_.NumRenderTargetViews ||
-            !std::equal(NewState.RenderTargetViews, NewState.RenderTargetViews + NewState.NumRenderTargetViews, CurrentState_.RenderTargetViews))
+        if (NewState.NumRenderTargets != CurrentState_.NumRenderTargets ||
+            !std::equal(NewState.RenderTargetViews, NewState.RenderTargetViews + NewState.NumRenderTargets, CurrentState_.RenderTargetViews))
         {
-            Context_->OMSetRenderTargets(NewState.NumRenderTargetViews, NewState.RenderTargetViews->GetAddressOf(), NewState.DepthStencilView.Get());
+            if(NewState.NumRenderTargets == 0)
+            {
+                Context_->OMSetRenderTargets(0, nullptr, NewState.DepthStencilView.Get());
+            }
+            else
+            {
+                Context_->OMSetRenderTargets(NewState.NumRenderTargets, NewState.RenderTargetViews->GetAddressOf(), NewState.DepthStencilView.Get());
+            }
         }
     }
 

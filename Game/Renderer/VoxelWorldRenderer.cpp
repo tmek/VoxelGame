@@ -1,4 +1,4 @@
-﻿// Copyright Voxel Games, Inc. All Rights Reserved.
+﻿// Copyright Thomas All Rights Reserved.
 
 #include "VoxelWorldRenderer.h"
 
@@ -9,7 +9,7 @@
 
 #include "Math/Math.h"
 
-#include "RHI/GraphicsDevice.h"
+#include "RHI/DynamicRHI.h"
 
 #include "Utils/ChunkUtils.h"
 
@@ -21,10 +21,10 @@
 void PrintMatrix(const Matrix& M, const TCHAR* Name = TEXT("Matrix"))
 {
     TE_LOG(LogTemp, Log, TEXT("%s: "), Name);
-    
+
     for (int Row = 0; Row < 4; ++Row)
     {
-        TE_LOG(LogTemp, Log, TEXT("%10.4f %10.4f %10.4f %10.4f"), 
+        TE_LOG(LogTemp, Log, TEXT("%10.4f %10.4f %10.4f %10.4f"),
                M.M[Row][0],
                M.M[Row][1],
                M.M[Row][2],
@@ -38,18 +38,20 @@ void PrintMatrix(const XMMATRIX& M, const TCHAR* Name = TEXT("Matrix"))
 
     for (int Row = 0; Row < 4; ++Row)
     {
-        TE_LOG(LogTemp, Log, TEXT("%10.4f %10.4f %10.4f %10.4f"), 
-            M.r[Row].m128_f32[0],
-            M.r[Row].m128_f32[1],
-            M.r[Row].m128_f32[2],
-            M.r[Row].m128_f32[3]);
+        TE_LOG(LogTemp, Log, TEXT("%10.4f %10.4f %10.4f %10.4f"),
+               M.r[Row].m128_f32[0],
+               M.r[Row].m128_f32[1],
+               M.r[Row].m128_f32[2],
+               M.r[Row].m128_f32[3]);
     }
 }
 
 void VoxelWorldRenderer::Initialize(void* WindowHandle)
 {
-    GraphicsDevice_ = new GraphicsDevice(WindowHandle);
-    assert(Graphics->IsValid());
+    GraphicsDevice_ = new DynamicRHI(WindowHandle);
+    assert(GraphicsDevice_->IsValid());
+
+    GraphicsDevice_->BeginPass(L"VoxelWorldRenderer:Init");
 
     BoxMeshBuilder boxMeshBuilder;
     BoxMesh_ = boxMeshBuilder.Build(GraphicsDevice_->GetDevice());
@@ -58,6 +60,8 @@ void VoxelWorldRenderer::Initialize(void* WindowHandle)
 
     CubeMesh_->SetShaders(); // sets general shaders
     CubeMesh_->Select();     // sets general input layout and topology
+
+    GraphicsDevice_->EndPass();
 }
 
 void VoxelWorldRenderer::CreateChunkMesh(const ChunkKey& Key, const ChunkRef ChunkData)
@@ -78,9 +82,23 @@ void VoxelWorldRenderer::RenderScene(const VoxelWorld* World, const Camera& Came
     BeginFrame();
     UpdateVisibility();
 
-    RenderDepthPrePass();
-    RenderMainPass();
-    
+    // todo: need way to easily configure to use depth pre-pass or not
+
+    if(GUseDepthPass)
+    {
+        GraphicsDevice_->BeginPass(L"VoxelGame:DepthPrePass");
+        RenderDepthPrePass();
+        GraphicsDevice_->EndPass();
+    }
+
+    GraphicsDevice_->BeginPass(L"VoxelGame:OpaquePass");
+    RenderOpaquePass();
+    GraphicsDevice_->EndPass();
+
+    GraphicsDevice_->BeginPass(L"VoxelGame:TransparencyPass");
+    RenderTransparencyPass();
+    GraphicsDevice_->EndPass();
+
     EndFrame();
 }
 
@@ -104,7 +122,7 @@ void VoxelWorldRenderer::UpdateVisibility()
         const auto& ChunkKey = ChunkEntry.first;
 
         BlockCoordinate ChunkOrigin;
-        ChunkKeyToWorldPosition(ChunkKey, ChunkOrigin);
+        ChunkKeyToWorld(ChunkKey, ChunkOrigin);
 
         Vector BoundsMin = {
             static_cast<float>(ChunkOrigin.X),
@@ -126,22 +144,18 @@ void VoxelWorldRenderer::UpdateVisibility()
 void VoxelWorldRenderer::RenderDepthPrePass()
 {
     GraphicsDevice_->SetPreDepthPrePassStates();
-    
-    // Render all opaque geometry
-    RenderOpaqueGeometry();    
-}
-
-void VoxelWorldRenderer::RenderMainPass()
-{
-}
-
-void VoxelWorldRenderer::RenderOpaqueGeometry()
-{
     DrawChunks(0);
 }
 
-void VoxelWorldRenderer::RenderTransparentGeometry()
+void VoxelWorldRenderer::RenderOpaquePass()
 {
+    GraphicsDevice_->SetOpaquePassState();
+    DrawChunks(0);
+}
+
+void VoxelWorldRenderer::RenderTransparencyPass()
+{
+    GraphicsDevice_->SetTransparencyPassState();
     DrawChunks(1);
 }
 
@@ -154,10 +168,10 @@ void VoxelWorldRenderer::BeginFrame()
 
 void VoxelWorldRenderer::DrawChunks(int PassIndex)
 {
-     for (const ChunkKey& ChunkKey : VisibleChunks_)
-     {
+    for (const ChunkKey& ChunkKey : VisibleChunks_)
+    {
         BlockCoordinate ChunkOrigin;
-        ChunkKeyToWorldPosition(ChunkKey, ChunkOrigin);
+        ChunkKeyToWorld(ChunkKey, ChunkOrigin);
 
         Matrix ChunkTranslation = {
             1.0f, 0.0f, 0.0f, 0.0f,
@@ -169,13 +183,13 @@ void VoxelWorldRenderer::DrawChunks(int PassIndex)
         float FovYInRadians = Math::ConvertToRadians(CurrentCamera_.GetFieldOfViewY());
         float AspectRatio = CurrentCamera_.GetAspectRatio();
         float NearZ = CurrentCamera_.GetNearPlane();
-        float FarZ = CurrentCamera_.GetFarPlane();          
-        
+        float FarZ = CurrentCamera_.GetFarPlane();
+
 
         const Matrix WorldMatrix = ChunkTranslation;
         Matrix ViewMatrixLH = Matrix::LookAtLH(CurrentCamera_.GetPosition(), CurrentCamera_.GetFocusPosition(), CurrentCamera_.GetUpDirection());
         const Matrix ProjectionMatrixLH = Matrix::PerspectiveFovLH(FovYInRadians, AspectRatio, NearZ, FarZ);
-        
+
         const Matrix WorldViewProjectionMatrix = WorldMatrix * ViewMatrixLH * ProjectionMatrixLH;
 
         Matrix TransposedWVPMatrix = WorldViewProjectionMatrix.Transpose(); // LookAtLH does a transpose and we do one here too, why?
@@ -192,22 +206,20 @@ void VoxelWorldRenderer::DrawChunks(int PassIndex)
             constexpr int SolidBlocksSubMesh = 0;
             constexpr int WaterBlocksSubMesh = 1;
 
-            if(PassIndex == 1)
+            if (PassIndex == 1)
             {
                 // draw water blocks submesh
                 if (ChunkMesh->SubMeshes[WaterBlocksSubMesh].indexCount > 0)
                 {
-                    GraphicsDevice_->SetTransparencyPassState();
                     ChunkMesh->DrawSubMesh(GraphicsDevice_->GetDeviceContext(), WaterBlocksSubMesh);
                 }
             }
             else
             {
                 // draw solid blocks submesh
-                GraphicsDevice_->SetOpaquePassState();
                 ChunkMesh->DrawSubMesh(GraphicsDevice_->GetDeviceContext(), SolidBlocksSubMesh);
             }
-            
+
             GTotalDrawCalls++;
         }
     }

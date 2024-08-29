@@ -65,17 +65,22 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
 {
     // setup pointers to chunk and its neighbors
     ChunkCluster localChunks(chunk);
-    
+
     for (int i = -1; i <= 1; ++i)
+    {
         for (int j = -1; j <= 1; ++j)
         {
-            if (i == 0 && j == 0) // we already have the center chunk
+            if (i == 0 && j == 0)
+            {
+                // we already have the center chunk
                 continue;
+            }
 
-            ChunkKey neighborKey = {chunkKey.X + i, chunkKey.Z + j};
-            ChunkPtr neighbor = GWorld->TryGetChunk(neighborKey);
-            localChunks.SetNeighbor(neighbor, i, j);
+            ChunkKey NeighborKey = {chunkKey.X + i, chunkKey.Z + j};
+            ChunkPtr Neighbor = GWorld->TryGetChunk(NeighborKey);
+            localChunks.SetNeighbor(Neighbor, i, j);
         }
+    }
 
     // setup mesh builders
     //WorldOperations world(GWorld);
@@ -113,7 +118,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
     return mesh2;    
 #endif
 
-    // loop through all blocks in the chunk in yzx order
+    // loop through all blocks in the chunk in XZY order (x increments fastest, y increments slowest)
     BlockIndex blockIndex = 0;
     for (int localY = 0; localY < ChunkHeight; ++localY)
     {
@@ -122,6 +127,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
         {
             return Mesh(); // empty mesh
         }
+        
         for (int localZ = 0; localZ < ChunkDepth; ++localZ)
         {
             for (int localX = 0; localX < ChunkWidth; ++localX, ++blockIndex)
@@ -131,15 +137,14 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
                 // - you need to know how many blocks are touching each face vertex (in front of face)
                 // this means you need to query all blocks in the chunk and all blocks touching the chunk
 
-
-                BlockType blockType = localChunks.GetBlockFromCluster(localX, localY, localZ);
-                if (blockType == AIR)
+                Block& CurrentBlock = localChunks.GetBlockFromCluster(localX, localY, localZ);
+                if (CurrentBlock.TypeIndex == AIR)
                 {
                     continue;
                 }
 
                 // get block type
-                bool IsWaterBlock = blockType == WATER;
+                bool IsWaterBlock = CurrentBlock.TypeIndex == WATER;
 
                 // determine which faces to include:
                 //  if i'm water and touching air, add faces
@@ -195,7 +200,7 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
                 blockMeshBuilder.SetMeshRelativeBlockOrigin((float)localX, (float)localY, (float)localZ);
 
                 // give each face a slightly different ambient shade
-                XMFLOAT4 BlockColor = GetBlockColor(blockType);
+                XMFLOAT4 BlockColor = GetBlockColor(CurrentBlock);
                 constexpr float TopFaceAmbientShade = 1.0f;
                 constexpr float BottomFaceAmbientShade = 0.5f;
                 constexpr float EastWestFaceAmbientShade = 0.8f;
@@ -237,13 +242,17 @@ Mesh ChunkMeshBuilder::Build(const ChunkKey& chunkKey, Chunk& chunk, ID3D11Devic
 
     //Mesh mesh = builder.ToMesh();
 
+    // store the chunk key in the mesh for debugging
+
+    auto DebugString = std::make_shared<std::string>(
+        "ChunkMesh: " + std::to_string(chunkKey.X) + ", " + std::to_string(chunkKey.Z));
+
+
     MeshAssembler assembler(device);
     std::vector<TMeshBuilder<VoxelGameMeshVertex>> builders = {solidMeshBuilder, waterMeshBuilder};
-    Mesh mesh = assembler.AssembleMesh(builders);
+    Mesh mesh = assembler.AssembleMesh(builders, DebugString->c_str());
 
-    // store the chunk key in the mesh for debugging
-    mesh.DebugTag = std::make_shared<std::string>(
-        "ChunkMesh: " + std::to_string(chunkKey.X) + ", " + std::to_string(chunkKey.Z));
+    mesh.DebugTag = DebugString;
 
     return mesh;
 

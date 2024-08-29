@@ -19,7 +19,6 @@ struct PS_INPUT
     float3 Normal : NORMAL;
     float2 TexCoord : TEXCOORD0;
     float Depth : TEXCOORD1; // Add depth as a texture coordinate
-    uint viewportIndex : SV_ViewportArrayIndex;
 };
 
 // PS_INPUT main(VS_INPUT input)
@@ -30,22 +29,17 @@ struct PS_INPUT
 //     return output;
 // }
 
-PS_INPUT main(VS_INPUT input, uint vertexID : SV_VertexID)
+PS_INPUT main(VS_INPUT input)
 {
     PS_INPUT output;
 
-    // uint viewportIndex = 0;
-    //
-    // // If the normal is pointing mostly up (Y > 0.5), switch to a different viewport
-    // if (input.Normal.y > 0.5f)
-    // {
-    //     viewportIndex = 1;
-    // }
-    //
-    output.viewportIndex = 0;
-    
     // Transform the position to clip space
     output.Pos = mul(float4(input.Pos, 1.0f), WorldViewProjection);
+    output.Color = input.Color * 1.2f + float4(TintColor.rgb, 0.0f) * .75f;
+    output.Normal = input.Normal;
+    output.TexCoord = input.TexCoord;
+    output.Depth =  output.Pos.z / output.Pos.w;
+    return output;    
     
     // Pass the texture coordinates to the pixel shader
     output.TexCoord = input.TexCoord;

@@ -1,4 +1,4 @@
-﻿
+﻿// copyright
 
 #include <RHI/MeshAssembler.h>
 

@@ -84,20 +84,20 @@ void WindowsPlatformProcess::ShowConsole()
     TE_LOG(LogConsole, Log, TEXT("Console initialized successfully!"));
 }
 
-const char* WindowsPlatformProcess::GetPlatformName()
+const TCHAR* WindowsPlatformProcess::GetPlatformName()
 {
     // want to know if we are running on 32 or 64 bit and if release or debug
 #if defined(_WIN64)
 #if defined(_DEBUG)
-    return "Windows 64-bit Debug";
+    return TEXT("Windows 64-bit Debug");
 #else
-                return "Windows 64-bit Release";
+                return TEXT("Windows 64-bit Release");
 #endif
 #else
 #if defined(_DEBUG)
-                return "Windows 32-bit Debug";
+                return TEXT("Windows 32-bit Debug");
 #else
-                return "Windows 32-bit Release";
+                return TEXT("Windows 32-bit Release");
 #endif
 #endif
 }
