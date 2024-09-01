@@ -35,10 +35,19 @@ PS_INPUT main(VS_INPUT input)
 
     // Transform the position to clip space
     output.Pos = mul(float4(input.Pos, 1.0f), WorldViewProjection);
-    output.Color = input.Color * 1.2f + float4(TintColor.rgb, 0.0f) * .75f;
+
+    output.Color = input.Color * 1.0f + float4(TintColor.rgb, 0.0f) * .75f;
     output.Normal = input.Normal;
     output.TexCoord = input.TexCoord;
     output.Depth =  output.Pos.z / output.Pos.w;
+    
+    // Pass the color to the pixel shader
+    if(input.Color[3] < 0.0f)
+    {
+        output.Color = float4(input.Color.rgb, 1.0f);
+        output.Depth = -123.0f;
+    }
+    
     return output;    
     
     // Pass the texture coordinates to the pixel shader

@@ -23,10 +23,13 @@ struct alignas(16) TMatrix
 {
     static_assert(std::is_floating_point_v<T>, "TMatrix should only be used with floating point types");
 
+   
 public:
 
     T M[4][4];
 
+    static TMatrix<T> Identity;
+    
     // Default constructor - initializes to identity matrix
     TMatrix()
     {

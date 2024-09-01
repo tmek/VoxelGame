@@ -22,7 +22,7 @@ struct PipelineState
     static constexpr UINT MaxVertexBuffers = D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT; // 32 
 
     const TCHAR* Name = TEXT("(None)");
-    
+
 #pragma region(Input Assembler)
 
     // Input Layout
@@ -30,7 +30,12 @@ struct PipelineState
 
     // Vertex Buffers
     std::unordered_map<UINT, ComPtr<ID3D11Buffer>> VertexBuffers;
+    std::unordered_map<UINT, UINT> VertexBufferStrides;
+    std::unordered_map<UINT, UINT> VertexBufferOffsets;
+
     ComPtr<ID3D11Buffer> IndexBuffer;
+    DXGI_FORMAT IndexBufferFormat = DXGI_FORMAT_UNKNOWN;
+    UINT IndexBufferOffset = 0;
 
     // Primitive Topology
     D3D11_PRIMITIVE_TOPOLOGY PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
@@ -128,13 +133,19 @@ public:
         QueryPipelineState(CurrentState_);
     }
 
-    const PipelineState& GetCurrentState() const 
+    const PipelineState& GetCurrentState() const
     {
         return CurrentState_;
     }
 
+    void SetVertexBuffersIfDifferent(const PipelineState& NewState);
+
+    void SetIndexBufferIfDifferent(const PipelineState& NewState);
+
     void ApplyPipelineState(const PipelineState& NewState)
     {
+        SetVertexBuffersIfDifferent(NewState);
+        SetIndexBufferIfDifferent(NewState);
         SetShadersIfDifferent(NewState);
         SetInputLayoutIfDifferent(NewState);
         SetBlendStateIfDifferent(NewState);
@@ -156,6 +167,21 @@ private:
 
     void QueryPipelineState(PipelineState& state)
     {
+        // Query VertexBuffers
+        for (UINT i = 0; i < PipelineState::MaxVertexBuffers; ++i)
+        {
+            ComPtr<ID3D11Buffer> buffer;
+            UINT stride = 0;
+            UINT offset = 0;
+            Context_->IAGetVertexBuffers(i, 1, buffer.GetAddressOf(), &stride, &offset);
+            if (buffer) state.VertexBuffers[i] = buffer;
+            if (stride) state.VertexBufferStrides[i] = stride;
+            if (offset) state.VertexBufferOffsets[i] = offset;
+        }
+
+        // Query Index Buffer
+        Context_->IAGetIndexBuffer(state.IndexBuffer.GetAddressOf(), &state.IndexBufferFormat, &state.IndexBufferOffset);
+
         // Query Shaders
         Context_->VSGetShader(state.VertexShader.GetAddressOf(), nullptr, nullptr);
         Context_->PSGetShader(state.PixelShader.GetAddressOf(), nullptr, nullptr);
@@ -359,7 +385,7 @@ private:
         if (NewState.NumRenderTargets != CurrentState_.NumRenderTargets ||
             !std::equal(NewState.RenderTargetViews, NewState.RenderTargetViews + NewState.NumRenderTargets, CurrentState_.RenderTargetViews))
         {
-            if(NewState.NumRenderTargets == 0)
+            if (NewState.NumRenderTargets == 0)
             {
                 Context_->OMSetRenderTargets(0, nullptr, NewState.DepthStencilView.Get());
             }
@@ -471,3 +497,35 @@ private:
     ComPtr<ID3D11DeviceContext> Context_;
     PipelineState CurrentState_;
 };
+
+inline void PipelineStateManager::SetVertexBuffersIfDifferent(const PipelineState& NewState)
+{
+    // Set VertexBuffers
+    for (UINT i = 0; i < PipelineState::MaxVertexBuffers; ++i)
+    {
+        auto itNew = NewState.VertexBuffers.find(i);
+        auto itCurrent = CurrentState_.VertexBuffers.find(i);
+        auto itStride = NewState.VertexBufferStrides.find(i);
+        auto itOffset = NewState.VertexBufferOffsets.find(i);
+        auto itCurrentStride = CurrentState_.VertexBufferStrides.find(i);
+        auto itCurrentOffset = CurrentState_.VertexBufferOffsets.find(i);
+        
+
+        bool bufferChanged = itNew != NewState.VertexBuffers.end() && itCurrent != CurrentState_.VertexBuffers.end() && itNew->second != itCurrent->second;
+        bool strideChanged = itStride != NewState.VertexBufferStrides.end() && itCurrentStride != CurrentState_.VertexBufferStrides.end() && itStride->second != itCurrentStride->second;
+        bool offsetChanged = itOffset != NewState.VertexBufferOffsets.end() && itCurrentOffset != CurrentState_.VertexBufferOffsets.end() && itOffset->second != itCurrentOffset->second;
+
+        if(bufferChanged || strideChanged || offsetChanged)
+        {
+            Context_->IASetVertexBuffers(i, 1, itNew != NewState.VertexBuffers.end() ? itNew->second.GetAddressOf() : nullptr, itStride != NewState.VertexBufferStrides.end() ? &itStride->second : nullptr, itOffset != NewState.VertexBufferOffsets.end() ? &itOffset->second : nullptr);
+        }
+    }
+}
+
+inline void PipelineStateManager::SetIndexBufferIfDifferent(const PipelineState& NewState)
+{
+    if (NewState.IndexBuffer != CurrentState_.IndexBuffer || NewState.IndexBufferFormat != CurrentState_.IndexBufferFormat || NewState.IndexBufferOffset != CurrentState_.IndexBufferOffset)
+    {
+        Context_->IASetIndexBuffer(NewState.IndexBuffer.Get(), NewState.IndexBufferFormat, NewState.IndexBufferOffset);
+    }
+}

@@ -22,7 +22,11 @@ float4 main(PS_INPUT input) : SV_TARGET
     return float4(input.TexCoord, 0.0f, 1.0f);
 #else
 
-    
+    // if negative alpha, these are debug lines. just return color.
+    if(input.Depth > -124.0f && input.Depth < -122.0f)
+    {
+        return input.Color;
+    }    
     
     // float depth = input.Pos.z / input.Pos.w;
     //
@@ -94,6 +98,7 @@ float4 main(PS_INPUT input) : SV_TARGET
     // float4 finalColor = lerp(TintedColor, FogColor, FogFactor);
 
     float4 finalColor = TintedColor;
+    //float4 finalColor = input.Color;
     
     return finalColor ;
 #endif

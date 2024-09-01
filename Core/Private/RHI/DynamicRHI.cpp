@@ -172,18 +172,23 @@ void DynamicRHI::EndPass()
     }
 }
 
+const PipelineState& DynamicRHI::GetCurrentPSO() const
+{
+    return PipelineStateManager_->GetCurrentState();
+}
 
-void DynamicRHI::SetDebugName(ID3D11DeviceChild* resource, const char* format, ...)
+
+void DynamicRHI::SetDebugName(ID3D11DeviceChild* Resource, const char* Format, ...)
 {
     // Determine the buffer size needed
     char buffer[256]; // Adjust size as necessary
     va_list args;
-    va_start(args, format);
-    vsprintf_s(buffer, sizeof(buffer), format, args);
+    va_start(args, Format);
+    vsprintf_s(buffer, sizeof(buffer), Format, args);
     va_end(args);
 
     // Submit the formatted name to the resource
-    resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(buffer)), buffer);
+    Resource->SetPrivateData(WKPDID_D3DDebugObjectName, static_cast<UINT>(strlen(buffer)), buffer);
 }
 
 void DynamicRHI::DefineOpaquePassPSO()
@@ -252,7 +257,11 @@ void DynamicRHI::DefineOpaquePassPSO()
     RasterizerDesc.CullMode = D3D11_CULL_BACK;
     RasterizerDesc.FrontCounterClockwise = TRUE; // Use counter-clockwise vertices as the front face
     RasterizerDesc.DepthClipEnable = TRUE;
-    RasterizerDesc.MultisampleEnable = TRUE;
+    if(SampleCount_ > 1)
+    {
+        RasterizerDesc.MultisampleEnable = TRUE;
+        RasterizerDesc.AntialiasedLineEnable = TRUE;
+    }
     CheckHR(GraphicsFactory_->CreateRasterizerState(&RasterizerDesc, Pass.RasterizerState.GetAddressOf()));
     SetDebugName(Pass.RasterizerState, "OpaquePass:RSS");
 
@@ -356,8 +365,8 @@ void DynamicRHI::DefineTransparencyPassPSO()
 
 void DynamicRHI::CreateSimpleNoiseTextureAndShaderResourceView()
 {
-    UINT ImageWidth = 4;
-    UINT ImageHeight = 4;
+    UINT ImageWidth = 16;
+    UINT ImageHeight = 16;
 
     // Create an RGBA image and fill it with noise.
     std::vector<UINT> RGBAImage;

@@ -9,6 +9,8 @@
 
 #include "Containers/Array.h"
 
+#include "Math/Matrix.h"
+
 #include "RHI/Mesh.h"
 
 class DynamicRHI;
@@ -46,6 +48,8 @@ private:
 
     void RenderTransparencyPass();
 
+    void RenderDebugLines();
+
     // Draws all chunks, first opaque then translucent meshes.
     void DrawChunks(int PassIndex);
 
@@ -61,4 +65,7 @@ private:
 
     const VoxelWorld* CurrentWorld_ = nullptr;
     Camera CurrentCamera_;
+
+    Matrix ViewMatrixLH;
+    Matrix ProjectionMatrixLH;
 };

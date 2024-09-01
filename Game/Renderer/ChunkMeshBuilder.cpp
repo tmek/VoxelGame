@@ -24,15 +24,15 @@
 
 extern std::shared_ptr<VoxelWorld> GWorld;
 
-static DirectX::XMFLOAT4 TintColors[] = {
-    {0.5f, 0.5f, 0.5f, 1.0f}, // stone 1
-    {0.55f, 0.27f, 0.07f, 1.0f}, // dirt
-    {0.3f, 0.6f, 0.2f, 1.0f}, // grass
-    {0.0f, 0.5f, 1.0f, 1.0f}, // water
-    {0.2f, 0.2f, 0.2f, 1.0f}, // bedrock
-    {0.057f, 0.392f, 0.155f, 1.0f}, // tree leaves 6
-    {0.95f, 0.95f, 0.95f, 1.0f}, // snow
-};
+// static DirectX::XMFLOAT4 TintColors[] = {
+//     {0.5f, 0.5f, 0.5f, 1.0f}, // stone 1
+//     {0.55f, 0.27f, 0.07f, 1.0f}, // dirt
+//     {0.3f, 0.6f, 0.2f, 1.0f}, // grass
+//     {0.0f, 0.5f, 1.0f, 1.0f}, // water
+//     {0.2f, 0.2f, 0.2f, 1.0f}, // bedrock
+//     {0.057f, 0.392f, 0.155f, 1.0f}, // tree leaves 6
+//     {0.95f, 0.95f, 0.95f, 1.0f}, // snow
+// };
 
 inline XMFLOAT4 GetBlockColor(uint32 blockType)
 {

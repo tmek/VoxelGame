@@ -9,6 +9,7 @@
 
 #include "Math/Math.h"
 
+#include "RHI/DebugLines.h"
 #include "RHI/DynamicRHI.h"
 
 #include "Utils/ChunkUtils.h"
@@ -84,7 +85,7 @@ void VoxelWorldRenderer::RenderScene(const VoxelWorld* World, const Camera& Came
 
     // todo: need way to easily configure to use depth pre-pass or not
 
-    if(GUseDepthPass)
+    if (GUseDepthPass)
     {
         GraphicsDevice_->BeginPass(L"VoxelGame:DepthPrePass");
         RenderDepthPrePass();
@@ -94,6 +95,8 @@ void VoxelWorldRenderer::RenderScene(const VoxelWorld* World, const Camera& Came
     GraphicsDevice_->BeginPass(L"VoxelGame:OpaquePass");
     RenderOpaquePass();
     GraphicsDevice_->EndPass();
+
+    RenderDebugLines();
 
     GraphicsDevice_->BeginPass(L"VoxelGame:TransparencyPass");
     RenderTransparencyPass();
@@ -159,11 +162,45 @@ void VoxelWorldRenderer::RenderTransparencyPass()
     DrawChunks(1);
 }
 
+void VoxelWorldRenderer::RenderDebugLines()
+{
+    Matrix TransposedViewProj = (ViewMatrixLH * ProjectionMatrixLH).Transpose();
+    XMMATRIX& XMTransposedWVPMatrix = reinterpret_cast<XMMATRIX&>(TransposedViewProj);
+    GraphicsDevice_->UpdateVertexShaderConstantBuffer(XMTransposedWVPMatrix, 1.0f, 1.0f, 1.0f);
+
+    // get camera chunk
+    Vector CameraPosition = CurrentCamera_.GetPosition();
+    BlockCoordinate CameraBlock = {
+        static_cast<int>(floor(CameraPosition.X)),
+        static_cast<int>(floor(CameraPosition.Y)), 
+        static_cast<int>(floor(CameraPosition.Z))
+    };
+    ChunkKey CameraChunkKey;
+    WorldToChunkKey(CameraBlock, CameraChunkKey);
+
+    DebugLines::Clear();
+    DebugLines::DrawChunkBounds(CameraChunkKey.X, CameraChunkKey.Z);
+
+
+
+    DebugLines::UpdateVertexBuffer(GraphicsDevice_->GetDevice());
+    DebugLines::Draw(GraphicsDevice_->GetDeviceContext());
+}
+
 void VoxelWorldRenderer::BeginFrame()
 {
     GTotalDrawCalls = 0;
     constexpr float MinecraftSkyColor[] = {0.4706f, 0.6549f, 1.0f, 1.0f};
     GraphicsDevice_->Clear(MinecraftSkyColor);
+
+
+    float FovYInRadians = Math::ConvertToRadians(CurrentCamera_.GetFieldOfViewY());
+    float AspectRatio = CurrentCamera_.GetAspectRatio();
+    float NearZ = CurrentCamera_.GetNearPlane();
+    float FarZ = CurrentCamera_.GetFarPlane();
+
+    ViewMatrixLH = Matrix::LookAtLH(CurrentCamera_.GetPosition(), CurrentCamera_.GetFocusPosition(), CurrentCamera_.GetUpDirection());
+    ProjectionMatrixLH = Matrix::PerspectiveFovLH(FovYInRadians, AspectRatio, NearZ, FarZ);
 }
 
 void VoxelWorldRenderer::DrawChunks(int PassIndex)
@@ -180,23 +217,12 @@ void VoxelWorldRenderer::DrawChunks(int PassIndex)
             static_cast<float>(ChunkOrigin.X), 0.0f, static_cast<float>(ChunkOrigin.Z), 1.0f
         };
 
-        float FovYInRadians = Math::ConvertToRadians(CurrentCamera_.GetFieldOfViewY());
-        float AspectRatio = CurrentCamera_.GetAspectRatio();
-        float NearZ = CurrentCamera_.GetNearPlane();
-        float FarZ = CurrentCamera_.GetFarPlane();
-
-
-        const Matrix WorldMatrix = ChunkTranslation;
-        Matrix ViewMatrixLH = Matrix::LookAtLH(CurrentCamera_.GetPosition(), CurrentCamera_.GetFocusPosition(), CurrentCamera_.GetUpDirection());
-        const Matrix ProjectionMatrixLH = Matrix::PerspectiveFovLH(FovYInRadians, AspectRatio, NearZ, FarZ);
-
-        const Matrix WorldViewProjectionMatrix = WorldMatrix * ViewMatrixLH * ProjectionMatrixLH;
-
-        Matrix TransposedWVPMatrix = WorldViewProjectionMatrix.Transpose(); // LookAtLH does a transpose and we do one here too, why?
-
         if (Mesh* ChunkMesh = ChunkMeshManager::GetInstance().GetChunkMesh(ChunkKey))
         {
             // set constants
+            const Matrix WorldMatrix = ChunkTranslation;
+            const Matrix WorldViewProjectionMatrix = WorldMatrix * ViewMatrixLH * ProjectionMatrixLH;
+            Matrix TransposedWVPMatrix = WorldViewProjectionMatrix.Transpose(); // LookAtLH does a transpose and we do one here too, why?
             XMMATRIX& XMTransposedWVPMatrix = reinterpret_cast<XMMATRIX&>(TransposedWVPMatrix);
             GraphicsDevice_->UpdateVertexShaderConstantBuffer(XMTransposedWVPMatrix, ChunkMesh->DebugColor.x, ChunkMesh->DebugColor.y, ChunkMesh->DebugColor.z);
 

@@ -6,8 +6,7 @@
 
 #include "Math/Math.h"
 
-
-constexpr float MaxPitch = 89.0f; 
+constexpr float MaxPitch = 89.0f;
 
 
 void PlayerController::Tick(const float DeltaTime)
@@ -19,13 +18,13 @@ void PlayerController::Tick(const float DeltaTime)
     // move forward
     if (Input.IsKeyHeld('W'))
     {
-        MovementVector_ = MovementVector_ + GetForwardVector();
+        MovementVector_ = MovementVector_ + GetYawOnlyForwardVector();
     }
 
     // move backward
     if (Input.IsKeyHeld('S'))
     {
-        MovementVector_ = MovementVector_ - GetForwardVector();
+        MovementVector_ = MovementVector_ - GetYawOnlyForwardVector();
     }
 
     // move left
@@ -41,13 +40,13 @@ void PlayerController::Tick(const float DeltaTime)
     }
 
     // move up
-    if (Input.IsKeyHeld('E'))
+    if (Input.IsKeyHeld(' '))
     {
         MovementVector_ = MovementVector_ + GetUpVector();
     }
 
     // move down
-    if (Input.IsKeyHeld('Q'))
+    if (Input.IsKeyHeld(VK_CONTROL))
     {
         MovementVector_ = MovementVector_ - GetUpVector();
     }
@@ -107,3 +106,11 @@ Vector PlayerController::GetForwardVector() const
     const Matrix RotationMatrix = Matrix::RotationRollPitchYaw(Math::ConvertToRadians(Pitch_), Math::ConvertToRadians(Yaw_), 0.0f);
     return Vector::Transform(Forward, RotationMatrix);
 }
+
+Vector PlayerController::GetYawOnlyForwardVector() const
+{
+    const Vector Forward = {0, 0, 1};
+    const Matrix RotationMatrix = Matrix::RotationRollPitchYaw(0.0f, Math::ConvertToRadians(Yaw_), 0.0f);
+    return Vector::Transform(Forward, RotationMatrix);
+}
+

@@ -37,6 +37,11 @@ struct alignas(4) VOXELCORE_API Block final
     /** Block type */
     BlockType TypeIndex;              // runtime index into the block types table. (0-65535). a few special index values are reserved for air=0, stone=1, water=13, etc. the rest are configurable depending on user mods etc.
 
+    // todo: replace all of these "properties" with "variant".
+    // each block type defines their own variants.
+    // that might include rotation, age, wetness, etc.
+    // 1 byte gives 256 potential variants.
+    
     /** Block properties */
     BlockProperty RotationIndexY : 2;    // Multiply by 90 degrees for rotation angle around the Y-axis. (0-3)
     BlockProperty IsFlipped      : 1;    // Flipped vertically

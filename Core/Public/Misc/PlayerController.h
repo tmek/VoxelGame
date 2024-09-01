@@ -20,6 +20,8 @@ public:
     // Get the forward vector based on player controller orientation
     [[nodiscard]] Vector GetForwardVector() const;
 
+    Vector GetYawOnlyForwardVector() const;
+
     [[nodiscard]] Vector GetMovementVector() const { return MovementVector_; }
 
     [[nodiscard]] float GetYaw() const { return Yaw_; }

@@ -15,7 +15,6 @@
 
 #include "Input/InputManager.h"
 
-#include "Math/Math.h"
 #include "Math/Matrix.h"
 
 #include "Misc/Application.h"
@@ -49,10 +48,10 @@ static bool ShowConsoleOnInit = []()
 
 
 // Constants
-constexpr auto MinecraftSprintSpeed = 5.612f;
+constexpr auto MinecraftSprintSpeedInMetersPerSecond = 5.612f;
 constexpr float IncreaseSpeedMultiplier = 2;
 constexpr int ChunkDrawRadius = 32;
-
+Vector PlayerVelocity = Vector::ZeroVector;
 
 // globals
 ThreadPool GThreadPool(std::thread::hardware_concurrency() / 2);
@@ -70,9 +69,9 @@ std::shared_ptr<VoxelWorld> GWorld = std::make_unique<VoxelWorld>();
 
 std::unordered_set<ChunkKey, ChunkKeyHash> ChunkLoadQueue;
 
-float GPlayerSpeed = MinecraftSprintSpeed;
+float GPlayerSpeed = MinecraftSprintSpeedInMetersPerSecond;
 PlayerController GPlayerController;
-Camera StartingCameraState =  Camera(Vector(0.0f, 100.0f, -1152.0f),
+Camera StartingCameraState =  Camera(Vector(0.0f, 100.0f, 0.0f),
                         Vector::ForwardVector,
                         70.0f,
                         16.0f / 10.0f,
@@ -234,9 +233,9 @@ void FOldEngineLoop::HandleInput(const double DeltaTime)
     }
 
     // toggle chunk debug visualization
-    if (InputManager::Get().IsKeyPressed(' '))
+    if (InputManager::Get().IsKeyPressed('Q'))
     {
-        InputManager::Get().ClearKeyPressed(' '); // todo: may need a better way to 'consume' input
+        InputManager::Get().ClearKeyPressed('Q'); // todo: may need a better way to 'consume' input
         GEnableDebugTint = !GEnableDebugTint;
         TE_LOG(LogTemp, Log, TEXT("GShouldRenderTintColor: %d"), GEnableDebugTint);
     }
@@ -244,13 +243,29 @@ void FOldEngineLoop::HandleInput(const double DeltaTime)
 
 void FOldEngineLoop::UpdateCamera(const double DeltaTime)
 {
-    if (GPlayerSpeed < MinecraftSprintSpeed)
+    if (GPlayerSpeed < MinecraftSprintSpeedInMetersPerSecond)
     {
-        GPlayerSpeed = MinecraftSprintSpeed;
+        GPlayerSpeed = MinecraftSprintSpeedInMetersPerSecond;
     }
 
-    Vector PlayerVelocity = GPlayerController.GetMovementVector() * GPlayerSpeed;
-    GCamera.SetPosition(GCamera.GetPosition() + PlayerVelocity * static_cast<float>(DeltaTime));
+    const float SpeedInMetersPerSecondSquared = GPlayerSpeed * GPlayerSpeed; 
+    const float Acceleration = SpeedInMetersPerSecondSquared;
+    const float Friction = SpeedInMetersPerSecondSquared;
+
+    Vector UnitMovementDirectionInMeters = GPlayerController.GetMovementVector(); 
+
+    // apply acceleration
+    PlayerVelocity = PlayerVelocity + UnitMovementDirectionInMeters * Acceleration * DeltaTime;
+
+    float timescale = 0.2f;
+    float scale = exp(-DeltaTime / timescale);
+    PlayerVelocity = PlayerVelocity * scale;
+        
+    //float PlayerSpeed = PlayerVelocity.GetMagnitude();
+
+    Vector PlayerPosition = GCamera.GetPosition() + PlayerVelocity * DeltaTime;
+    
+    GCamera.SetPosition(PlayerPosition);
     GCamera.SetTarget(GCamera.GetPosition() + GPlayerController.GetForwardVector());
 }
 

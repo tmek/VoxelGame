@@ -16,11 +16,14 @@ class CORE_API DynamicRHI
 {
 public:
 
+    static void SetDebugName(ID3D11DeviceChild* Resource, const char* Format, ...);
 
-    static void SetDebugName(ID3D11DeviceChild* resource, const char* format, ...);
     void BeginPass(const wchar_t* Name);
+
     void EndPass();
-    
+
+    const PipelineState& GetCurrentPSO() const;
+
     DynamicRHI(void* WindowHandle);
 
     ~DynamicRHI();
@@ -54,9 +57,12 @@ public:
         PipelineStateManager_->ApplyPipelineState(DepthPrePassPSO_);
     };
 
-  
-private:
+    void ApplyPSO(PipelineState PSO)
+    {
+        PipelineStateManager_->ApplyPipelineState(PSO);
+    }
 
+private:
 
     void DefineOpaquePassPSO();
 
@@ -85,7 +91,7 @@ private:
     HWND WindowHandle_;
     int WindowClientWidth_ = 800; // fallback values
     int WindowClientHeight_ = 600;
-    UINT SampleCount_ = 2; // 4x MSAA
+    UINT SampleCount_ = 1; // 4x MSAA
     UINT MSAAQuality_ = 0;
 
 #pragma warning(push)
@@ -101,7 +107,7 @@ private:
 
     std::unique_ptr<PipelineStateManager> PipelineStateManager_;
 #pragma warning(pop)
-    
+
     PipelineState InitialPipelineState_;
     PipelineState DepthPrePassPSO_;
     PipelineState OpaquePassPSO_;

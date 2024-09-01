@@ -45,7 +45,7 @@ inline void WorldToChunkGrid(const int32& WorldCoordinateIn, int32& ChunkCoordin
 /** Convert world position to chunk key. */
 inline void WorldToChunkKey(const BlockCoordinate& WorldPositionIn, ChunkKey& ChunkKeyOut) noexcept
 {
-    CheckWorldPosition(WorldPositionIn);
+    //CheckWorldPosition(WorldPositionIn);
 
     WorldToChunkGrid(WorldPositionIn.X, ChunkKeyOut.X);
     WorldToChunkGrid(WorldPositionIn.Z, ChunkKeyOut.Z);

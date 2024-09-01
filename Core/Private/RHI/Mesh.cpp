@@ -1,12 +1,14 @@
 ﻿
 #include "RHI/Mesh.h"
 
+#include "RHI/PipelineState.h"
+
 void Mesh::BindToDeviceContext(ID3D11DeviceContext* deviceContext) const
 {
     UINT offset = 0;
     deviceContext->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &vertexStride, &offset);
     deviceContext->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-    //deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 void Mesh::Draw(ID3D11DeviceContext* deviceContext) const

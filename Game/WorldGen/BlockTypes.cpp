@@ -14,7 +14,7 @@ const BlockColor BlockColors[] = {
     {54, 54, 54},     // CoalOre
     {139, 69, 19},    // Log
     {34, 139, 34},    // Leaves
-    {0, 0, 0},        // Bedrock
+    {16, 16, 16},        // Bedrock
     {0, 64, 192},   // Water {64, 164, 223},   // Water
     {255, 69, 0},     // Lava
     {237, 201, 175},  // Sandstone
