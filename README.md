@@ -3,4 +3,4 @@ A personal project exploring a standalone game engine using C++, Direct3D, voxel
 
 [video on LinkedIn](https://www.linkedin.com/feed/update/urn:li:activity:7228283928715968512/)
 
-[Chunks Debug Visualizer](Images/Chunks.png)
+![Chunk Debug Visualization](Images/Chunks.png)
