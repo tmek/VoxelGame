@@ -175,6 +175,7 @@
     <Content Include="Textures\ascii.bmp">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="version.rc" />
     <Content Include="VoxelMisc\VoxelNotes.txt" />
   </ItemGroup>
   <ItemGroup>

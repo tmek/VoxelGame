@@ -1,5 +1,7 @@
 // copyright
 
+#include <cstdlib>
+
 #include "HAL/Platform.h"
 #include "Windows/WindowsHWrapper.h"
 
@@ -16,5 +18,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 {
     ::GSavedCommandLine = ::GetCommandLineW();
     GuardedMain(GSavedCommandLine);
+
     return 0;
 }

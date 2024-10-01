@@ -248,6 +248,7 @@
     <ClCompile Include="Private\HAL\PlatformTime.cpp" />
     <ClCompile Include="Private\HAL\PlatformWindow.cpp" />
     <ClCompile Include="Private\Input\InputManager.cpp" />
+    <ClCompile Include="Private\Logging\LogFileManager.cpp" />
     <ClCompile Include="Private\Logging\Logging.cpp" />
     <ClCompile Include="Private\Logging\LogMacros.cpp" />
     <ClCompile Include="Private\Logging\LogVerbosity.cpp" />
@@ -276,6 +277,7 @@
     <ClCompile Include="Public\Misc\Application.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Private\Logging\LogFileManager.h" />
     <ClInclude Include="Public\Containers\Array.h" />
     <ClInclude Include="Public\Containers\UnrealString.h" />
     <ClInclude Include="Public\Core.h" />
