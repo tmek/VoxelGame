@@ -8,7 +8,7 @@ Uses no libraries other than C++ std and core Direct3D
 - Core Defines and Macros
 - Platform agnostic classes (timing, OS window, threading)
 - Multi-threaded tasks (threadpool)
-- Core 3D Math classes (matrix, vector)
+- Core 3D Math classes (matrix, vector, intvector, plane, frustum)
 - 3D Noise generation (perlin, simplex)
 - Camera, PlayerController, InputManager
 - VoxelCore Library (worlds, chunks, blocks)
