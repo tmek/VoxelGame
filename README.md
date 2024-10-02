@@ -1,7 +1,7 @@
 
 # VoxelGame
 
-A personal project exploring a standalone C++ game engine exploring voxels and procedural world generation.
+A personal project exploring a standalone C++ game engine using voxels/blocks and procedural world generation.
 
 Uses no libraries other than C++ std and core Direct3D
 
