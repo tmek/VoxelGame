@@ -12,7 +12,8 @@ Uses no libraries other than C++ std and core Direct3D
 - 3D Noise generation (perlin, simplex)
 - Camera, PlayerController, InputManager
 - VoxelCore Library (worlds, chunks, blocks)
-- Graphis classes and HLSL supporting multiple render passes
+- Graphis classes tracking pipeline state and supporting multiple render passes
+- HLSL shaders
 - Mesh Builder and assembly classes
 - Launch / Application classes
 - Console, Logging, DebugLines
